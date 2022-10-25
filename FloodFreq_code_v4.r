@@ -253,26 +253,24 @@ ArrayToNc(list(fldRecurIntrvl, lon, lat, decade, recurInterval, rcpScen), file_p
 # https://www.rdocumentation.org/packages/rnaturalearth/versions/0.1.0
 library(rnaturalearth)
 library(raster)
+library(data.table)
 library(sf)
 sf_use_s2(FALSE) # for error suppression of Error in wk_handle.wk_wkb(wkb, s2_geography_writer(oriented = oriented,  :
 land10 <- ne_download(scale = 10, type = 'land', category = 'physical') #scal50 scale110
 sp::plot(land10)
 land10Sf = st_as_sf(land10)
-
 	# lons and lats to match the flood rasters
-#floodRast = raster('floodMapGL_rp100y.tif')
-lats = seq(-54.00824,83.2251,length.out=16468)
-lons = seq(-166.8, 180, length.out=41616)
 
+#floodRast = raster('J:\\Cai_data\\TCFD\\CurrentFloodHazard\\floodMapGL_rp100y.tif')
+lats = rev(seq(-54.00824,83.2251,length.out=16468))
+lons = seq(-166.8, 180, length.out=41616)
 #spPoints = st_multipoint(rbind(c(lats[1], lons[1]), c(lats[100],lons[50])))
 pointDf = data.frame('lon' = rep(lons, length(lats)),
 	'lat' = rep(lats, each=length(lons)))
-
-	# pointDf is too long to allocate to one SF object, so splitting up runs
-theseRows = 1:10000000 #685332288
+	# pointDf is too long to allocate to one SF object, so splitting to 4
+theseRows = 1:5000000 #685332288
 pointSf = st_as_sf(pointDf[theseRows,], coords = c('lon', 'lat'))
 st_crs(pointSf) = st_crs(land10)
-
 goodPoints = data.frame(row1 = rep(NA, nrow(pointSf)))
 goodPoints[,1]  = st_intersects(pointSf, land10Sf[1,], sparse=FALSE)[,1]
 goodPoints[,2] = st_intersects(pointSf, land10Sf[2,], sparse=FALSE)[,1]
@@ -285,18 +283,19 @@ goodPoints[,8] = st_intersects(pointSf, land10Sf[9,], sparse=FALSE)[,1]
 goodPoints[,9] = st_intersects(pointSf, land10Sf[10,], sparse=FALSE)[,1]
 goodPoints[,10] = st_intersects(pointSf, land10Sf[11,], sparse=FALSE)[,1]
 goodPoints[,11] = apply(goodPoints, 1, any)
-
 goodRows = theseRows[goodPoints[,11]]
-write.csv(goodRows, 'goodRows2.csv')
-#sp::plot(goodPointsSf)
 
-	# repeating for all new rows
-theseRows = theseRows + 10000000 #685332288
+iter = 1
+write.csv(goodRows, paste0('goodRows', iter, '.csv'))
+#sp::plot(goodPointsSf)
+	# repeating for all news rows
+theseRows = theseRows + 5000000 #685332288
 maxRow = 685332288
-while(theseRows[1] <= 685332288)
+while(theseRows[1] <= 685332288)	{
 	if(last(theseRows) > maxRow)	{
 		theseRows = seq(theseRows[1], maxRow, 1)
 	}
+	print(theseRows[1] / maxRow)
 	pointSf = st_as_sf(pointDf[theseRows,], coords = c('lon', 'lat'))
 	st_crs(pointSf) = st_crs(land10)
 	goodPoints = data.frame(row1 = rep(NA, nrow(pointSf)))
@@ -311,12 +310,29 @@ while(theseRows[1] <= 685332288)
 	goodPoints[,9] = st_intersects(pointSf, land10Sf[10,], sparse=FALSE)[,1]
 	goodPoints[,10] = st_intersects(pointSf, land10Sf[11,], sparse=FALSE)[,1]
 	goodPoints[,11] = apply(goodPoints, 1, any)
-	goodRows = c(goodRows, theseRows[goodPoints[,11]])
-	theseRows = theseRows + 10000000 #685332288
+	goodRows = theseRows[goodPoints[,11]]
+	#goodRows = c(goodRows, theseRows[goodPoints[,11]])
+	#write.table(goodRows, 'goodRows2.txt')
+	#saveRDS(goodRows, 'goodRows2.rds')
+	#gg=readRDS('goodRows2.rds')
+	iter = iter + 1
+	write.csv(goodRows, paste0('goodRows', iter, '.csv'))
+
+	theseRows = theseRows + 5000000 #685332288
 	#sp::plot(goodPointsDf)
 }
-write.csv(goodRows, 'goodRows2.csv')
 
+
+dataOutArray = array(rep(0, length(lons) * length(lats)), 
+	dim = c(length(lons), length(lats)))
+
+for(i in 1:138)	{
+	theseGoodRows = read.csv(paste0('goodRows', i, '.csv'))$x
+	print(theseGoodRows[1])
+	dataOutArray[theseGoodRows] = 1
+}
+	
+saveRDS(dataOutArray, 'J:\\Cai_data\\TCFD\\CurrentFloodHazard\\LandMaskArray.rds')
 
 
 
@@ -328,12 +344,17 @@ write.csv(goodRows, 'goodRows2.csv')
 ########################################################################################################################
 # step 3 intersecting recurrence intervals with flood depth
 library(raster)
+library(ncdf4)
+library(data.table)
 
-whichRecurIntrvls = c(500)	# customer request: which recurrence intervals
-chooseDepth = TRUE			# does the customer want flood depth or just occurrence
+whichRecurIntrvls = c(10,20,50,100,200,500)	# customer request: which recurrence intervals
+chooseDepth = FALSE			# does the customer want flood depth or just occurrence
 customerName = 'Richs Foods'
-locationFootprint = 1		# how big is the footprint of the location of interest? in number of 'boxes' to search to the left and right (so 0 is equal to 1 km^2, 1 is 9 km^2, 2 is 25 km^2, etc.
+locationFootprint = 12		# how big is the footprint of the location of interest? in number of 'boxes' to search to the left and right (so 0 is equal to 1 km^2, 1 is 9 km^2, 2 is 25 km^2, etc.
 dataOutputLoc = 'J:\\Cai_data\\TCFD\\CustomerOutputs\\'
+waterMaskLoc = 'J:\\Cai_data\\TCFD\\CurrentFloodHazard\\LandMaskArray.rds'
+
+
 
 	# reading in table of customer locations
 customerPath = 'J:\\Cai_data\\TCFD\\'
@@ -348,21 +369,17 @@ whichDecades = seq(10,90,10)
 	
 	# read in flood recurrence data
 ncpath = "J:\\Cai_data\\TCFD\\Flash Floods\\"
-fldRcrIntNC = nc_open(paste0(ncpath, 'floodRecurIntervals.nc'))
+fldRcrIntNC = nc_open(paste0(ncpath, 'floodRecurIntervals_v2.nc'))
 nc_lat = ncvar_get(fldRcrIntNC, 'lat')
 nc_lon = ncvar_get(fldRcrIntNC, 'lon')
 fldRcrVals = ncvar_get(fldRcrIntNC, 'fldRecurIntrvl')
-fldRcrIntrvlOpts = ncvar_get(fldRcrIntNC, 'recurInterval')
-
 
 
 	# initializing data output
-dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA, Hazard = NA, Decade = NA, Scenario = NA, Raw_Hazard_Value = NA, Percentile = NA, Relative_Hazard_Score = NA)
+dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA, Hazard = NA, Decade = NA, Scenario = NA, Raw_Hazard_Value = NA)#, Percentile = NA, Relative_Hazard_Score = NA)
 
 	# read in historic floods data
-str_name = paste0('floodMapGL_rp500y.tif')
 fileLoc = 'J:\\Cai_data\\TCFD\\CurrentFloodHazard'
-
 fldDepthList = list()
 fldDepthList[[1]] = raster(paste0(fileLoc, '\\floodMapGL_rp10y.tif'))
 fldDepthList[[2]] = raster(paste0(fileLoc, '\\floodMapGL_rp20y.tif'))
@@ -371,31 +388,34 @@ fldDepthList[[4]] = raster(paste0(fileLoc, '\\floodMapGL_rp100y.tif'))
 fldDepthList[[5]] = raster(paste0(fileLoc, '\\floodMapGL_rp200y.tif'))
 fldDepthList[[6]] = raster(paste0(fileLoc, '\\floodMapGL_rp500y.tif'))
 
+
 	# identifying lat lon coordinates for tiffs
-tif_lat = seq(-54.00824,83.2251,length.out=16468)
+tif_lat = rev(seq(-54.00824,83.2251,length.out=16468))
 tif_lon = seq(-166.8, 180, length.out=41616)
 
+	# vector for storing raw hazard output
+rawHazOut = NULL
 
-for(thisIntrvl in whichRecurIntrvls)	{
-	hazardName = ifelse(chooseDepth, paste0("Flood Hazard (m) ", whichRecurIntrvls[thisIntrvl], 'yr Flood'), paste0('Flood Hazard (-) ', whichRecurIntrvls[thisIntrvl], 'yr Flood'))
+for(thisIntrvl in 1:length(recurIntrvls))	{
+	hazardName = ifelse(chooseDepth, paste0("Flood Hazard (m) ", recurIntrvls[thisIntrvl], 'yr Flood'), paste0('Flood Hazard (-) ', recurIntrvls[thisIntrvl], 'yr Flood'))
 	for(j in 1:nrow(customerTable))	{
 		closeTiffLons = which.min(abs(customerTable$Lon[j] - tif_lon))
 		closeTiffLats = which.min(abs(customerTable$Lat[j] - tif_lat))
 		
-		for(k in 1:locationFootprint)	{
-			theseLats = seq(closeTiffLats - locationFootprint, closeTiffLats + locationFootprint, 1)
-			theseLons = seq(closeTiffLons - locationFootprint, closeTiffLons + locationFootprint, 1)
-				#ensuring lats / lons don't go outside bounding box
-			if(any(theseLats < 1))	{theseLats[theseLats < 1] = 1}
-			if(any(theseLats > length(tif_lat)))	{theseLats[theseLats > length(tif_lat)] = length(tif_lat)}
-			if(any(theseLons < 1))	{theseLats[theseLons < 1] = 1}
-			if(any(theseLons > length(tif_lon)))	{theseLats[theseLons > length(tif_lon)] = length(tif_lon)}
+		theseLats = seq(closeTiffLats - locationFootprint, closeTiffLats + locationFootprint, 1)
+		theseLons = seq(closeTiffLons - locationFootprint, closeTiffLons + locationFootprint, 1)
+			#ensuring lats / lons don't go outside bounding box
+		if(any(theseLats < 1))	{theseLats[theseLats < 1] = 1}
+		if(any(theseLats > length(tif_lat)))	{theseLats[theseLats > length(tif_lat)] = length(tif_lat)}
+		if(any(theseLons < 1))	{theseLons[theseLons < 1] = 1}
+		if(any(theseLons > length(tif_lon)))	{theseLons[theseLons > length(tif_lon)] = length(tif_lon)}
 
-			histFloodImpact = ifelse(chooseDepth,
-										mean(fldDepthList[[6]][theseLats, theseLons], na.rm=TRUE),
-										length(which(fldDepthList[[6]][theseLats, theseLons] > 0)) / length(theseLats)^2)
-			
-		}
+			# defining the water mask
+		thisWaterMask = readRDS(waterMaskLoc)[theseLons, theseLats]
+
+		histFloodImpact = ifelse(chooseDepth,
+									mean(fldDepthList[[6]][theseLats, theseLons], na.rm=TRUE),
+									length(which(fldDepthList[[6]][theseLats, theseLons] > 0)) / length(theseLats)^2)
 		
 			# check to see if even 500yr floods trigger historically; if not, the skip next analysis
 		if(!is.na(histFloodImpact))	{
@@ -420,15 +440,16 @@ for(thisIntrvl in whichRecurIntrvls)	{
 					if(thisFldRcrVal >= recurIntrvls[1])	{
 						closestFldRcrIntrvl = last(which(thisFldRcrVal > recurIntrvls))
 						theseFloodImpacts = fldDepthList[[closestFldRcrIntrvl]][theseLats, theseLons]
+						theseFloodImpacts[is.na(theseFloodImpacts)] = 0
+						theseFloodImpacts = theseFloodImpacts * thisWaterMask
+	
 						
 						if(any(!is.na(theseFloodImpacts)))	{
 							histFloodImpact = ifelse(chooseDepth,
 								mean(theseFloodImpacts, na.rm=TRUE),
-								length(which(theseFloodImpacts > 0)) / length(theseLats)^2)
-							percentileScore = NA
-							relHazardScore = NA
-							
-							rbind(dataOutput,
+								length(which(theseFloodImpacts > 0)) / length(!is.na(theseFloodImpacts)))
+
+							dataOutput = rbind(dataOutput,
 								c(customerName,
 								customerTable$Name[j],
 								customerTable$Region[j],
@@ -438,10 +459,33 @@ for(thisIntrvl in whichRecurIntrvls)	{
 								hazardName,
 								paste0('20', whichDecades[thisDecade], 's'),
 								paste0('RCP', rcpScenarios[thisScenario]),
-								histFloodImpact,
-								percentileScore,
-								relHazardScore))
+								histFloodImpact))
+					
+						} else	{ 
+							dataOutput = rbind(dataOutput,
+								c(customerName,
+								customerTable$Name[j],
+								customerTable$Region[j],
+								customerTable$Subregion[j],
+								customerTable$Lat[j],
+								customerTable$Lon[j],
+								hazardName,
+								paste0('20', whichDecades[thisDecade], 's'),
+								paste0('RCP', rcpScenarios[thisScenario]),
+								0))
 						}
+					}	else	{
+						dataOutput = rbind(dataOutput,
+							c(customerName,
+							customerTable$Name[j],
+							customerTable$Region[j],
+							customerTable$Subregion[j],
+							customerTable$Lat[j],
+							customerTable$Lon[j],
+							hazardName,
+							paste0('20', whichDecades[thisDecade], 's'),
+							paste0('RCP', rcpScenarios[thisScenario]),
+							0))
 					}
 				}
 			}
@@ -458,15 +502,39 @@ for(thisIntrvl in whichRecurIntrvls)	{
 				Hazard = hazardName,
 				Decade = rep(paste0('20', whichDecades, 's'), length(rcpScenarios)),
 				Scenario = rep(paste0('RCP', rcpScenarios), each=length(whichDecades)),
-				Raw_Hazard_Value = 0,
-				Percentile = 1,
-				Relative_Hazard_Score = 'Low'))
+				Raw_Hazard_Value = 0))
+			
 		}
 	}
 }	
 
-		
-fwrite(dataOutput, paste0(dataOutputLoc, customerName, '_', sys.Date(), '.csv'))
+dataOutput$Raw_Hazard_Value = as.numeric(dataOutput$Raw_Hazard_Value)
+dataOutput = dataOutput[-1,]
+
+
+	# defining relativ flood hazard
+if(chooseDepth)	{
+	basSeq = seq(0.1, 1, length.out=67)^4
+	relFloodHazard = c(rep(0, 33), basSeq*30)
+	#relFloodHazard = c(rep(0, 33), seq(0.01,10,length.out=(67)))
+	dataOutput$Percentile = 1
+	for(ll in 2:length(relFloodHazard))	{
+		dataOutput$Percentile[which(dataOutput$Raw_Hazard_Value > relFloodHazard[ll])] = ll
+	}
+} else {
+	dataOutput$Percentile = round(dataOutput$Raw_Hazard_Value * 100, 0)
+}
+dataOutput$Relative_Hazard_Score = 'Low'
+dataOutput$Relative_Hazard_Score[dataOutput$Percentile > 33] = 'Medium'
+dataOutput$Relative_Hazard_Score[dataOutput$Percentile > 76] = 'High'
+
+fileName = ifelse(chooseDepth, paste0(customerName, '_', Sys.Date(), '_avgDepth_Footprint_', (locationFootprint*2+1), 'km'), paste0(customerName, '_', Sys.Date(), '_relLikelihood_Footprint_', (locationFootprint*2+1), 'km'))
+fwrite(dataOutput, paste0(dataOutputLoc, fileName, '.csv'))
+
+
+
+
+
 
 
 

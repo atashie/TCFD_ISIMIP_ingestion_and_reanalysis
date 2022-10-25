@@ -13,22 +13,23 @@ library(easyNCDF)	# for ArrayToNc()
 
 
 
-
 #########################################
 # reading in climai netcdf data
-ncpath = "J:\\Cai_data\\TCFD\\BurntArea\\"
-ncVarFileName = 'burntarea'
-saveDate = '10OCT2022'
+ncpath = "J:\\Cai_data\\TCFD\\SurfaceWater_Streamflow\\"
+ncVarFileName = 'dis'
+saveDate = '19OCT2022'
 rcpScenarios = c(26, 60)
 whichDecades = seq(10,90,10)
 valueType = c(1,2)
 
+
 	# reading in dummy data for lat lons
-ncname_dummy = paste0('clm45_gfdl-esm2m_ewembi_rcp26_2005soc_co2_burntarea_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_dummy = paste0('matsiro_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_dummy = nc_open(paste0(ncpath, ncname_dummy))
 nc_lat = ncvar_get(ncin_dummy, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(ncin_dummy, 'lon')
 
+scalar = 60*60*24*30.4375 / (1000 * 1000 * 1000)
 
 	# array for holding outputs
 myMissingData = -(10^10)
@@ -36,27 +37,23 @@ dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(rcpScenarios), length(valueType)))
 
 
-
-
-
-
 for(thisScen in 1:length(rcpScenarios))	{
 	rcpScenNum = rcpScenarios[thisScen]
 	rcpScen = paste0('rcp', rcpScenNum)
 
-	ncname_gfdl = paste0('clm45_gfdl-esm2m_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_gfdl = paste0('matsiro_gfdl-esm2m_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
 	nc_gfdl = ncvar_get(ncin_gfdl,ncVarFileName)	# lon, lat, time
 
-	ncname_hadgem = paste0('clm45_hadgem2-es_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_hadgem = paste0('matsiro_hadgem2-es_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
 	nc_hadgem = ncvar_get(ncin_hadgem,ncVarFileName)	# lon, lat, time
 	
-	ncname_ipsl = paste0('clm45_ipsl-cm5a-lr_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_ipsl = paste0('matsiro_ipsl-cm5a-lr_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
 	nc_ipsl = ncvar_get(ncin_ipsl,ncVarFileName)	# lon, lat, time
 	
-	ncname_miroc = paste0('clm45_miroc5_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_miroc = paste0('matsiro_miroc5_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
 	nc_miroc = ncvar_get(ncin_miroc,ncVarFileName)	# lon, lat, time
 
@@ -136,15 +133,15 @@ for(thisScen in 1:length(rcpScenarios))	{
 						sum(nc_9099[(1:12)+(12*(kh-1))]))
 				}
 
-				dataOutArray[j, i, 1, thisScen, 1] = mean(data1019) * 100
-				dataOutArray[j, i, 2, thisScen, 1] = mean(data2029) * 100
-				dataOutArray[j, i, 3, thisScen, 1] = mean(data3039) * 100
-				dataOutArray[j, i, 4, thisScen, 1] = mean(data4049) * 100
-				dataOutArray[j, i, 5, thisScen, 1] = mean(data5059) * 100
-				dataOutArray[j, i, 6, thisScen, 1] = mean(data6069) * 100
-				dataOutArray[j, i, 7, thisScen, 1] = mean(data7079) * 100
-				dataOutArray[j, i, 8, thisScen, 1] = mean(data8089) * 100
-				dataOutArray[j, i, 9, thisScen, 1] = mean(data9099) * 100
+				dataOutArray[j, i, 1, thisScen, 1] = mean(data1019) * scalar
+				dataOutArray[j, i, 2, thisScen, 1] = mean(data2029) * scalar 
+				dataOutArray[j, i, 3, thisScen, 1] = mean(data3039) * scalar
+				dataOutArray[j, i, 4, thisScen, 1] = mean(data4049) * scalar
+				dataOutArray[j, i, 5, thisScen, 1] = mean(data5059) * scalar
+				dataOutArray[j, i, 6, thisScen, 1] = mean(data6069) * scalar
+				dataOutArray[j, i, 7, thisScen, 1] = mean(data7079) * scalar
+				dataOutArray[j, i, 8, thisScen, 1] = mean(data8089) * scalar
+				dataOutArray[j, i, 9, thisScen, 1] = mean(data9099) * scalar
 			}
 		}
 	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
@@ -162,22 +159,21 @@ maskedLocs26 = which(dataOutArray[ , , 1, 1, 1] == myMissingData)
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
 maskedLocs60 = which(dataOutArray[ , , 1, 2, 1] == myMissingData)
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
-histQuants = quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01))
+histQuants = rev(quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01)))
 
 for(i in 1:length(whichDecades))	{
-	dataOutArray[ , , i, 1, 2] = 1
-	dataOutArray[ , , i, 2, 2] = 1
-	for(j in 1:(length(histQuants) - 1))	{
-		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j + 1
-		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j + 1
+	for(j in 1:(length(histQuants)))	{
+		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] <= histQuants[j]] = j
+		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
 }
 
 
+
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Fire - % Area Burned / yr'))
+metadata = list(tcfdVariable = list(units = 'Surface Water - annual total streamflow in km^3'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
@@ -224,6 +220,7 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,2] - nc_testDat[,,1,2,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,2] - nc_testDat[,,1,1,2])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,1] - nc_testDat[,,1,1,1])
 

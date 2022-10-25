@@ -13,18 +13,18 @@ library(easyNCDF)	# for ArrayToNc()
 
 
 
-
 #########################################
 # reading in climai netcdf data
-ncpath = "J:\\Cai_data\\TCFD\\BurntArea\\"
-ncVarFileName = 'burntarea'
-saveDate = '10OCT2022'
+ncpath = "J:\\Cai_data\\TCFD\\RootZoneSoilMoisture\\"
+ncVarFileName = 'rootmoist'
+saveDate = '19OCT2022'
 rcpScenarios = c(26, 60)
 whichDecades = seq(10,90,10)
 valueType = c(1,2)
 
+
 	# reading in dummy data for lat lons
-ncname_dummy = paste0('clm45_gfdl-esm2m_ewembi_rcp26_2005soc_co2_burntarea_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_dummy = paste0('clm45_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_dummy = nc_open(paste0(ncpath, ncname_dummy))
 nc_lat = ncvar_get(ncin_dummy, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(ncin_dummy, 'lon')
@@ -34,10 +34,6 @@ nc_lon = ncvar_get(ncin_dummy, 'lon')
 myMissingData = -(10^10)
 dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(rcpScenarios), length(valueType)))
-
-
-
-
 
 
 for(thisScen in 1:length(rcpScenarios))	{
@@ -93,58 +89,58 @@ for(thisScen in 1:length(rcpScenarios))	{
 				data1019 = NULL
 				for(kh in 1:(length(nc_1019)/12))	{
 					data1019 = c(data1019,
-						sum(nc_1019[(1:12)+(12*(kh-1))]))
+						median(nc_1019[(1:12)+(12*(kh-1))]))
 				}
 				data2029 = NULL
 				for(kh in 1:(length(nc_2029)/12))	{
 					data2029 = c(data2029,
-						sum(nc_2029[(1:12)+(12*(kh-1))]))
+						median(nc_2029[(1:12)+(12*(kh-1))]))
 				}
 				data3039 = NULL
 				for(kh in 1:(length(nc_3039)/12))	{
 					data3039 = c(data3039,
-						sum(nc_3039[(1:12)+(12*(kh-1))]))
+						median(nc_3039[(1:12)+(12*(kh-1))]))
 				}
 				data4049 = NULL
 				for(kh in 1:(length(nc_4049)/12))	{
 					data4049 = c(data4049,
-						sum(nc_4049[(1:12)+(12*(kh-1))]))
+						median(nc_4049[(1:12)+(12*(kh-1))]))
 				}
 				data5059 = NULL
 				for(kh in 1:(length(nc_5059)/12))	{
 					data5059 = c(data5059,
-						sum(nc_5059[(1:12)+(12*(kh-1))]))
+						median(nc_5059[(1:12)+(12*(kh-1))]))
 				}
 				data6069 = NULL
 				for(kh in 1:(length(nc_6069)/12))	{
 					data6069 = c(data6069,
-						sum(nc_6069[(1:12)+(12*(kh-1))]))
+						median(nc_6069[(1:12)+(12*(kh-1))]))
 				}
 				data7079 = NULL
 				for(kh in 1:(length(nc_7079)/12))	{
 					data7079 = c(data7079,
-						sum(nc_7079[(1:12)+(12*(kh-1))]))
+						median(nc_7079[(1:12)+(12*(kh-1))]))
 				}
 				data8089 = NULL
 				for(kh in 1:(length(nc_8089)/12))	{
 					data8089 = c(data8089,
-						sum(nc_8089[(1:12)+(12*(kh-1))]))
+						median(nc_8089[(1:12)+(12*(kh-1))]))
 				}
 				data9099 = NULL
 				for(kh in 1:(length(nc_9099)/12))	{
 					data9099 = c(data9099,
-						sum(nc_9099[(1:12)+(12*(kh-1))]))
+						median(nc_9099[(1:12)+(12*(kh-1))]))
 				}
 
-				dataOutArray[j, i, 1, thisScen, 1] = mean(data1019) * 100
-				dataOutArray[j, i, 2, thisScen, 1] = mean(data2029) * 100
-				dataOutArray[j, i, 3, thisScen, 1] = mean(data3039) * 100
-				dataOutArray[j, i, 4, thisScen, 1] = mean(data4049) * 100
-				dataOutArray[j, i, 5, thisScen, 1] = mean(data5059) * 100
-				dataOutArray[j, i, 6, thisScen, 1] = mean(data6069) * 100
-				dataOutArray[j, i, 7, thisScen, 1] = mean(data7079) * 100
-				dataOutArray[j, i, 8, thisScen, 1] = mean(data8089) * 100
-				dataOutArray[j, i, 9, thisScen, 1] = mean(data9099) * 100
+				dataOutArray[j, i, 1, thisScen, 1] = mean(data1019) 
+				dataOutArray[j, i, 2, thisScen, 1] = mean(data2029) 
+				dataOutArray[j, i, 3, thisScen, 1] = mean(data3039) 
+				dataOutArray[j, i, 4, thisScen, 1] = mean(data4049) 
+				dataOutArray[j, i, 5, thisScen, 1] = mean(data5059)
+				dataOutArray[j, i, 6, thisScen, 1] = mean(data6069)
+				dataOutArray[j, i, 7, thisScen, 1] = mean(data7079)
+				dataOutArray[j, i, 8, thisScen, 1] = mean(data8089) 
+				dataOutArray[j, i, 9, thisScen, 1] = mean(data9099)
 			}
 		}
 	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
@@ -162,22 +158,21 @@ maskedLocs26 = which(dataOutArray[ , , 1, 1, 1] == myMissingData)
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
 maskedLocs60 = which(dataOutArray[ , , 1, 2, 1] == myMissingData)
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
-histQuants = quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01))
+histQuants = rev(quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01)))
 
 for(i in 1:length(whichDecades))	{
-	dataOutArray[ , , i, 1, 2] = 1
-	dataOutArray[ , , i, 2, 2] = 1
-	for(j in 1:(length(histQuants) - 1))	{
-		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j + 1
-		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j + 1
+	for(j in 1:(length(histQuants)))	{
+		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] <= histQuants[j]] = j
+		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
 }
 
 
+
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Fire - % Area Burned / yr'))
+metadata = list(tcfdVariable = list(units = 'Root Zone Soil Moisture - annual median in mm'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
@@ -224,6 +219,7 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,2] - nc_testDat[,,1,2,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,2] - nc_testDat[,,1,1,2])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,1] - nc_testDat[,,1,1,1])
 

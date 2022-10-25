@@ -12,19 +12,19 @@ library(ncdf4)
 library(easyNCDF)	# for ArrayToNc()
 
 
-
+lange2020_clm45_ipsl-cm5a-lr_ewembi_rcp60_2005soc_co2_ler_global_annual_2006_2099.nc4
 
 #########################################
 # reading in climai netcdf data
-ncpath = "J:\\Cai_data\\TCFD\\BurntArea\\"
-ncVarFileName = 'burntarea'
+ncpath = "J:\\Cai_data\\TCFD\\RiverFloodArea\\"
+ncVarFileName = 'ler'
 saveDate = '10OCT2022'
 rcpScenarios = c(26, 60)
 whichDecades = seq(10,90,10)
 valueType = c(1,2)
 
 	# reading in dummy data for lat lons
-ncname_dummy = paste0('clm45_gfdl-esm2m_ewembi_rcp26_2005soc_co2_burntarea_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_dummy = paste0('lange2020_clm45_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_dummy = nc_open(paste0(ncpath, ncname_dummy))
 nc_lat = ncvar_get(ncin_dummy, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(ncin_dummy, 'lon')
@@ -44,42 +44,42 @@ for(thisScen in 1:length(rcpScenarios))	{
 	rcpScenNum = rcpScenarios[thisScen]
 	rcpScen = paste0('rcp', rcpScenNum)
 
-	ncname_gfdl = paste0('clm45_gfdl-esm2m_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_gfdl = paste0('lange2020_clm45_gfdl-esm2m_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
 	nc_gfdl = ncvar_get(ncin_gfdl,ncVarFileName)	# lon, lat, time
 
-	ncname_hadgem = paste0('clm45_hadgem2-es_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_hadgem = paste0('lange2020_clm45_hadgem2-es_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
 	nc_hadgem = ncvar_get(ncin_hadgem,ncVarFileName)	# lon, lat, time
 	
-	ncname_ipsl = paste0('clm45_ipsl-cm5a-lr_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_ipsl = paste0('lange2020_clm45_ipsl-cm5a-lr_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
 	nc_ipsl = ncvar_get(ncin_ipsl,ncVarFileName)	# lon, lat, time
 	
-	ncname_miroc = paste0('clm45_miroc5_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_miroc = paste0('lange2020_clm45_miroc5_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
 	nc_miroc = ncvar_get(ncin_miroc,ncVarFileName)	# lon, lat, time
 
-	nc_date = as.Date("1661-01-01") + ncvar_get(ncin_miroc, 'time') * 30.4375# time is months after 1661-1-1
+	nc_date = as.Date("1661-01-01") + ncvar_get(ncin_miroc, 'time') * 365.25# time is months after 1661-1-1
 	nc_years = unique(year(nc_date))
 	missing_data = 1.00000002004088e+20
 
-	dates1019 = which(year(nc_date) == 2010)[1]:which(year(nc_date) == 2019)[12]
-	dates2029 = which(year(nc_date) == 2020)[1]:which(year(nc_date) == 2029)[12]
-	dates3039 = which(year(nc_date) == 2030)[1]:which(year(nc_date) == 2039)[12]
-	dates4049 = which(year(nc_date) == 2040)[1]:which(year(nc_date) == 2049)[12]
-	dates5059 = which(year(nc_date) == 2050)[1]:which(year(nc_date) == 2059)[12]
-	dates6069 = which(year(nc_date) == 2060)[1]:which(year(nc_date) == 2069)[12]
-	dates7079 = which(year(nc_date) == 2070)[1]:which(year(nc_date) == 2079)[12]
-	dates8089 = which(year(nc_date) == 2080)[1]:which(year(nc_date) == 2089)[12]
-	dates9099 = which(year(nc_date) == 2090)[1]:which(year(nc_date) == 2099)[12]
+	dates1019 = which(year(nc_date) == 2010):which(year(nc_date) == 2019)
+	dates2029 = which(year(nc_date) == 2020):which(year(nc_date) == 2029)
+	dates3039 = which(year(nc_date) == 2030):which(year(nc_date) == 2039)
+	dates4049 = which(year(nc_date) == 2040):which(year(nc_date) == 2049)
+	dates5059 = which(year(nc_date) == 2050):which(year(nc_date) == 2059)
+	dates6069 = which(year(nc_date) == 2060):which(year(nc_date) == 2069)
+	dates7079 = which(year(nc_date) == 2070):which(year(nc_date) == 2079)
+	dates8089 = which(year(nc_date) == 2080):which(year(nc_date) == 2089)
+	dates9099 = which(year(nc_date) == 2090):which(year(nc_date) == 2099)
 
 
 	for(i in 1:length(nc_lat))	{
 		for(j in 1:length(nc_lon))	{
 			nc_dummy = nc_gfdl[j,i,dates1019] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
-				print(c(i, j))
+						print(c(i, j))
 				nc_1019 = c(nc_gfdl[j,i,dates1019],nc_hadgem[j,i,dates1019],nc_ipsl[j,i,dates1019],nc_miroc[j,i,dates1019]) 
 				nc_2029 = c(nc_gfdl[j,i,dates2029],nc_hadgem[j,i,dates2029],nc_ipsl[j,i,dates2029],nc_miroc[j,i,dates2029]) 
 				nc_3039 = c(nc_gfdl[j,i,dates3039],nc_hadgem[j,i,dates3039],nc_ipsl[j,i,dates3039],nc_miroc[j,i,dates3039]) 
@@ -90,61 +90,15 @@ for(thisScen in 1:length(rcpScenarios))	{
 				nc_8089 = c(nc_gfdl[j,i,dates8089],nc_hadgem[j,i,dates8089],nc_ipsl[j,i,dates8089],nc_miroc[j,i,dates8089]) 		
 				nc_9099 = c(nc_gfdl[j,i,dates9099],nc_hadgem[j,i,dates9099],nc_ipsl[j,i,dates9099],nc_miroc[j,i,dates9099]) 			
 
-				data1019 = NULL
-				for(kh in 1:(length(nc_1019)/12))	{
-					data1019 = c(data1019,
-						sum(nc_1019[(1:12)+(12*(kh-1))]))
-				}
-				data2029 = NULL
-				for(kh in 1:(length(nc_2029)/12))	{
-					data2029 = c(data2029,
-						sum(nc_2029[(1:12)+(12*(kh-1))]))
-				}
-				data3039 = NULL
-				for(kh in 1:(length(nc_3039)/12))	{
-					data3039 = c(data3039,
-						sum(nc_3039[(1:12)+(12*(kh-1))]))
-				}
-				data4049 = NULL
-				for(kh in 1:(length(nc_4049)/12))	{
-					data4049 = c(data4049,
-						sum(nc_4049[(1:12)+(12*(kh-1))]))
-				}
-				data5059 = NULL
-				for(kh in 1:(length(nc_5059)/12))	{
-					data5059 = c(data5059,
-						sum(nc_5059[(1:12)+(12*(kh-1))]))
-				}
-				data6069 = NULL
-				for(kh in 1:(length(nc_6069)/12))	{
-					data6069 = c(data6069,
-						sum(nc_6069[(1:12)+(12*(kh-1))]))
-				}
-				data7079 = NULL
-				for(kh in 1:(length(nc_7079)/12))	{
-					data7079 = c(data7079,
-						sum(nc_7079[(1:12)+(12*(kh-1))]))
-				}
-				data8089 = NULL
-				for(kh in 1:(length(nc_8089)/12))	{
-					data8089 = c(data8089,
-						sum(nc_8089[(1:12)+(12*(kh-1))]))
-				}
-				data9099 = NULL
-				for(kh in 1:(length(nc_9099)/12))	{
-					data9099 = c(data9099,
-						sum(nc_9099[(1:12)+(12*(kh-1))]))
-				}
-
-				dataOutArray[j, i, 1, thisScen, 1] = mean(data1019) * 100
-				dataOutArray[j, i, 2, thisScen, 1] = mean(data2029) * 100
-				dataOutArray[j, i, 3, thisScen, 1] = mean(data3039) * 100
-				dataOutArray[j, i, 4, thisScen, 1] = mean(data4049) * 100
-				dataOutArray[j, i, 5, thisScen, 1] = mean(data5059) * 100
-				dataOutArray[j, i, 6, thisScen, 1] = mean(data6069) * 100
-				dataOutArray[j, i, 7, thisScen, 1] = mean(data7079) * 100
-				dataOutArray[j, i, 8, thisScen, 1] = mean(data8089) * 100
-				dataOutArray[j, i, 9, thisScen, 1] = mean(data9099) * 100
+				dataOutArray[j, i, 1, thisScen, 1] = mean(nc_1019) * 100
+				dataOutArray[j, i, 2, thisScen, 1] = mean(nc_2029) * 100
+				dataOutArray[j, i, 3, thisScen, 1] = mean(nc_3039) * 100
+				dataOutArray[j, i, 4, thisScen, 1] = mean(nc_4049) * 100
+				dataOutArray[j, i, 5, thisScen, 1] = mean(nc_5059) * 100
+				dataOutArray[j, i, 6, thisScen, 1] = mean(nc_6069) * 100
+				dataOutArray[j, i, 7, thisScen, 1] = mean(nc_7079) * 100
+				dataOutArray[j, i, 8, thisScen, 1] = mean(nc_8089) * 100
+				dataOutArray[j, i, 9, thisScen, 1] = mean(nc_9099) * 100
 			}
 		}
 	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
@@ -221,7 +175,7 @@ nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 
 
-image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,2])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,2] - nc_testDat[,,1,2,2])
 
