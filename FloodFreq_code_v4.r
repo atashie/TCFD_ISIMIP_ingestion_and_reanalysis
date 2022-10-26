@@ -346,11 +346,9 @@ saveRDS(dataOutArray, 'J:\\Cai_data\\TCFD\\CurrentFloodHazard\\LandMaskArray.rds
 library(raster)
 library(ncdf4)
 library(data.table)
-
-whichRecurIntrvls = c(10,20,50,100,200,500)	# customer request: which recurrence intervals
-chooseDepth = FALSE			# does the customer want flood depth or just occurrence
+chooseDepth = TRUE			# does the customer want flood depth or just occurrence
 customerName = 'Richs Foods'
-locationFootprint = 12		# how big is the footprint of the location of interest? in number of 'boxes' to search to the left and right (so 0 is equal to 1 km^2, 1 is 9 km^2, 2 is 25 km^2, etc.
+locationFootprint = 2		# how big is the footprint of the location of interest? in number of 'boxes' to search to the left and right (so 0 is equal to 1 km^2, 1 is 9 km^2, 2 is 25 km^2, etc.
 dataOutputLoc = 'J:\\Cai_data\\TCFD\\CustomerOutputs\\'
 waterMaskLoc = 'J:\\Cai_data\\TCFD\\CurrentFloodHazard\\LandMaskArray.rds'
 

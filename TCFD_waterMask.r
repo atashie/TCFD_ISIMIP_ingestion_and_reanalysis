@@ -72,7 +72,7 @@ while(theseRows[1] <= 685332288)	{
 
 
 
-dataOutArray = array(rep(0, length(lons) * length(lats)), 
+dataOutArray = array(rep(NA, length(lons) * length(lats)), 
 	dim = c(length(lons), length(lats)))
 
 
@@ -87,7 +87,7 @@ saveRDS(dataOutArray, 'J:\\Cai_data\\TCFD\\CurrentFloodHazard\\LandMaskArray.rds
 
 
 # inspecting output
-testArray = readRDS('J:\\Cai_data\\TCFD\\CurrentFloodHazard\\LandMaskArray.rds')
+testArray = readRDS('J:\\Cai_data\\TCFD\\CurrentFloodHazard\\LandMaskArray.rds')[10:50,5:6]
 
 image(testArray[4001:60000, 4001:6000])
 

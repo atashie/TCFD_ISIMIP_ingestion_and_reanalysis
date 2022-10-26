@@ -11,10 +11,11 @@ library(magrittr)
 
 #########################################
 # reading in climai netcdf data
-ncPath = "J:\\Cai_data\\TCFD\\GWstorage\\"	# where are the relevant data stored?								GWstorage,        RootZoneSoilMoisture, GWrecharge   , SurfaceWater_Streamflow
-ncVarFileName = 'groundwstor'				# what is the var name in the .nc? 									groundwstor,      rootmoist           , qr           , dis
-ncModel = 'watergap2-2c'					# what is the name of the model used to derive the var of interest?	watergap2-2c,     clm45,              , watergap2-2c , matsiro
-commonVarName = 'Groundwater (mm)'			# user friendly name (with units) of the var of interest			Groundwater (mm), Soil Moisture (mm)  , Recharge (mm), Streamflow (mm)
+ncPath = "J:\\Cai_data\\TCFD\\SurfaceWater_Streamflow\\"	# where are the relevant data stored?								GWstorage,        RootZoneSoilMoisture, GWrecharge   , SurfaceWater_Streamflow
+ncVarFileName = 'dis'						# what is the var name in the .nc? 									groundwstor,      rootmoist           , qr           , dis
+ncModel = 'matsiro'					# what is the name of the model used to derive the var of interest?	watergap2-2c,     clm45,              , watergap2-2c , matsiro
+commonVarName = 'Streamflow (%)'				# user friendly name (with units) of the var of interest			Groundwater (mm), Soil Moisture (mm)  , Recharge (mm), Streamflow (%)
+convertToPct = ifelse(ncVarFileName == 'dis', TRUE, FALSE)	# do we convert to a % or keep in orig units
 
 allLocCsv = fread('J:\\Cai_data\\TCFD\\locations\\Driscolls_locations_onboarding.csv')	# Driscolls_locations_onboarding,	Advanta_locations_Toowoomba
 locCsv = allLocCsv[complete.cases(allLocCsv),]
@@ -22,8 +23,9 @@ userName = 'Driscolls'																	# Driscolls,						Advanta
 
 	# these vars are unlikely to change between runs
 projYears = 2010:2069	# projections for all models (so far) start in 2006
-histYears = 1990:2005	# matsiro hist data goes to 2005, watergap goes to 2015
-normYears = 2010:2020	# which years should we normalize on
+histYears = 1980:2005	# matsiro hist data goes to 2005, watergap goes to 2015
+normYears = 1980:2019	# which years should we normalize on
+trendYears = 2010:2069	# which uears to compute trend over
 theseModels = c("gfdl","hadgem2","ipsl","miroc5")	# this cannot be changed for now
 dataOutput = paste0('J:\\Cai_data\\TCFD\\', userName)
 
@@ -40,6 +42,7 @@ for(i in 1:nrow(locCsv))	{
 			projYears = projYears,
 			histYears = histYears,
 			normYears = normYears,
+			trendYears = trendYears, 
 			theseModels = theseModels,
 			locName = locName,
 			locLat = locLat,
@@ -57,370 +60,6 @@ combiningData_f(dataOutput = dataOutput)
 
 
 
-###################################################################
-## defining functions
-waterTrends_f = function(ncPath = ncPath,
-	ncModel = ncModel,
-	ncVarFileName = ncVarFileName,
-	commonVarName = commonVarName,
-	repScen = repScen,
-	projYears = projYears,
-	histYears = histYears,
-	normYears = normYears,
-	theseModels = theseModels,
-	locName = locName,
-	locLat = locLat,
-	locLon = locLon,
-	userName = userName, 
-	dataOutput = dataOutput)
-{
-
-	if(!file.exists(paste0(dataOutput)))	{
-		dir.create(file.path(paste0(dataOutput)))
-	}
-
-	scalar = 1
-	#recharge is in mean mm / s, so convert to mm / month
-	if(ncVarFileName == 'qr')	{
-		scalar = 60 * 60 * 24 * 30.4375
-	}
-	#streamflow is in mean m^3 / s, so convert to mm / month
-	#if(ncVarFileName == 'dis')	{
-	#	scalar = 60 * 60 * 24 * 30.4375 * 1000 / (1000 * 1000)
-	#}
-
-		# reading ssp126 climate data 
-	ncname = paste0(ncModel, '_gfdl-esm2m_ewembi_', rcpScen, '_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_2005co2_thawdepth_global_annual_2006_2099.nc4"  
-		# note that watergap treats gw as a relative value (depth below or above a relative datum) so the actual value can go negative (and theoretically can go to any real negative number)
-	ncinProj = nc_open(paste0(ncPath, ncname))
-
-		#creating a database for storing all initial data
-	nc_lat = ncvar_get(ncinProj, 'lat')#rev(ncvar_get(ncin, 'lat'))	# lat is given from high to low
-	nc_lon = ncvar_get(ncinProj, 'lon')
-	this_lat = which.min(abs(nc_lat - locLat))
-	this_lon = which.min(abs(nc_lon - locLon))
-		# ensuring we aren't drawing from a coastal water cell
-	if(is.na(ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,1]))	{
-		this_lat = this_lat + 1
-		if(is.na(ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,1]))	{
-			this_lat = this_lat - 2
-			if(is.na(ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,1]))	{
-				this_lat = this_lat + 1
-				this_lon = this_lon + 1
-				if(is.na(ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,1]))	{
-					this_lon = this_lon - 2
-				}
-			}
-		}
-	}
-	
-		# identifying the years to use for projected data
-	nc_dateProj = as.Date("1661-01-01") + 10 + ncvar_get(ncinProj, 'time') * 30.4375# time is days after jan 1 1661
-	nc_yearsProj = year(nc_dateProj)
-	lastYearProj = last(which(nc_yearsProj == last(projYears)))
-	firstYearProj = which(nc_yearsProj == projYears[1])[1]
-	
-	
-		# initializing the data table
-	nc_varOut = data.table(year = rep(projYears, each=12))
-
-
-	###############################################
-	# reading in data
-		# concatenating hist and proj data
-	nc_varOut$gfdl = ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,firstYearProj:lastYearProj]	* scalar# lon, lat, time
-
-	ncname = paste0(ncModel, '_hadgem2-es_ewembi_', rcpScen, '_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')	
-	ncinProj = nc_open(paste0(ncPath, ncname))
-	nc_varOut$hadgem2 = ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,firstYearProj:lastYearProj] * scalar# lon, lat, time
-	
-	ncname = paste0(ncModel, '_ipsl-cm5a-lr_ewembi_', rcpScen, '_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')	
-	ncinProj = nc_open(paste0(ncPath, ncname))
-	nc_varOut$ipsl = ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,firstYearProj:lastYearProj]	* scalar	# lon, lat, time
-
-	ncname = paste0(ncModel, '_miroc5_ewembi_', rcpScen, '_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')	
-	ncinProj = nc_open(paste0(ncPath, ncname))
-	nc_varOut$miroc5 = ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,firstYearProj:lastYearProj]	* scalar # lon, lat, time
-
-	names(nc_varOut) = c('year',theseModels)
-
-	
-	varOutYr_df = data.frame(year = rep(projYears, length(theseModels)), 
-		minVal = NA, maxVal = NA, meanVal = NA, sumVal = NA, rngVal = NA, sdVal = NA)
-
-	iter = 0
-	for(thisModel in theseModels)	{
-		thisCol = which(names(nc_varOut) == thisModel)
-		modSubset = nc_varOut[ , c(1, ..thisCol)]
-		for(thisYear in projYears)	{
-			iter = iter + 1
-			thisSubset = subset(nc_varOut, year == thisYear)[ , -1]
-			varOutYr_df[iter, -1] = c(
-				min(thisSubset),
-				max(thisSubset),
-				mean(unlist(thisSubset)),
-				sum(thisSubset),
-				diff(range(thisSubset)),
-				sd(unlist(thisSubset)))
-		}	
-	}
-	varOutYr_df$decade = varOutYr_df$year - varOutYr_df$year %% 10
-	varOutYrAbs_df = varOutYr_df
-	
-		# cor.test can't take 0 vals, so adding a small random value 
-	varOutYr_df$minVal = varOutYr_df$minVal  + runif(nrow(varOutYr_df), 0, 0.000001)
-		# normalizing by median
-	varOutYr_df$minVal = varOutYr_df$minVal - median(varOutYr_df$minVal[varOutYr_df$year %in% normYears])
-	varOutYr_df$maxVal = varOutYr_df$maxVal - median(varOutYr_df$maxVal[varOutYr_df$year %in% normYears])
-	varOutYr_df$meanVal = varOutYr_df$meanVal - median(varOutYr_df$meanVal[varOutYr_df$year %in% normYears])
-	varOutYr_df$sumVal = varOutYr_df$sumVal - median(varOutYr_df$sumVal[varOutYr_df$year %in% normYears])
-	varOutYr_df$rngVal = varOutYr_df$rngVal - median(varOutYr_df$rngVal[varOutYr_df$year %in% normYears])
-	varOutYr_df$sdVal = varOutYr_df$sdVal - median(varOutYr_df$sdVal[varOutYr_df$year %in% normYears])
-
-	cor.test(varOutYr_df$year, varOutYr_df$minVal, method = 'kendall')$p.value
-	cor.test(varOutYr_df$year, varOutYr_df$minVal, method = 'kendall')$estimate
-
-
-	numBoxes = length(projYears) / 10
-	
-	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_minVal.png'), width = 720, height = 720)
-	windowsFonts(A = windowsFont("Roboto"))
-	maxLim = max(abs(quantile(varOutYr_df$minVal, c(0.05,0.95))))
-	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
-	boxplot(minVal ~ decade, data=varOutYr_df, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
-				main='', ylab=paste0('Annual Minimimum ', commonVarName), xlab='Decade', xaxt='n',
-				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-				family='A', 
-				ylim = c(maxLim * -1.1, maxLim * 1.1))
-		axis(1, at=1:length(unique(varOutYr_df$decade)),
-		labels = paste0(unique(varOutYr_df$decade), 's'),
-				col.lab='#1A232F', col.axis='#666D74')
-		abline(h=0, lwd=2, col='#1A232F', cex=2)
-		text(x=.08*numBoxes, y=maxLim * 1, paste0("Change Relative to ", normYears[1], ' to ', last(normYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		if(cor.test(varOutYr_df$year, varOutYr_df$minVal, method = 'kendall')$p.value < 0.05)	{
-			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-			if(cor.test(varOutYr_df$year, varOutYr_df$minVal, method = 'kendall')$estimate < 0)	{
-				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
-			} else { 
-				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
-			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(minVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
-				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	else	{
-			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	
-	dev.off()
-
-
-
-	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_maxVal.png'), width = 720, height = 720)
-	windowsFonts(A = windowsFont("Roboto"))
-	maxLim = max(abs(quantile(varOutYr_df$maxVal, c(0.05,0.95))))
-	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
-	boxplot(maxVal ~ decade, data=varOutYr_df, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
-				main='', ylab=paste0('Annual Maximum ', commonVarName), xlab='Decade', xaxt='n',
-				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-				family='A', 
-				ylim = c(maxLim * -1.1, maxLim * 1.1))
-		axis(1, at=1:length(unique(varOutYr_df$decade)),
-		labels = paste0(unique(varOutYr_df$decade), 's'),
-				col.lab='#1A232F', col.axis='#666D74')
-		abline(h=0, lwd=2, col='#1A232F', cex=2)
-		text(x=.08*numBoxes, y=maxLim * 1, paste0("Change Relative to ", normYears[1], ' to ', last(normYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		if(cor.test(varOutYr_df$year, varOutYr_df$maxVal, method = 'kendall')$p.value < 0.05)	{
-			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-			if(cor.test(varOutYr_df$year, varOutYr_df$maxVal, method = 'kendall')$estimate < 0)	{
-				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
-			} else { 
-				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
-			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(maxVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
-				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	else	{
-			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	
-	dev.off()
-
-
-
-	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_meanVal.png'), width = 720, height = 720)
-	windowsFonts(A = windowsFont("Roboto"))
-	maxLim = max(abs(quantile(varOutYr_df$meanVal, c(0.05,0.95))))
-	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
-	boxplot(meanVal ~ decade, data=varOutYr_df, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
-				main='', ylab=paste0('Annual Average ' , commonVarName), xlab='Decade', xaxt='n',
-				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-				family='A', 
-				ylim = c(maxLim * -1.1, maxLim * 1.1))
-		axis(1, at=1:length(unique(varOutYr_df$decade)),
-		labels = paste0(unique(varOutYr_df$decade), 's'),
-				col.lab='#1A232F', col.axis='#666D74')
-		abline(h=0, lwd=2, col='#1A232F', cex=2)
-		text(x=.08*numBoxes, y=maxLim * 1, paste0("Change Relative to ", normYears[1], ' to ', last(normYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		if(cor.test(varOutYr_df$year, varOutYr_df$meanVal, method = 'kendall')$p.value < 0.05)	{
-			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-			if(cor.test(varOutYr_df$year, varOutYr_df$meanVal, method = 'kendall')$estimate < 0)	{
-				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
-			} else { 
-				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
-			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(meanVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
-				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	else{
-			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	
-	dev.off()
-
-
-
-	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_sumVal.png'), width = 720, height = 720)
-	windowsFonts(A = windowsFont("Roboto"))
-	maxLim = max(abs(quantile(varOutYr_df$sumVal, c(0.05,0.95))))
-	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
-	boxplot(sumVal ~ decade, data=varOutYr_df, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
-				main='', ylab=paste0('Annual Total ', commonVarName), xlab='Decade', xaxt='n',
-				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-				family='A', 
-				ylim = c(maxLim * -1.1, maxLim * 1.1))
-		axis(1, at=1:length(unique(varOutYr_df$decade)),
-		labels = paste0(unique(varOutYr_df$decade), 's'),
-				col.lab='#1A232F', col.axis='#666D74')
-		abline(h=0, lwd=2, col='#1A232F', cex=2)
-		text(x=.08*numBoxes, y=maxLim * 1, paste0("Change Relative to ", normYears[1], ' to ', last(normYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		if(cor.test(varOutYr_df$year, varOutYr_df$sumVal, method = 'kendall')$p.value < 0.05)	{
-			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-			if(cor.test(varOutYr_df$year, varOutYr_df$sumVal, method = 'kendall')$estimate < 0)	{
-				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
-			} else { 
-				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
-			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(sumVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
-				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	else{
-			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	
-	dev.off()
-
-	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_rngVal.png'), width = 720, height = 720)
-	windowsFonts(A = windowsFont("Roboto"))
-	maxLim = max(abs(quantile(varOutYr_df$rngVal, c(0.05,0.95))))
-	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
-	boxplot(rngVal ~ decade, data=varOutYr_df, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
-				main='', ylab=paste0('Annual Range in ', commonVarName), xlab='Decade', xaxt='n',
-				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-				family='A', 
-				ylim = c(maxLim * -1.1, maxLim * 1.1))
-		axis(1, at=1:length(unique(varOutYr_df$decade)),
-		labels = paste0(unique(varOutYr_df$decade), 's'),
-				col.lab='#1A232F', col.axis='#666D74')
-		abline(h=0, lwd=2, col='#1A232F', cex=2)
-		text(x=.08*numBoxes, y=maxLim * 1, paste0("Change Relative to ", normYears[1], ' to ', last(normYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		if(cor.test(varOutYr_df$year, varOutYr_df$rngVal, method = 'kendall')$p.value < 0.05)	{
-			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-			if(cor.test(varOutYr_df$year, varOutYr_df$rngVal, method = 'kendall')$estimate < 0)	{
-				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
-			} else { 
-				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
-			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(rngVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
-				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	else{
-			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	
-	dev.off()
-
-
-
-
-	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_sdVal.png'), width = 720, height = 720)
-	windowsFonts(A = windowsFont("Roboto"))
-	maxLim = max(abs(quantile(varOutYr_df$sdVal, c(0.05,0.95))))
-	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
-	boxplot(sdVal ~ decade, data=varOutYr_df, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
-				main='', ylab=paste0('Annual St. Dev. in ', commonVarName), xlab='Decade', xaxt='n',
-				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-				family='A', 
-				ylim = c(maxLim * -1.1, maxLim * 1.1))
-		axis(1, at=1:length(unique(varOutYr_df$decade)),
-		labels = paste0(unique(varOutYr_df$decade), 's'),
-				col.lab='#1A232F', col.axis='#666D74')
-		abline(h=0, lwd=2, col='#1A232F', cex=2)
-		text(x=.08*numBoxes, y=maxLim * 1, paste0("Change Relative to ", normYears[1], ' to ', last(normYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		if(cor.test(varOutYr_df$year, varOutYr_df$sdVal, method = 'kendall')$p.value < 0.05)	{
-			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-			if(cor.test(varOutYr_df$year, varOutYr_df$sdVal, method = 'kendall')$estimate < 0)	{
-				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
-			} else { 
-				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
-			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(sdVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
-				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	else{
-			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
-		}	
-	dev.off()
-
-	lookerDF = data.frame(User = character(), Lat = numeric(), Lon = numeric(), Scenario = character(), Decade = numeric(), Variable = character(), Metric = character(),
-		Significance = numeric(), Trend_Strength = numeric(), Trend_Units = character(),
-		Q05 = numeric(), Q25 = numeric(), Q50 = numeric(), Q75 = numeric(), Q95 = numeric()) 
-	
-	theseDecades = seq(projYears[1], by = 10, length.out = length(projYears) / 10)
-	for(thisDecade in theseDecades)	{
-		subsetYrs = subset(varOutYr_df, decade == thisDecade)
-		subsetYrsAbs = subset(varOutYrAbs_df, decade == thisDecade)
-		
-		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Minimum', 
-			signif(cor.test(varOutYr_df$year, varOutYr_df$minVal, method = 'kendall')$p.value, 3), signif(lm(minVal ~ year, varOutYr_df)$coef[2], 2) * 10, 'mm per month',
-			signif(quantile(subsetYrs$minVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
-			signif(quantile(subsetYrsAbs$minVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
-		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Maximum', 
-			signif(cor.test(varOutYr_df$year, varOutYr_df$maxVal, method = 'kendall')$p.value, 3), signif(lm(maxVal ~ year, varOutYr_df)$coef[2], 2) * 10, 'mm per month',
-			signif(quantile(subsetYrs$maxVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
-			signif(quantile(subsetYrsAbs$maxVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
-		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Average', 
-			signif(cor.test(varOutYr_df$year, varOutYr_df$meanVal, method = 'kendall')$p.value, 3), signif(lm(meanVal ~ year, varOutYr_df)$coef[2], 2) * 10, 'mm per month',
-			signif(quantile(subsetYrs$meanVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
-			signif(quantile(subsetYrsAbs$meanVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
-		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Total (sum)', 
-			signif(cor.test(varOutYr_df$year, varOutYr_df$sumVal, method = 'kendall')$p.value, 3), signif(lm(sumVal ~ year, varOutYr_df)$coef[2], 2) * 10, 'annual mm',
-			signif(quantile(subsetYrs$sumVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
-			signif(quantile(subsetYrsAbs$sumVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
-		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Range', 
-			signif(cor.test(varOutYr_df$year, varOutYr_df$rngVal, method = 'kendall')$p.value, 3), signif(lm(rngVal ~ year, varOutYr_df)$coef[2], 2) * 10, 'mm per month',
-			signif(quantile(subsetYrs$rngVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
-			signif(quantile(subsetYrsAbs$rngVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
-		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual St. Dev.', 
-			signif(cor.test(varOutYr_df$year, varOutYr_df$sdVal, method = 'kendall')$p.value, 3), signif(lm(sdVal ~ year, varOutYr_df)$coef[2], 2) * 10, 'mm per month',
-			signif(quantile(subsetYrs$sdVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
-			signif(quantile(subsetYrsAbs$sdVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
-	}
-	names(lookerDF) = c('User', 'Lat', 'Lon', 'Scenario', 'Decade', 'Variable', 'Metric', 'Significance', 'Trend_Strength', 'Trend_Units',
-		'Q05_rel', 'Q25_rel', 'Q50_rel', 'Q75_rel', 'Q95_rel',
-		'Q05_abs', 'Q25_abs', 'Q50_abs', 'Q75_abs', 'Q95_abs')
-
-	if(!file.exists(paste0(dataOutput, '\\outputsForLooker')))	{
-		dir.create(file.path(paste0(dataOutput, '\\outputsForLooker')))
-	}
-
-	fwrite(lookerDF, paste0(dataOutput, '\\outputsForLooker\\', locName, '_', rcpScen, '_', ncVarFileName, '.csv'))
-}
-
-
-combiningData_f = function(dataOutput = dataOutput){
-	allFiles = list.files(paste0(dataOutput, '\\outputsForLooker\\'))
-	combFiles = fread(paste0(dataOutput, '\\outputsForLooker\\', allFiles[1]))
-	for(thisFile in allFiles[-1])	{
-		combFiles = rbind(combFiles, fread(paste0(dataOutput, '\\outputsForLooker\\', thisFile)))
-	}
-	fwrite(combFiles, paste0(dataOutput, '\\waterTrendsExposure_', userName, Sys.Date(), '.csv'))
-}
-
-
-
-
-
-
-
 
 
 
@@ -435,6 +74,7 @@ waterTrends_f = function(ncPath = ncPath,
 	projYears = projYears,
 	histYears = histYears,
 	normYears = normYears,
+	trendYears = trendYears, 
 	theseModels = theseModels,
 	locName = locName,
 	locLat = locLat,
@@ -446,6 +86,8 @@ waterTrends_f = function(ncPath = ncPath,
 	if(!file.exists(paste0(dataOutput)))	{
 		dir.create(file.path(paste0(dataOutput)))
 	}
+	
+	finalUnits = ifelse(convertToPct, "Pct / Decade", "mm / Decade")
 
 	scalar = 1
 	#recharge is in mean mm / s, so convert to mm / month
@@ -611,6 +253,396 @@ waterTrends_f = function(ncPath = ncPath,
 	varOutYrAbs_df = varOutYr_df
 	
 		# cor.test can't take 0 vals, so adding a small random value 
+	varOutYr_df$minVal = varOutYr_df$minVal  + runif(nrow(varOutYr_df), 0, 0.1)
+	
+	if(convertToPct)	{
+			# normalizing to pct
+		varOutYr_df$minVal = 100 * (varOutYr_df$minVal / mean(varOutYr_df$minVal[varOutYr_df$year %in% normYears])) - 100
+		varOutYr_df$maxVal = 100 * (varOutYr_df$maxVal / mean(varOutYr_df$maxVal[varOutYr_df$year %in% normYears])) - 100
+		varOutYr_df$meanVal = 100 * (varOutYr_df$meanVal / mean(varOutYr_df$meanVal[varOutYr_df$year %in% normYears])) - 100
+		varOutYr_df$sumVal = 100 * (varOutYr_df$sumVal / mean(varOutYr_df$sumVal[varOutYr_df$year %in% normYears])) - 100
+		varOutYr_df$rngVal = 100 * (varOutYr_df$rngVal / mean(varOutYr_df$rngVal[varOutYr_df$year %in% normYears])) - 100
+		varOutYr_df$sdVal = 100 * (varOutYr_df$sdVal / mean(varOutYr_df$sdVal[varOutYr_df$year %in% normYears])) - 100
+	} else	{
+			# normalizing by median
+		varOutYr_df$minVal = varOutYr_df$minVal - median(varOutYr_df$minVal[varOutYr_df$year %in% normYears])
+		varOutYr_df$maxVal = varOutYr_df$maxVal - median(varOutYr_df$maxVal[varOutYr_df$year %in% normYears])
+		varOutYr_df$meanVal = varOutYr_df$meanVal - median(varOutYr_df$meanVal[varOutYr_df$year %in% normYears])
+		varOutYr_df$sumVal = varOutYr_df$sumVal - median(varOutYr_df$sumVal[varOutYr_df$year %in% normYears])
+		varOutYr_df$rngVal = varOutYr_df$rngVal - median(varOutYr_df$rngVal[varOutYr_df$year %in% normYears])
+		varOutYr_df$sdVal = varOutYr_df$sdVal - median(varOutYr_df$sdVal[varOutYr_df$year %in% normYears])
+	}
+	whichTrendYears = which(varOutYr_df$year %in% trendYears)
+
+	cor.test(varOutYr_df$year[whichTrendYears], varOutYr_df$meanVal[whichTrendYears], method = 'kendall')$p.value
+	cor.test(varOutYr_df$year[whichTrendYears], varOutYr_df$meanVal[whichTrendYears], method = 'kendall')$estimate
+
+	varOutYr_df_sub = varOutYr_df[whichTrendYears, ]
+	
+	numBoxes = trendYears / 10
+
+	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_minVal.png'), width = 720, height = 720)
+	windowsFonts(A = windowsFont("Roboto"))
+	maxLim = max(abs(quantile(varOutYr_df_sub$minVal, c(0.05,0.95))))
+	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
+	boxplot(minVal ~ decade, data=varOutYr_df_sub, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
+				main='', ylab=paste0('Annual Minimimum ', commonVarName), xlab='Decade', xaxt='n',
+				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+				family='A', 
+				ylim = c(maxLim * -1.1, maxLim * 1.1))
+		axis(1, at=1:length(unique(varOutYr_df_sub$decade)),
+		labels = paste0(unique(varOutYr_df_sub$decade), 's'),
+				col.lab='#1A232F', col.axis='#666D74')
+		abline(h=0, lwd=2, col='#1A232F', cex=2)
+		text(x=.08*numBoxes, y=maxLim * 1, paste0("Trend Over Period ", whichTrendYears[1], ' to ', last(whichTrendYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$minVal, method = 'kendall')$p.value < 0.05)	{
+			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+			if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$minVal, method = 'kendall')$estimate < 0)	{
+				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
+			} else { 
+				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
+			}
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(minVal ~ year, varOutYr_df_sub)$coef[2]), 2) * 10, 'mm per decade'),
+				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	else	{
+			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	
+	dev.off()
+
+
+
+	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_maxVal.png'), width = 720, height = 720)
+	windowsFonts(A = windowsFont("Roboto"))
+	maxLim = max(abs(quantile(varOutYr_df_sub$maxVal, c(0.05,0.95))))
+	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
+	boxplot(maxVal ~ decade, data=varOutYr_df_sub, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
+				main='', ylab=paste0('Annual Maximum ', commonVarName), xlab='Decade', xaxt='n',
+				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+				family='A', 
+				ylim = c(maxLim * -1.1, maxLim * 1.1))
+		axis(1, at=1:length(unique(varOutYr_df_sub$decade)),
+		labels = paste0(unique(varOutYr_df_sub$decade), 's'),
+				col.lab='#1A232F', col.axis='#666D74')
+		abline(h=0, lwd=2, col='#1A232F', cex=2)
+		text(x=.08*numBoxes, y=maxLim * 1, paste0("Trend Over Period ", whichTrendYears[1], ' to ', last(whichTrendYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$maxVal, method = 'kendall')$p.value < 0.05)	{
+			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+			if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$maxVal, method = 'kendall')$estimate < 0)	{
+				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
+			} else { 
+				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
+			}
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(maxVal ~ year, varOutYr_df_sub)$coef[2]), 2) * 10, 'mm per decade'),
+				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	else	{
+			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	
+	dev.off()
+
+
+
+	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_meanVal.png'), width = 720, height = 720)
+	windowsFonts(A = windowsFont("Roboto"))
+	maxLim = max(abs(quantile(varOutYr_df_sub$meanVal, c(0.05,0.95))))
+	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
+	boxplot(meanVal ~ decade, data=varOutYr_df_sub, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
+				main='', ylab=paste0('Annual Average ' , commonVarName), xlab='Decade', xaxt='n',
+				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+				family='A', 
+				ylim = c(maxLim * -1.1, maxLim * 1.1))
+		axis(1, at=1:length(unique(varOutYr_df_sub$decade)),
+		labels = paste0(unique(varOutYr_df_sub$decade), 's'),
+				col.lab='#1A232F', col.axis='#666D74')
+		abline(h=0, lwd=2, col='#1A232F', cex=2)
+		text(x=.08*numBoxes, y=maxLim * 1, paste0("Trend Over Period ", whichTrendYears[1], ' to ', last(whichTrendYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$meanVal, method = 'kendall')$p.value < 0.05)	{
+			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+			if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$meanVal, method = 'kendall')$estimate < 0)	{
+				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
+			} else { 
+				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
+			}
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(meanVal ~ year, varOutYr_df_sub)$coef[2]), 2) * 10, 'mm per decade'),
+				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	else{
+			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	
+	dev.off()
+
+
+
+	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_sumVal.png'), width = 720, height = 720)
+	windowsFonts(A = windowsFont("Roboto"))
+	maxLim = max(abs(quantile(varOutYr_df_sub$sumVal, c(0.05,0.95))))
+	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
+	boxplot(sumVal ~ decade, data=varOutYr_df_sub, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
+				main='', ylab=paste0('Annual Total ', commonVarName), xlab='Decade', xaxt='n',
+				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+				family='A', 
+				ylim = c(maxLim * -1.1, maxLim * 1.1))
+		axis(1, at=1:length(unique(varOutYr_df_sub$decade)),
+		labels = paste0(unique(varOutYr_df_sub$decade), 's'),
+				col.lab='#1A232F', col.axis='#666D74')
+		abline(h=0, lwd=2, col='#1A232F', cex=2)
+		text(x=.08*numBoxes, y=maxLim * 1, paste0("Trend Over Period ", whichTrendYears[1], ' to ', last(whichTrendYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$sumVal, method = 'kendall')$p.value < 0.05)	{
+			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+			if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$sumVal, method = 'kendall')$estimate < 0)	{
+				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
+			} else { 
+				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
+			}
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(sumVal ~ year, varOutYr_df_sub)$coef[2]), 2) * 10, 'mm per decade'),
+				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	else{
+			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	
+	dev.off()
+
+	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_rngVal.png'), width = 720, height = 720)
+	windowsFonts(A = windowsFont("Roboto"))
+	maxLim = max(abs(quantile(varOutYr_df_sub$rngVal, c(0.05,0.95))))
+	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
+	boxplot(rngVal ~ decade, data=varOutYr_df_sub, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
+				main='', ylab=paste0('Annual Range in ', commonVarName), xlab='Decade', xaxt='n',
+				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+				family='A', 
+				ylim = c(maxLim * -1.1, maxLim * 1.1))
+		axis(1, at=1:length(unique(varOutYr_df_sub$decade)),
+		labels = paste0(unique(varOutYr_df_sub$decade), 's'),
+				col.lab='#1A232F', col.axis='#666D74')
+		abline(h=0, lwd=2, col='#1A232F', cex=2)
+		text(x=.08*numBoxes, y=maxLim * 1, paste0("Trend Over Period ", whichTrendYears[1], ' to ', last(whichTrendYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$rngVal, method = 'kendall')$p.value < 0.05)	{
+			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+			if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$rngVal, method = 'kendall')$estimate < 0)	{
+				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
+			} else { 
+				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
+			}
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(rngVal ~ year, varOutYr_df_sub)$coef[2]), 2) * 10, 'mm per decade'),
+				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	else{
+			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	
+	dev.off()
+
+
+
+
+	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_sdVal.png'), width = 720, height = 720)
+	windowsFonts(A = windowsFont("Roboto"))
+	maxLim = max(abs(quantile(varOutYr_df_sub$sdVal, c(0.05,0.95))))
+	par(mar=1.6*c(5,5,2,2), mgp=1.5*c(3,1.3,0), font.lab=2, bty='l', cex.lab=1.4*1.8, cex.axis=1.4*1.4, cex.main=1.4*1.8, col='#1A232F')
+	boxplot(sdVal ~ decade, data=varOutYr_df_sub, pch=1, lwd=1, col='#FDB600', border='#666D74', cex=1.5, 
+				main='', ylab=paste0('Annual St. Dev. in ', commonVarName), xlab='Decade', xaxt='n',
+				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+				family='A', 
+				ylim = c(maxLim * -1.1, maxLim * 1.1))
+		axis(1, at=1:length(unique(varOutYr_df_sub$decade)),
+		labels = paste0(unique(varOutYr_df_sub$decade), 's'),
+				col.lab='#1A232F', col.axis='#666D74')
+		abline(h=0, lwd=2, col='#1A232F', cex=2)
+		text(x=.08*numBoxes, y=maxLim * 1, paste0("Trend Over Period ", whichTrendYears[1], ' to ', last(whichTrendYears), ' Avg.'), adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$sdVal, method = 'kendall')$p.value < 0.05)	{
+			text(x=.08*numBoxes, y=-maxLim * 1, "Statistically significant ", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+			if(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$sdVal, method = 'kendall')$estimate < 0)	{
+				text(x=.654*numBoxes, y=-maxLim * 1, "decrease ", adj = c(0,0), font=2, col='#F06000', family='A', cex=1.4*1.4)
+			} else { 
+				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
+			}
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(sdVal ~ year, varOutYr_df_sub)$coef[2]), 2) * 10, 'mm per decade'),
+				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	else{
+			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
+		}	
+	dev.off()
+
+	lookerDF = data.frame(User = character(), Lat = numeric(), Lon = numeric(), Scenario = character(), Decade = numeric(), Variable = character(), Metric = character(),
+		Significance = numeric(), Trend_Strength = numeric(), Trend_Units = character(),
+		Q05 = numeric(), Q25 = numeric(), Q50 = numeric(), Q75 = numeric(), Q95 = numeric()) 
+	
+	theseDecades = seq(trendYears[1], by = 10, length.out = length(trendYears) / 10)
+	for(thisDecade in theseDecades)	{
+		subsetYrs = subset(varOutYr_df_sub, decade == thisDecade)
+		subsetYrsAbs = subset(varOutYrAbs_df, decade == thisDecade)
+		
+		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Minimum', 
+			signif(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$minVal, method = 'kendall')$p.value, 3), signif(lm(minVal ~ year, varOutYr_df_sub)$coef[2], 2) * 10, finalUnits,
+			signif(quantile(subsetYrs$minVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
+			signif(quantile(subsetYrsAbs$minVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
+		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Maximum', 
+			signif(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$maxVal, method = 'kendall')$p.value, 3), signif(lm(maxVal ~ year, varOutYr_df_sub)$coef[2], 2) * 10, finalUnits,
+			signif(quantile(subsetYrs$maxVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
+			signif(quantile(subsetYrsAbs$maxVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
+		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Average', 
+			signif(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$meanVal, method = 'kendall')$p.value, 3), signif(lm(meanVal ~ year, varOutYr_df_sub)$coef[2], 2) * 10, finalUnits,
+			signif(quantile(subsetYrs$meanVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
+			signif(quantile(subsetYrsAbs$meanVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
+		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Total (sum)', 
+			signif(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$sumVal, method = 'kendall')$p.value, 3), signif(lm(sumVal ~ year, varOutYr_df_sub)$coef[2], 2) * 10, finalUnits,
+			signif(quantile(subsetYrs$sumVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
+			signif(quantile(subsetYrsAbs$sumVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
+		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual Range', 
+			signif(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$rngVal, method = 'kendall')$p.value, 3), signif(lm(rngVal ~ year, varOutYr_df_sub)$coef[2], 2) * 10, finalUnits,
+			signif(quantile(subsetYrs$rngVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
+			signif(quantile(subsetYrsAbs$rngVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
+		lookerDF = rbind(lookerDF, c(userName, locLat, locLon, rcpScen, thisDecade, commonVarName, 'Annual St. Dev.', 
+			signif(cor.test(varOutYr_df_sub$year, varOutYr_df_sub$sdVal, method = 'kendall')$p.value, 3), signif(lm(sdVal ~ year, varOutYr_df_sub)$coef[2], 2) * 10, finalUnits,
+			signif(quantile(subsetYrs$sdVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4),
+			signif(quantile(subsetYrsAbs$sdVal, c(0.05, 0.25, 0.5, 0.75, 0.95)), 4)))
+	}
+	names(lookerDF) = c('User', 'Lat', 'Lon', 'Scenario', 'Decade', 'Variable', 'Metric', 'Significance', 'Trend_Strength', 'Trend_Units',
+		'Q05_rel', 'Q25_rel', 'Q50_rel', 'Q75_rel', 'Q95_rel',
+		'Q05_abs', 'Q25_abs', 'Q50_abs', 'Q75_abs', 'Q95_abs')
+
+	if(!file.exists(paste0(dataOutput, '\\outputsForLooker')))	{
+		dir.create(file.path(paste0(dataOutput, '\\outputsForLooker')))
+	}
+
+	fwrite(lookerDF, paste0(dataOutput, '\\outputsForLooker\\', locName, '_', rcpScen, '_', ncVarFileName, '.csv'))
+}
+
+
+
+combiningData_f = function(dataOutput = dataOutput){
+	allFiles = list.files(paste0(dataOutput, '\\outputsForLooker\\'))
+	combFiles = fread(paste0(dataOutput, '\\outputsForLooker\\', allFiles[1]))
+	for(thisFile in allFiles[-1])	{
+		combFiles = rbind(combFiles, fread(paste0(dataOutput, '\\outputsForLooker\\', thisFile)))
+	}
+	fwrite(combFiles, paste0(dataOutput, '\\waterTrendsExposure_', userName, Sys.Date(), '.csv'))
+}
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+# just the recent period
+ 
+ ###################################################################
+## defining functions
+waterTrends_f = function(ncPath = ncPath,
+	ncModel = ncModel,
+	ncVarFileName = ncVarFileName,
+	commonVarName = commonVarName,
+	repScen = repScen,
+	projYears = projYears,
+	histYears = histYears,
+	normYears = normYears,
+	theseModels = theseModels,
+	locName = locName,
+	locLat = locLat,
+	locLon = locLon,
+	userName = userName, 
+	dataOutput = dataOutput)
+{
+
+	if(!file.exists(paste0(dataOutput)))	{
+		dir.create(file.path(paste0(dataOutput)))
+	}
+
+	scalar = 1
+	#recharge is in mean mm / s, so convert to mm / month
+	if(ncVarFileName == 'qr')	{
+		scalar = 60 * 60 * 24 * 30.4375
+	}
+	#streamflow is in mean m^3 / s, so convert to m^3 / month
+	if(ncVarFileName == 'dis')	{
+		scalar = 60 * 60 * 24 * 30.4375
+	}
+
+		# reading ssp126 climate data 
+	ncname = paste0(ncModel, '_gfdl-esm2m_ewembi_', rcpScen, '_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_2005co2_thawdepth_global_annual_2006_2099.nc4"  
+		# note that watergap treats gw as a relative value (depth below or above a relative datum) so the actual value can go negative (and theoretically can go to any real negative number)
+	ncinProj = nc_open(paste0(ncPath, ncname))
+
+		#creating a database for storing all initial data
+	nc_lat = ncvar_get(ncinProj, 'lat')#rev(ncvar_get(ncin, 'lat'))	# lat is given from high to low
+	nc_lon = ncvar_get(ncinProj, 'lon')
+	this_lat = which.min(abs(nc_lat - locLat))
+	this_lon = which.min(abs(nc_lon - locLon))
+		# ensuring we aren't drawing from a coastal water cell
+	if(is.na(ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,1]))	{
+		this_lat = this_lat + 1
+		if(is.na(ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,1]))	{
+			this_lat = this_lat - 2
+			if(is.na(ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,1]))	{
+				this_lat = this_lat + 1
+				this_lon = this_lon + 1
+				if(is.na(ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,1]))	{
+					this_lon = this_lon - 2
+				}
+			}
+		}
+	}
+	
+		# identifying the years to use for projected data
+	nc_dateProj = as.Date("1661-01-01") + 10 + ncvar_get(ncinProj, 'time') * 30.4375# time is days after jan 1 1661
+	nc_yearsProj = year(nc_dateProj)
+	lastYearProj = last(which(nc_yearsProj == last(projYears)))
+	firstYearProj = which(nc_yearsProj == projYears[1])[1]
+	
+	
+		# initializing the data table
+	nc_varOut = data.table(year = rep(projYears, each=12))
+
+
+	###############################################
+	# reading in data
+		# concatenating hist and proj data
+	nc_varOut$gfdl = ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,firstYearProj:lastYearProj]	* scalar# lon, lat, time
+
+	ncname = paste0(ncModel, '_hadgem2-es_ewembi_', rcpScen, '_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')	
+	ncinProj = nc_open(paste0(ncPath, ncname))
+	nc_varOut$hadgem2 = ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,firstYearProj:lastYearProj] * scalar# lon, lat, time
+	
+	ncname = paste0(ncModel, '_ipsl-cm5a-lr_ewembi_', rcpScen, '_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')	
+	ncinProj = nc_open(paste0(ncPath, ncname))
+	nc_varOut$ipsl = ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,firstYearProj:lastYearProj]	* scalar	# lon, lat, time
+
+	ncname = paste0(ncModel, '_miroc5_ewembi_', rcpScen, '_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')	
+	ncinProj = nc_open(paste0(ncPath, ncname))
+	nc_varOut$miroc5 = ncvar_get(ncinProj, ncVarFileName)[this_lon,this_lat,firstYearProj:lastYearProj]	* scalar # lon, lat, time
+
+	names(nc_varOut) = c('year',theseModels)
+
+	
+	varOutYr_df = data.frame(year = rep(projYears, length(theseModels)), 
+		minVal = NA, maxVal = NA, meanVal = NA, sumVal = NA, rngVal = NA, sdVal = NA)
+
+	iter = 0
+	for(thisModel in theseModels)	{
+		thisCol = which(names(nc_varOut) == thisModel)
+		modSubset = nc_varOut[ , c(1, ..thisCol)]
+		for(thisYear in projYears)	{
+			iter = iter + 1
+			thisSubset = subset(nc_varOut, year == thisYear)[ , -1]
+			varOutYr_df[iter, -1] = c(
+				min(thisSubset),
+				max(thisSubset),
+				mean(unlist(thisSubset)),
+				sum(thisSubset),
+				diff(range(thisSubset)),
+				sd(unlist(thisSubset)))
+		}	
+	}
+	varOutYr_df$decade = varOutYr_df$year - varOutYr_df$year %% 10
+	varOutYrAbs_df = varOutYr_df
+	
+		# cor.test can't take 0 vals, so adding a small random value 
 	varOutYr_df$minVal = varOutYr_df$minVal  + runif(nrow(varOutYr_df), 0, 0.000001)
 		# normalizing by median
 	varOutYr_df$minVal = varOutYr_df$minVal - median(varOutYr_df$minVal[varOutYr_df$year %in% normYears])
@@ -624,8 +656,13 @@ waterTrends_f = function(ncPath = ncPath,
 	cor.test(varOutYr_df$year, varOutYr_df$minVal, method = 'kendall')$estimate
 
 
-	numBoxes = length(c(histYears, projYears)) / 10
+	numBoxes = length(projYears) / 10
 
+	theUnits = 'mm'
+	if(ncVarFileName == 'dis')	{
+		theUnits = 'm^3'
+	}
+	
 	png(paste0(dataOutput, '\\', locName, '_', rcpScen, '_', ncVarFileName, '_minVal.png'), width = 720, height = 720)
 	windowsFonts(A = windowsFont("Roboto"))
 	maxLim = max(abs(quantile(varOutYr_df$minVal, c(0.05,0.95))))
@@ -647,7 +684,7 @@ waterTrends_f = function(ncPath = ncPath,
 			} else { 
 				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
 			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(minVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(minVal ~ year, varOutYr_df)$coef[2]), 2) * 10, theUnits, ' per decade'),
 				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
 		}	else	{
 			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
@@ -677,7 +714,7 @@ waterTrends_f = function(ncPath = ncPath,
 			} else { 
 				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
 			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(maxVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(maxVal ~ year, varOutYr_df)$coef[2]), 2) * 10, theUnits, ' per decade'),
 				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
 		}	else	{
 			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
@@ -707,7 +744,7 @@ waterTrends_f = function(ncPath = ncPath,
 			} else { 
 				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
 			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(meanVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(meanVal ~ year, varOutYr_df)$coef[2]), 2) * 10, theUnits, ' per decade'),
 				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
 		}	else{
 			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
@@ -737,7 +774,7 @@ waterTrends_f = function(ncPath = ncPath,
 			} else { 
 				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
 			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(sumVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(sumVal ~ year, varOutYr_df)$coef[2]), 2) * 10, theUnits, ' per decade'),
 				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
 		}	else{
 			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
@@ -765,7 +802,7 @@ waterTrends_f = function(ncPath = ncPath,
 			} else { 
 				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
 			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(rngVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(rngVal ~ year, varOutYr_df)$coef[2]), 2) * 10, theUnits, ' per decade'),
 				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
 		}	else{
 			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
@@ -796,7 +833,7 @@ waterTrends_f = function(ncPath = ncPath,
 			} else { 
 				text(x=.654*numBoxes, y=-maxLim * 1, "increase ", adj = c(0,0), font=2, col='#0098B2', family='A', cex=1.4*1.4)
 			}
-			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(sdVal ~ year, varOutYr_df)$coef[2]), 2) * 10, 'mm per decade'),
+			text(x=.08*numBoxes, y=-maxLim * 1.1, paste0("of ", signif(abs(lm(sdVal ~ year, varOutYr_df)$coef[2]), 2) * 10, theUnits, ' per decade'),
 				adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
 		}	else{
 			text(x=.08*numBoxes, y=-maxLim * 1, "No statistically significant trend", adj = c(0,0), font=2, col='#1A232F', family='A', cex=1.4*1.4)
@@ -807,7 +844,7 @@ waterTrends_f = function(ncPath = ncPath,
 		Significance = numeric(), Trend_Strength = numeric(), Trend_Units = character(),
 		Q05 = numeric(), Q25 = numeric(), Q50 = numeric(), Q75 = numeric(), Q95 = numeric()) 
 	
-	theseDecades = seq(c(histYears, projYears)[1], by = 10, length.out = length(c(histYears, projYears)) / 10)
+	theseDecades = seq(projYears[1], by = 10, length.out = length(projYears) / 10)
 	for(thisDecade in theseDecades)	{
 		subsetYrs = subset(varOutYr_df, decade == thisDecade)
 		subsetYrsAbs = subset(varOutYrAbs_df, decade == thisDecade)
@@ -848,7 +885,16 @@ waterTrends_f = function(ncPath = ncPath,
 	fwrite(lookerDF, paste0(dataOutput, '\\outputsForLooker\\', locName, '_', rcpScen, '_', ncVarFileName, '.csv'))
 }
 
-
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
  
  
