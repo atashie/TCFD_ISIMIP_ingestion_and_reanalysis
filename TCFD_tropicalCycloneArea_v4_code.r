@@ -16,6 +16,7 @@ library(easyNCDF)	# for ArrayToNc()
 #########################################
 # reading in climai netcdf data
 ncpath = "J:\\Cai_data\\TCFD\\TropicalCycloneArea\\"
+ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'let'
 saveDate = '20OCT2022'
 rcpScenarios = c(26, 60)
@@ -60,15 +61,15 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_years = unique(year(nc_date))
 	missing_data = 1.00000002004088e+20
 
-	dates1019 = which(year(nc_date) == 2010):which(year(nc_date) == 2019)
-	dates2029 = which(year(nc_date) == 2020):which(year(nc_date) == 2029)
-	dates3039 = which(year(nc_date) == 2030):which(year(nc_date) == 2039)
-	dates4049 = which(year(nc_date) == 2040):which(year(nc_date) == 2049)
-	dates5059 = which(year(nc_date) == 2050):which(year(nc_date) == 2059)
-	dates6069 = which(year(nc_date) == 2060):which(year(nc_date) == 2069)
-	dates7079 = which(year(nc_date) == 2070):which(year(nc_date) == 2079)
-	dates8089 = which(year(nc_date) == 2080):which(year(nc_date) == 2089)
-	dates9099 = which(year(nc_date) == 2090):which(year(nc_date) == 2099)
+	dates1019 = which(year(nc_date) == 2006):which(year(nc_date) == 2025)
+	dates2029 = which(year(nc_date) == 2016):which(year(nc_date) == 2035)
+	dates3039 = which(year(nc_date) == 2026):which(year(nc_date) == 2045)
+	dates4049 = which(year(nc_date) == 2036):which(year(nc_date) == 2055)
+	dates5059 = which(year(nc_date) == 2046):which(year(nc_date) == 2065)
+	dates6069 = which(year(nc_date) == 2056):which(year(nc_date) == 2075)
+	dates7079 = which(year(nc_date) == 2066):which(year(nc_date) == 2085)
+	dates8089 = which(year(nc_date) == 2076):which(year(nc_date) == 2095)
+	dates9099 = which(year(nc_date) == 2086):which(year(nc_date) == 2099)
 
 
 	for(i in 1:length(nc_lat))	{
@@ -117,10 +118,10 @@ histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 	# removing zeroes from non-impacted regions
 maskedLocs26_zeroes = which(dataOutArray[ , , 1, 1, 1] == myMissingData | dataOutArray[ , , 1, 1, 1] == 0)
 histDatSubset26_zeroes =  dataOutArray[ , , 1, 1, 1][-maskedLocs26_zeroes]
-maskedLocs60_zeroes = which(dataOutArray[ , , 1, 2, 1] == myMissingData | dataOutArray[ , , 1, 1, 2] == 0)
+maskedLocs60_zeroes = which(dataOutArray[ , , 1, 2, 1] == myMissingData | dataOutArray[ , , 1, 2, 1] == 0)
 histDatSubset60_zeroes =  dataOutArray[ , , 1, 2, 1][-maskedLocs60_zeroes]
 histQuants = quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes), seq(0.01, 1, 0.01))
-
+#oldHistQuants
 
 for(i in 1:length(whichDecades))	{
 	dataOutArray[ , , i, 1, 2] = 1
@@ -170,16 +171,17 @@ attr(valueClass, 'variables') = metadata
 names(dim(valueClass)) = 'valueClass'
 
 	# saving ncdf
-ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncVarFileName, '_', saveDate, '.nc'))
+ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, ncVarFileName, '_processed.nc'))
 
 	# testing output, squinty eye test
-myNC = nc_open(paste0(ncVarFileName, '_', saveDate, '.nc'))
+myNC = nc_open(paste0(ncOutputPath, ncVarFileName, '_processed.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,2] - nc_testDat[,,1,2,2])
 

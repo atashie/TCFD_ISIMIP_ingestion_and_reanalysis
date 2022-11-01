@@ -64,15 +64,15 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_years = unique(year(nc_date))
 	missing_data = 1.00000002004088e+20
 
-	dates1019 = which(year(nc_date) == 2010):which(year(nc_date) == 2019)
-	dates2029 = which(year(nc_date) == 2020):which(year(nc_date) == 2029)
-	dates3039 = which(year(nc_date) == 2030):which(year(nc_date) == 2039)
-	dates4049 = which(year(nc_date) == 2040):which(year(nc_date) == 2049)
-	dates5059 = which(year(nc_date) == 2050):which(year(nc_date) == 2059)
-	dates6069 = which(year(nc_date) == 2060):which(year(nc_date) == 2069)
-	dates7079 = which(year(nc_date) == 2070):which(year(nc_date) == 2079)
-	dates8089 = which(year(nc_date) == 2080):which(year(nc_date) == 2089)
-	dates9099 = which(year(nc_date) == 2090):which(year(nc_date) == 2099)
+	dates1019 = which(year(nc_date) == 2006):which(year(nc_date) == 2025)
+	dates2029 = which(year(nc_date) == 2016):which(year(nc_date) == 2035)
+	dates3039 = which(year(nc_date) == 2026):which(year(nc_date) == 2045)
+	dates4049 = which(year(nc_date) == 2036):which(year(nc_date) == 2055)
+	dates5059 = which(year(nc_date) == 2046):which(year(nc_date) == 2065)
+	dates6069 = which(year(nc_date) == 2056):which(year(nc_date) == 2075)
+	dates7079 = which(year(nc_date) == 2066):which(year(nc_date) == 2085)
+	dates8089 = which(year(nc_date) == 2076):which(year(nc_date) == 2095)
+	dates9099 = which(year(nc_date) == 2086):which(year(nc_date) == 2099)
 
 
 	for(i in 1:length(nc_lat))	{

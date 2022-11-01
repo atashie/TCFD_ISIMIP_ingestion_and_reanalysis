@@ -538,6 +538,17 @@ fwrite(dataOutput, paste0(dataOutputLoc, fileName, '.csv'))
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 rejiggerData = all_data[c(1:200,1090000:1090200), c('User', 'Region', 'Subregion', 'Lat', 'Lon', 'Hazard', 'Decade', 'Scenario', 'Raw_Hazard_Value', 'Percentile', 'Relative_Hazard_Score')]
 fwrite(rejiggerData, paste0(ncpath, ncVarFileName, "_", "sampleData_", saveDate,  ".csv"))
 

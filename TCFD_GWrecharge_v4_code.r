@@ -209,7 +209,7 @@ attr(valueClass, 'variables') = metadata
 names(dim(valueClass)) = 'valueClass'
 
 	# saving ncdf
-ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncVarFileName, '_', saveDate, '.nc'))
+ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncVarFileName, '_processed.nc'))
 
 	# testing output, squinty eye test
 myNC = nc_open(paste0(ncVarFileName, '_', saveDate, '.nc'))
