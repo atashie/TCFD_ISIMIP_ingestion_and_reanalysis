@@ -58,7 +58,12 @@ for(thisHazard in 6:ncol(customerTable))	{
 							Scenario = rep(c('RCP 2.6', 'RCP 6.0'), each = 9),
 							Raw_Hazard_Value = c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 1], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 1]),
 							Percentile_Score = c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 2], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 2]),
-							Relative_Hazard_Score = NA))
+							Relative_Hazard_Score = NA,
+							Decadal_Trend_Strength = c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 3], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 3]),
+							Decadal_Trend_Significance = c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 4], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 4]),
+							Long_Term_Trend_Strength = c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 5], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 5]),
+							Long_Term_Trend_Significance = c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 6], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 6])
+							))
 				}
 			}
 		}
@@ -77,6 +82,20 @@ fwrite(dataOutput, paste0(customerFolder, 'processedOutput_', Sys.Date(), '.csv'
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	#############################
+	########## old ##############
+	#############################
 	
 	
 	

@@ -17,7 +17,7 @@ userName = 'Driscolls_v2'																	# Driscolls,						Advanta
 includeIndex = TRUE
 
 	# these vars are unlikely to change between runs
-projYears = 2010:2059	# projections for all models (so far) start in 2006
+projYears = 2010:2069	# projections for all models (so far) start in 2006
 histYears = 1980:2005	# matsiro hist data goes to 2005, watergap goes to 2015
 normYears = 1980:2019	# which years should we normalize on
 trendYears = 2010:2069	# which uears to compute trend over

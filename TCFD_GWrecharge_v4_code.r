@@ -10,6 +10,8 @@ library(magrittr)
 library(maptools)
 library(ncdf4)
 library(easyNCDF)	# for ArrayToNc()
+library(robslopes)	# for TheilSen()
+#library(trend)		# for sens.slope()
 
 
 
@@ -20,7 +22,7 @@ ncVarFileName = 'qr'
 saveDate = '19OCT2022'
 rcpScenarios = c(26, 60)
 whichDecades = seq(10,90,10)
-valueType = c(1,2)
+valueType = 1:6
 
 
 	# reading in dummy data for lat lons
@@ -32,7 +34,7 @@ nc_lon = ncvar_get(ncin_dummy, 'lon')
 scalar = 60*60*24*30.4375
 
 	# array for holding outputs
-myMissingData = -(10^10)
+myMissingData = NA
 dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(rcpScenarios), length(valueType)))
 
@@ -87,6 +89,17 @@ for(thisScen in 1:length(rcpScenarios))	{
 				nc_8089 = c(nc_gfdl[j,i,dates8089],nc_hadgem[j,i,dates8089],nc_ipsl[j,i,dates8089],nc_miroc[j,i,dates8089]) 		
 				nc_9099 = c(nc_gfdl[j,i,dates9099],nc_hadgem[j,i,dates9099],nc_ipsl[j,i,dates9099],nc_miroc[j,i,dates9099]) 			
 
+				datesSeq1019 = rep(seq(first(dates1019), last(dates1019), 12), 4)
+				datesSeq2029 = rep(seq(first(dates2029), last(dates2029), 12), 4)
+				datesSeq3039 = rep(seq(first(dates3039), last(dates3039), 12), 4)
+				datesSeq4049 = rep(seq(first(dates4049), last(dates4049), 12), 4)
+				datesSeq5059 = rep(seq(first(dates5059), last(dates5059), 12), 4)
+				datesSeq6069 = rep(seq(first(dates6069), last(dates6069), 12), 4)
+				datesSeq7079 = rep(seq(first(dates7079), last(dates7079), 12), 4)
+				datesSeq8089 = rep(seq(first(dates8089), last(dates8089), 12), 4)
+				datesSeq9099 = rep(seq(first(dates9099), last(dates9099), 12), 4)
+
+
 				data1019 = NULL
 				for(kh in 1:(length(nc_1019)/12))	{
 					data1019 = c(data1019,
@@ -133,6 +146,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 						sum(nc_9099[(1:12)+(12*(kh-1))]))
 				}
 
+					# defining absolute values
 				dataOutArray[j, i, 1, thisScen, 1] = mean(data1019) * scalar
 				dataOutArray[j, i, 2, thisScen, 1] = mean(data2029) * scalar
 				dataOutArray[j, i, 3, thisScen, 1] = mean(data3039) * scalar
@@ -142,6 +156,54 @@ for(thisScen in 1:length(rcpScenarios))	{
 				dataOutArray[j, i, 7, thisScen, 1] = mean(data7079) * scalar
 				dataOutArray[j, i, 8, thisScen, 1] = mean(data8089) * scalar
 				dataOutArray[j, i, 9, thisScen, 1] = mean(data9099) * scalar
+
+					# calculating decadal trends (sens slope)
+				dataOutArray[j, i, 1, thisScen, 3] = TheilSen(datesSeq1019,
+																  data1019)$slope * 10 * scalar
+				dataOutArray[j, i, 2, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029),
+																  c(data1019, data2029), verbose = FALSE)$slope * 10 * scalar
+				dataOutArray[j, i, 3, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039),
+																  c(data1019, data2029, data3039), verbose = FALSE)$slope * 10 * scalar
+				dataOutArray[j, i, 4, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049),
+																  c(data1019, data2029, data3039, data4049), verbose = FALSE)$slope * 10 * scalar
+				dataOutArray[j, i, 5, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059),
+																  c(data1019, data2029, data3039, data4049, data5059), verbose = FALSE)$slope * 10 * scalar
+				dataOutArray[j, i, 6, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069),
+																  c(data1019, data2029, data3039, data4049, data5059, data6069), verbose = FALSE)$slope * 10 * scalar
+				dataOutArray[j, i, 7, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079),
+																  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079), verbose = FALSE)$slope * 10 * scalar
+				dataOutArray[j, i, 8, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089),
+																  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089), verbose = FALSE)$slope * 10 * scalar
+				dataOutArray[j, i, 9, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089, datesSeq9099),
+																  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089, data9099), verbose = FALSE)$slope * 10 * scalar
+				
+					# calculating decadal significance (spearmans)
+				dataOutArray[j, i, 1, thisScen, 4] = cor.test(datesSeq1019,
+														 data1019, method='spearman') $p.value
+				dataOutArray[j, i, 2, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029),
+														 c(data1019, data2029), method='spearman')$p.value
+				dataOutArray[j, i, 3, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039),
+														 c(data1019, data2029, data3039), method='spearman') $p.value
+				dataOutArray[j, i, 4, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049),
+														 c(data1019, data2029, data3039, data4049), method='spearman')$p.value
+				dataOutArray[j, i, 5, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059),
+														 c(data1019, data2029, data3039, data4049, data5059), method='spearman') $p.value
+				dataOutArray[j, i, 6, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069),
+														 c(data1019, data2029, data3039, data4049, data5059, data6069), method='spearman') $p.value
+				dataOutArray[j, i, 7, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079),
+														 c(data1019, data2029, data3039, data4049, data5059, data6069, data7079), method='spearman') $p.value
+				dataOutArray[j, i, 8, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089),
+														 c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089), method='spearman')$p.value
+				dataOutArray[j, i, 9, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089, datesSeq9099),
+														 c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089, data9099), method='spearman')$p.value
+						
+					# calculating long-term trends (sens slope)
+				dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]
+
+					# calculating long-term significance (spearmans)
+				dataOutArray[j, i, , thisScen, 6] = dataOutArray[j, i, 9, thisScen, 4]				
+
+
 			}
 		}
 	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))

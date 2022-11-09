@@ -346,7 +346,6 @@ saveRDS(dataOutArray, 'J:\\Cai_data\\TCFD\\CurrentFloodHazard\\LandMaskArray.rds
 library(raster)
 library(ncdf4)
 library(data.table)
-chooseDepth = TRUE			# does the customer want flood depth or just occurrence
 customerName = 'Richs Foods'
 locationFootprint = 2		# how big is the footprint of the location of interest? in number of 'boxes' to search to the left and right (so 0 is equal to 1 km^2, 1 is 9 km^2, 2 is 25 km^2, etc.
 dataOutputLoc = 'J:\\Cai_data\\TCFD\\CustomerOutputs\\'
@@ -391,11 +390,10 @@ fldDepthList[[6]] = raster(paste0(fileLoc, '\\floodMapGL_rp500y.tif'))
 tif_lat = rev(seq(-54.00824,83.2251,length.out=16468))
 tif_lon = seq(-166.8, 180, length.out=41616)
 
-	# vector for storing raw hazard output
-rawHazOut = NULL
 
 for(thisIntrvl in 1:length(recurIntrvls))	{
-	hazardName = ifelse(chooseDepth, paste0("Flood Hazard (m) ", recurIntrvls[thisIntrvl], 'yr Flood'), paste0('Flood Hazard (-) ', recurIntrvls[thisIntrvl], 'yr Flood'))
+	hazardDepthName = paste0("Flood Hazard (m) ", recurIntrvls[thisIntrvl], 'yr Flood')
+	hazardLikliName = paste0('Flood Hazard (-) ', recurIntrvls[thisIntrvl], 'yr Flood'))
 	for(j in 1:nrow(customerTable))	{
 		closeTiffLons = which.min(abs(customerTable$Lon[j] - tif_lon))
 		closeTiffLats = which.min(abs(customerTable$Lat[j] - tif_lat))
@@ -411,12 +409,11 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 			# defining the water mask
 		thisWaterMask = readRDS(waterMaskLoc)[theseLons, theseLats]
 
-		histFloodImpact = ifelse(chooseDepth,
-									mean(fldDepthList[[6]][theseLats, theseLons], na.rm=TRUE),
-									length(which(fldDepthList[[6]][theseLats, theseLons] > 0)) / length(theseLats)^2)
+		histFloodDepth = mean(fldDepthList[[6]][theseLats, theseLons], na.rm=TRUE)
+		histFloodLikli = length(which(fldDepthList[[6]][theseLats, theseLons] > 0)) / length(theseLats)^2)
 		
 			# check to see if even 500yr floods trigger historically; if not, the skip next analysis
-		if(!is.na(histFloodImpact))	{
+		if(!is.na(histFloodDepth))	{
 						# ensuring we are not drawing from a water tile, then searching box around point if so
 			closeNCLon = which.min(abs(customerTable$Lon[j] - nc_lon))
 			closeNCLat = which.min(abs(customerTable$Lat[j] - nc_lat))
@@ -443,9 +440,8 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 	
 						
 						if(any(!is.na(theseFloodImpacts)))	{
-							histFloodImpact = ifelse(chooseDepth,
-								mean(theseFloodImpacts, na.rm=TRUE),
-								length(which(theseFloodImpacts > 0)) / length(!is.na(theseFloodImpacts)))
+							histFloodDepth = mean(theseFloodImpacts, na.rm=TRUE),
+							histFloodLikli = length(which(theseFloodImpacts > 0)) / length(!is.na(theseFloodImpacts)))
 
 							dataOutput = rbind(dataOutput,
 								c(customerName,
@@ -454,10 +450,23 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 								customerTable$Subregion[j],
 								customerTable$Lat[j],
 								customerTable$Lon[j],
-								hazardName,
+								hazardDepthName,
 								paste0('20', whichDecades[thisDecade], 's'),
 								paste0('RCP', rcpScenarios[thisScenario]),
-								histFloodImpact))
+								histFloodDepth))
+
+							dataOutput = rbind(dataOutput,
+								c(customerName,
+								customerTable$Name[j],
+								customerTable$Region[j],
+								customerTable$Subregion[j],
+								customerTable$Lat[j],
+								customerTable$Lon[j],
+								hazardLikliName,
+								paste0('20', whichDecades[thisDecade], 's'),
+								paste0('RCP', rcpScenarios[thisScenario]),
+								histFloodLikli))
+
 					
 						} else	{ 
 							dataOutput = rbind(dataOutput,
