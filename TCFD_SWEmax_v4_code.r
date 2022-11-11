@@ -10,8 +10,9 @@ library(magrittr)
 library(maptools)
 library(ncdf4)
 library(easyNCDF)	# for ArrayToNc()
-library(robslopes)	# for TheilSen()
+#library(robslopes)	# for TheilSen()
 #library(trend)		# for sens.slope()
+library(mblm)		# for sens slope mlbm()
 
 
 
@@ -157,25 +158,32 @@ for(thisScen in 1:length(rcpScenarios))	{
 				dataOutArray[j, i, 9, thisScen, 1] = mean(data9099)
 
 					# calculating decadal trends (sens slope)
-				dataOutArray[j, i, 1, thisScen, 3] = TheilSen(datesSeq1019,
-																  data1019)$slope * 10
-				dataOutArray[j, i, 2, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029),
-																  c(data1019, data2029), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 3, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039),
-																  c(data1019, data2029, data3039), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 4, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049),
-																  c(data1019, data2029, data3039, data4049), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 5, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059),
-																  c(data1019, data2029, data3039, data4049, data5059), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 6, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069),
-																  c(data1019, data2029, data3039, data4049, data5059, data6069), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 7, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079),
-																  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 8, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089),
-																  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 9, thisScen, 3] = TheilSen(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089, datesSeq9099),
-																  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089, data9099), verbose = FALSE)$slope * 10
-				
+				dataOutArray[j, i, 1, thisScen, 3] = mblm(data1019 ~ datesSeq1019)$coefficients[2] * 10
+				theDates = c(datesSeq1019, datesSeq2029)
+				theValues =  c(data1019, data2029)
+				dataOutArray[j, i, 2, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039)
+				theValues =  c(data1019, data2029, data3039)
+				dataOutArray[j, i, 3, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049)
+				theValues =  c(data1019, data2029, data3039, data4049)
+				dataOutArray[j, i, 4, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059)
+				theValues =  c(data1019, data2029, data3039, data4049, data5059)
+				dataOutArray[j, i, 5, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069)
+				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069)
+				dataOutArray[j, i, 6, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079)
+				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079)
+				dataOutArray[j, i, 7, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089)
+				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089)
+				dataOutArray[j, i, 8, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089, datesSeq9099)
+				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089, data9099)
+				dataOutArray[j, i, 9, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+			
 					# calculating decadal significance (spearmans)
 				dataOutArray[j, i, 1, thisScen, 4] = cor.test(datesSeq1019,
 														 data1019, method='spearman') $p.value
@@ -214,9 +222,9 @@ for(thisScen in 1:length(rcpScenarios))	{
 dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
 
 	# defining quantiles 
-maskedLocs26 = which(dataOutArray[ , , 1, 1, 1] == myMissingData)
+maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
-maskedLocs60 = which(dataOutArray[ , , 1, 2, 1] == myMissingData)
+maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 histQuants = rev(quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01)))
 

@@ -64,7 +64,9 @@ ncVarFileName = 'maxdis'
 saveDate = '10OCT2022'
 rcpScenarios = c(26, 60)
 recurIntrvls = c(10, 20, 50, 100, 200, 500)
+valueType = 1:2		# recurrence interval, significance
 whichDecades = seq(10,90,10)
+
 startHist = as.Date('1920-01-01')
 
 	# reading in dummy data for lat lons
@@ -75,8 +77,9 @@ nc_lon = ncvar_get(ncin_dummy, 'lon')
 
 
 	# array for holding outputs
-fldRecurArray = array(rep(-(10^10), length(nc_lon) * length(nc_lat) * length(whichDecades) * length(recurIntrvls) * length(rcpScenarios)), 
-	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(recurIntrvls), length(rcpScenarios)))
+myMissingData = NA
+dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(recurIntrvls) * length(valueType) * length(rcpScenarios)), 
+	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(recurIntrvls), length(valueType), length(rcpScenarios)))
 
 
 
@@ -121,6 +124,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 		for(j in 1:length(nc_lon))	{
 			nc_dummy = nc_gfdl[j, i, dates10s] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
+				print(c(i,j))
 				nc_10s = c(nc_gfdl[j, i, dates10s], nc_hadgem[j, i, dates10s], nc_ipsl[j, i, dates10s], nc_miroc[j, i, dates10s]) 
 				nc_20s = c(nc_gfdl[j, i, dates20s], nc_hadgem[j, i, dates20s], nc_ipsl[j, i, dates20s], nc_miroc[j, i, dates20s]) 
 				nc_30s = c(nc_gfdl[j, i, dates30s], nc_hadgem[j, i, dates30s], nc_ipsl[j, i, dates30s], nc_miroc[j, i, dates30s]) 
@@ -131,9 +135,17 @@ for(thisScen in 1:length(rcpScenarios))	{
 				nc_80s = c(nc_gfdl[j, i, dates80s], nc_hadgem[j, i, dates80s], nc_ipsl[j, i, dates80s], nc_miroc[j, i, dates80s]) 
 				nc_90s = c(nc_gfdl[j, i, dates90s], nc_hadgem[j, i, dates90s], nc_ipsl[j, i, dates90s], nc_miroc[j, i, dates90s]) 
 				
-		
-				print(c(i,j))
+				datesSeq1019 = rep(seq(first(dates1019), last(dates1019), 12), 4)
+				datesSeq2029 = rep(seq(first(dates2029), last(dates2029), 12), 4)
+				datesSeq3039 = rep(seq(first(dates3039), last(dates3039), 12), 4)
+				datesSeq4049 = rep(seq(first(dates4049), last(dates4049), 12), 4)
+				datesSeq5059 = rep(seq(first(dates5059), last(dates5059), 12), 4)
+				datesSeq6069 = rep(seq(first(dates6069), last(dates6069), 12), 4)
+				datesSeq7079 = rep(seq(first(dates7079), last(dates7079), 12), 4)
+				datesSeq8089 = rep(seq(first(dates8089), last(dates8089), 12), 4)
+				datesSeq9099 = rep(seq(first(dates9099), last(dates9099), 12), 4)
 
+				
 				randNoise = seq(0.1^3,0.1^2,length.out = 100)
 				nc_yr10s = NULL
 				for(kh in 1:(length(nc_10s)/12))	{
@@ -181,16 +193,36 @@ for(thisScen in 1:length(rcpScenarios))	{
 				}
 
 				for(intrvl in 1:length(recurIntrvls))	{
-					fldRecurArray[j, i, 1, intrvl, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr10s, probFld = recurIntrvls[intrvl])
-					fldRecurArray[j, i, 2, intrvl, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr20s, probFld = recurIntrvls[intrvl])
-					fldRecurArray[j, i, 3, intrvl, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr30s, probFld = recurIntrvls[intrvl])
-					fldRecurArray[j, i, 4, intrvl, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr40s, probFld = recurIntrvls[intrvl])
-					fldRecurArray[j, i, 5, intrvl, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr50s, probFld = recurIntrvls[intrvl])
-					fldRecurArray[j, i, 6, intrvl, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr60s, probFld = recurIntrvls[intrvl])
-					fldRecurArray[j, i, 7, intrvl, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr70s, probFld = recurIntrvls[intrvl])
-					fldRecurArray[j, i, 8, intrvl, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr80s, probFld = recurIntrvls[intrvl])
-					fldRecurArray[j, i, 9, intrvl, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr90s, probFld = recurIntrvls[intrvl])
+					fldRecurArray[j, i, 1, intrvl, 1, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr10s, probFld = recurIntrvls[intrvl])
+					fldRecurArray[j, i, 2, intrvl, 1, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr20s, probFld = recurIntrvls[intrvl])
+					fldRecurArray[j, i, 3, intrvl, 1, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr30s, probFld = recurIntrvls[intrvl])
+					fldRecurArray[j, i, 4, intrvl, 1, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr40s, probFld = recurIntrvls[intrvl])
+					fldRecurArray[j, i, 5, intrvl, 1, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr50s, probFld = recurIntrvls[intrvl])
+					fldRecurArray[j, i, 6, intrvl, 1, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr60s, probFld = recurIntrvls[intrvl])
+					fldRecurArray[j, i, 7, intrvl, 1, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr70s, probFld = recurIntrvls[intrvl])
+					fldRecurArray[j, i, 8, intrvl, 1, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr80s, probFld = recurIntrvls[intrvl])
+					fldRecurArray[j, i, 9, intrvl, 1, thisScen] = newFldFrqFunc(oldQ = nc_yr10s, newQ = nc_yr90s, probFld = recurIntrvls[intrvl])
 				}
+				
+				fldRecurArray[j, i, 1, , 2, thisScen] = cor.test(rep(datesSeq1019, 4), 
+														 nc_yr10s, method='spearman')$p.value 
+				fldRecurArray[j, i, 2, , 2, thisScen] = cor.test(c(datesSeq1019, datesSeq2029),
+														 c(nc_yr10s, nc_yr20s), method='spearman')$p.value
+				fldRecurArray[j, i, 3, , 2, thisScen] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039),
+														 c(nc_yr10s, nc_yr20s, nc_yr30s), method='spearman')$p.value 
+				fldRecurArray[j, i, 4, , 2, thisScen] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049),
+														 c(nc_yr10s, nc_yr20s, nc_yr30s, nc_yr40s), method='spearman')$p.value 
+				fldRecurArray[j, i, 5, , 2, thisScen] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059),
+														 c(nc_yr10s, nc_yr20s, nc_yr30s, nc_yr40s, nc_yr40s, nc_yr50s), method='spearman')$p.value 
+				fldRecurArray[j, i, 6, , 2, thisScen] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069),
+														 c(nc_yr10s, nc_yr20s, nc_yr30s, nc_yr40s, nc_yr40s, nc_yr50s, nc_yr60s), method='spearman')$p.value  
+				fldRecurArray[j, i, 7, , 2, thisScen] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079),
+														 c(nc_yr10s, nc_yr20s, nc_yr30s, nc_yr40s, nc_yr40s, nc_yr50s, nc_yr60s, nc_yr70s), method='spearman')$p.value   
+				fldRecurArray[j, i, 8, , 2, thisScen] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089),
+														 c(nc_yr10s, nc_yr20s, nc_yr30s, nc_yr40s, nc_yr40s, nc_yr50s, nc_yr60s, nc_yr70s, nc_yr80s), method='spearman')$p.value  
+				fldRecurArray[j, i, 9, , 2, thisScen] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089, datesSeq9099),
+														 c(nc_yr10s, nc_yr20s, nc_yr30s, nc_yr40s, nc_yr40s, nc_yr50s, nc_yr60s, nc_yr70s, nc_yr80s, nc_yr90s), method='spearman')$p.value  
+				
 			}
 		}
 	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out2.rds'))
@@ -209,7 +241,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 fldRecurIntrvl = fldRecurArray
 metadata = list(fldRecurIntrvl = list(units = 'recurrence interval ( / yr)'))
 attr(fldRecurIntrvl, 'variables') = metadata
-names(dim(fldRecurIntrvl)) = c('lon', 'lat', 'decade', 'recurInterval','rcpScen')
+names(dim(fldRecurIntrvl)) = c('lon', 'lat', 'decade', 'recurInterval', 'valueTypes', 'rcpScen')
 
 lon = nc_lon
 dim(lon) = length(lon)
@@ -219,7 +251,7 @@ names(dim(lon)) = 'lon'
 
 lat = nc_lat
 dim(lat) = length(lat)
-metadata = list(lat = list(units = 'tdegrees'))
+metadata = list(lat = list(units = 'degrees'))
 attr(lat, 'variables') = metadata
 names(dim(lat)) = 'lat'
 
@@ -235,6 +267,12 @@ metadata = list(recurInterval = list(units = 'recurrence_intervals'))
 attr(recurInterval, 'variables') = metadata
 names(dim(recurInterval)) = 'recurInterval'
 
+valueTypes = valueType
+dim(valueTypes) = length(valueTypes)
+metadata = list(valueTypes = list(units = 'interval_or_significance'))
+attr(valueTypes, 'variables') = metadata
+names(dim(valueTypes)) = 'valueTypes'
+
 rcpScen = rcpScenarios
 dim(rcpScen) = length(rcpScen)
 metadata = list(rcpScen = list(units = 'RCP_scenario'))
@@ -242,7 +280,7 @@ attr(rcpScen, 'variables') = metadata
 names(dim(rcpScen)) = 'rcpScen'
 
 
-ArrayToNc(list(fldRecurIntrvl, lon, lat, decade, recurInterval, rcpScen), file_path = paste0(ncpath, 'floodRecurIntervals_v2.nc'))
+ArrayToNc(list(fldRecurIntrvl, lon, lat, decade, recurInterval, valueTypes, rcpScen), file_path = paste0(ncpath, 'floodRecurIntervals_v4.nc'))
 
 
 
@@ -366,7 +404,7 @@ whichDecades = seq(10,90,10)
 	
 	# read in flood recurrence data
 ncpath = "J:\\Cai_data\\TCFD\\Flash Floods\\"
-fldRcrIntNC = nc_open(paste0(ncpath, 'floodRecurIntervals_v2.nc'))
+fldRcrIntNC = nc_open(paste0(ncpath, 'floodRecurIntervals_v4.nc'))
 nc_lat = ncvar_get(fldRcrIntNC, 'lat')
 nc_lon = ncvar_get(fldRcrIntNC, 'lon')
 fldRcrVals = ncvar_get(fldRcrIntNC, 'fldRecurIntrvl')
@@ -417,23 +455,32 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 						# ensuring we are not drawing from a water tile, then searching box around point if so
 			closeNCLon = which.min(abs(customerTable$Lon[j] - nc_lon))
 			closeNCLat = which.min(abs(customerTable$Lat[j] - nc_lat))
-			if(fldRcrVals[closeNCLon, closeNCLat, 1, thisIntrvl, 1] == -1e+10)	{
+			if(fldRcrVals[closeNCLon, closeNCLat, 1, 1, thisIntrvl, 1] == NA)	{
 					closeNCLon = closeNCLon + 1
-					if(fldRcrVals[closeNCLon, closeNCLat, 1, thisIntrvl, 1] == -1e+10)	{
+					if(fldRcrVals[closeNCLon, closeNCLat, 1, 1, thisIntrvl, 1] == NA)	{
 						closeNCLon = closeNCLon - 2
-						if(fldRcrVals[closeNCLon, closeNCLat, 1, thisIntrvl, 1] == -1e+10)	{
+						if(fldRcrVals[closeNCLon, closeNCLat, 1, 1, thisIntrvl, 1] == NA)	{
 							closeNCLon = closeNCLon + 1
 							closeNCLat = closeNCLat + 1
-							if(fldRcrVals[closeNCLon, closeNCLat, 1, thisIntrvl, 1] == -1e+10)	{
+							if(fldRcrVals[closeNCLon, closeNCLat, 1, 1, thisIntrvl, 1] == NA)	{
 								closeNCLat = closeNCLat - 2
 			}}}}
 				
 			for(thisScenario in 1:length(rcpScenarios))	{
+				FldRcrSignif_all = fldRcrVals[closeNCLon, closeNCLat, 9, 2, thisIntrvl, thisScenario]
+				
 				for(thisDecade in 1:length(whichDecades))	{
-					thisFldRcrVal = fldRcrVals[closeNCLon, closeNCLat, thisDecade, thisIntrvl, thisScenario]
+					thisFldRcrVal = 		fldRcrVals[closeNCLon, closeNCLat, thisDecade, 1, thisIntrvl, thisScenario]
+					thisFldRcrSignif = 		fldRcrVals[closeNCLon, closeNCLat, thisDecade, 2, thisIntrvl, thisScenario]
 					
 					if(thisFldRcrVal >= recurIntrvls[1])	{
-						closestFldRcrIntrvl = last(which(thisFldRcrVal > recurIntrvls))
+						closestFldRcrIntrvl = 	last(which(thisFldRcrVal > recurIntrvls))
+						closestFldRcrIntrvlAll =last(which(FldRcrSignif_all > recurIntrvls))
+						
+						theseFloodImpacts = fldDepthList[[closestFldRcrIntrvl]][theseLats, theseLons]
+						theseFloodImpacts[is.na(theseFloodImpacts)] = 0
+						theseFloodImpacts = theseFloodImpacts * thisWaterMask
+	
 						theseFloodImpacts = fldDepthList[[closestFldRcrIntrvl]][theseLats, theseLons]
 						theseFloodImpacts[is.na(theseFloodImpacts)] = 0
 						theseFloodImpacts = theseFloodImpacts * thisWaterMask
@@ -441,7 +488,11 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 						
 						if(any(!is.na(theseFloodImpacts)))	{
 							histFloodDepth = mean(theseFloodImpacts, na.rm=TRUE),
+							histFloodDepthChng = histFloodDepth - 
+
 							histFloodLikli = length(which(theseFloodImpacts > 0)) / length(!is.na(theseFloodImpacts)))
+							histFloodLikliChng = 
+						
 
 							dataOutput = rbind(dataOutput,
 								c(customerName,
@@ -453,7 +504,11 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 								hazardDepthName,
 								paste0('20', whichDecades[thisDecade], 's'),
 								paste0('RCP', rcpScenarios[thisScenario]),
-								histFloodDepth))
+								histFloodDepth,
+								,
+								thisFldRcrSignif,
+								,
+								FldRcrSignif_all))
 
 							dataOutput = rbind(dataOutput,
 								c(customerName,
@@ -465,7 +520,11 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 								hazardLikliName,
 								paste0('20', whichDecades[thisDecade], 's'),
 								paste0('RCP', rcpScenarios[thisScenario]),
-								histFloodLikli))
+								histFloodLikli,
+								,
+								thisFldRcrSignif,
+								,
+								FldRcrSignif_all))
 
 					
 						} else	{ 
@@ -479,7 +538,11 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 								hazardName,
 								paste0('20', whichDecades[thisDecade], 's'),
 								paste0('RCP', rcpScenarios[thisScenario]),
-								0))
+								0,
+								,
+								thisFldRcrSignif,
+								,
+								FldRcrSignif_all))
 						}
 					}	else	{
 						dataOutput = rbind(dataOutput,

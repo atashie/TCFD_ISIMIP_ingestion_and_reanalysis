@@ -10,7 +10,8 @@ hazardTable = fread(paste0(hazardFolder, 'Hazard_Table.csv'))
 relHazScores = fread(paste0(hazardFolder, 'Relative_Hazard_Table.csv'))
 
 dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
-	Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA, Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA)
+	Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
+	Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA)
 	
 for(thisHazard in 6:ncol(customerTable))	{
 	if(any(customerTable[, ..thisHazard]))	{

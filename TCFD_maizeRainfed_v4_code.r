@@ -10,8 +10,9 @@ library(magrittr)
 library(maptools)
 library(ncdf4)
 library(easyNCDF)	# for ArrayToNc()
-library(robslopes)	# for TheilSen()
+#library(robslopes)	# for TheilSen()
 #library(trend)		# for sens.slope()
+library(mblm)		# for sens slope mlbm()
 
 
 
@@ -101,24 +102,31 @@ for(thisScen in 1:length(rcpScenarios))	{
 				dataOutArray[j, i, 9, thisScen, 1] = mean(nc_9099)
 
 					# calculating decadal trends (sens slope)
-				dataOutArray[j, i, 1, thisScen, 3] = TheilSen(rep(dates1019, 4),
-																  nc_1019, verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 2, thisScen, 3] = TheilSen(rep(c(dates1019, dates2029), 4),
-																  c(nc_1019, nc_2029), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 3, thisScen, 3] = TheilSen(rep(c(dates1019, dates2029, dates3039), 4),
-																  c(nc_1019, nc_2029, nc_3039), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 4, thisScen, 3] = TheilSen(rep(c(dates1019, dates2029, dates3039, dates4049), 4),
-																  c(nc_1019, nc_2029, nc_3039, nc_4049), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 5, thisScen, 3] = TheilSen(rep(c(dates1019, dates2029, dates3039, dates4049, dates5059), 4),
-																  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 6, thisScen, 3] = TheilSen(rep(c(dates1019, dates2029, dates3039, dates4049, dates5059, dates6069), 4),
-																  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 7, thisScen, 3] = TheilSen(rep(c(dates1019, dates2029, dates3039, dates4049, dates5059, dates6069, dates7079), 4),
-																  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 8, thisScen, 3] = TheilSen(rep(c(dates1019, dates2029, dates3039, dates4049, dates5059, dates6069, dates7079, dates8089), 4),
-																  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079, nc_8089), verbose = FALSE)$slope * 10
-				dataOutArray[j, i, 9, thisScen, 3] = TheilSen(rep(c(dates1019, dates2029, dates3039, dates4049, dates5059, dates6069, dates7079, dates8089, dates9099), 4),
-																  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079, nc_8089, nc_9099), verbose = FALSE)$slope * 10
+				dataOutArray[j, i, 1, thisScen, 3] = mblm(nc_1019 ~ dates1019)$coefficients[2] * 10
+				theDates = c(dates1019, dates2029)
+				theValues =  c(nc_1019, nc_2029)
+				dataOutArray[j, i, 2, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(dates1019, dates2029, dates3039)
+				theValues =  c(nc_1019, nc_2029, nc_3039)
+				dataOutArray[j, i, 3, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(dates1019, dates2029, dates3039, dates4049)
+				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049)
+				dataOutArray[j, i, 4, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(dates1019, dates2029, dates3039, dates4049, dates5059)
+				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059)
+				dataOutArray[j, i, 5, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(dates1019, dates2029, dates3039, dates4049, dates5059, dates6069)
+				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069)
+				dataOutArray[j, i, 6, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(dates1019, dates2029, dates3039, dates4049, dates5059, dates6069, dates7079)
+				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079)
+				dataOutArray[j, i, 7, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(dates1019, dates2029, dates3039, dates4049, dates5059, dates6069, dates7079, dates8089)
+				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079, nc_8089)
+				dataOutArray[j, i, 8, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
+				theDates = c(dates1019, dates2029, dates3039, dates4049, dates5059, dates6069, dates7079, dates8089, dates9099)
+				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079, nc_8089, nc_9099)
+				dataOutArray[j, i, 9, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10
 				
 					# calculating decadal significance (spearmans)
 				dataOutArray[j, i, 1, thisScen, 4] = cor.test(rep(dates1019, 4), 
@@ -158,15 +166,15 @@ for(thisScen in 1:length(rcpScenarios))	{
 dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
 
 	# defining quantiles 
-maskedLocs26 = which(dataOutArray[ , , 1, 1, 1] == myMissingData)
+maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
-maskedLocs60 = which(dataOutArray[ , , 1, 2, 1] == myMissingData)
+maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 
-	# removing zeroes from non-growing regions
-maskedLocs26_zeroes = which(dataOutArray[ , , 1, 1, 1] == myMissingData | dataOutArray[ , , 1, 1, 1] == 0)
+	# removing zeroes from non-impacted regions
+maskedLocs26_zeroes = which(is.na(dataOutArray[ , , 1, 1, 1]) | dataOutArray[ , , 1, 1, 1] == 0)
 histDatSubset26_zeroes =  dataOutArray[ , , 1, 1, 1][-maskedLocs26_zeroes]
-maskedLocs60_zeroes = which(dataOutArray[ , , 1, 2, 1] == myMissingData | dataOutArray[ , , 1, 2, 1] == 0)
+maskedLocs60_zeroes = which(is.na(dataOutArray[ , , 1, 2, 1]) | dataOutArray[ , , 1, 2, 1] == 0)
 histDatSubset60_zeroes =  dataOutArray[ , , 1, 2, 1][-maskedLocs60_zeroes]
 histQuants = rev(quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes), seq(0.01, 1, 0.01)))
 
