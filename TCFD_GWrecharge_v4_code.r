@@ -18,8 +18,9 @@ library(mblm)		# for sens slope mlbm()
 #########################################
 # reading in climai netcdf data
 ncpath = "J:\\Cai_data\\TCFD\\GWrecharge\\"
+ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'qr'
-saveDate = '11NOV2022'
+saveDate = '14NOV2022'
 rcpScenarios = c(26, 60)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -157,52 +158,50 @@ for(thisScen in 1:length(rcpScenarios))	{
 				dataOutArray[j, i, 8, thisScen, 1] = mean(data8089) * scalar
 				dataOutArray[j, i, 9, thisScen, 1] = mean(data9099) * scalar
 
-					# calculating decadal trends (sens slope)
-				dataOutArray[j, i, 1, thisScen, 3] = mblm(data1019 ~ datesSeq1019)$coefficients[2] * 10 * scalar
-				theDates = c(datesSeq1019, datesSeq2029)
+					# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
+				theDates = datesSeq1019
+				dataOutArray[j, i, 1, thisScen, 3] = lm(data1019 ~ theDates)$coefficients[2] * 10 * scalar
+				dataOutArray[j, i, 1, thisScen, 4] = cor.test(theDates, data1019)$p.value
+				
+				theDates = c(theDates, datesSeq2029)
 				theValues =  c(data1019, data2029)
-				dataOutArray[j, i, 2, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039)
+				dataOutArray[j, i, 2, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
+				dataOutArray[j, i, 2, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				
+				theDates = c(theDates, datesSeq3039)
 				theValues =  c(data1019, data2029, data3039)
-				dataOutArray[j, i, 3, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049)
+				dataOutArray[j, i, 3, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
+				dataOutArray[j, i, 3, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				
+				theDates = c(theDates, datesSeq4049)
 				theValues =  c(data1019, data2029, data3039, data4049)
-				dataOutArray[j, i, 4, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059)
+				dataOutArray[j, i, 4, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
+				dataOutArray[j, i, 4, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				
+				theDates = c(theDates, datesSeq5059)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059)
-				dataOutArray[j, i, 5, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069)
+				dataOutArray[j, i, 5, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
+				dataOutArray[j, i, 5, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				
+				theDates = c(theDates, datesSeq6069)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069)
-				dataOutArray[j, i, 6, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079)
+				dataOutArray[j, i, 6, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
+				dataOutArray[j, i, 6, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				
+				theDates = c(theDates, datesSeq7079)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079)
-				dataOutArray[j, i, 7, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089)
+				dataOutArray[j, i, 7, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
+				dataOutArray[j, i, 7, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				
+				theDates = c(theDates, datesSeq8089)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089)
-				dataOutArray[j, i, 8, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				theDates = c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089, datesSeq9099)
+				dataOutArray[j, i, 8, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
+				dataOutArray[j, i, 8, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				
+				theDates = c(theDates, datesSeq9099)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089, data9099)
-				dataOutArray[j, i, 9, thisScen, 3] = mblm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-					
-					# calculating decadal significance (spearmans)
-				dataOutArray[j, i, 1, thisScen, 4] = cor.test(datesSeq1019,
-														 data1019, method='spearman') $p.value
-				dataOutArray[j, i, 2, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029),
-														 c(data1019, data2029), method='spearman')$p.value
-				dataOutArray[j, i, 3, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039),
-														 c(data1019, data2029, data3039), method='spearman') $p.value
-				dataOutArray[j, i, 4, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049),
-														 c(data1019, data2029, data3039, data4049), method='spearman')$p.value
-				dataOutArray[j, i, 5, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059),
-														 c(data1019, data2029, data3039, data4049, data5059), method='spearman') $p.value
-				dataOutArray[j, i, 6, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069),
-														 c(data1019, data2029, data3039, data4049, data5059, data6069), method='spearman') $p.value
-				dataOutArray[j, i, 7, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079),
-														 c(data1019, data2029, data3039, data4049, data5059, data6069, data7079), method='spearman') $p.value
-				dataOutArray[j, i, 8, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089),
-														 c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089), method='spearman')$p.value
-				dataOutArray[j, i, 9, thisScen, 4] = cor.test(c(datesSeq1019, datesSeq2029, datesSeq3039, datesSeq4049, datesSeq5059, datesSeq6069, datesSeq7079, datesSeq8089, datesSeq9099),
-														 c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089, data9099), method='spearman')$p.value
+				dataOutArray[j, i, 9, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
+				dataOutArray[j, i, 9, thisScen, 4] = cor.test(theDates, theValues)$p.value
 						
 					# calculating long-term trends (sens slope)
 				dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]
@@ -278,10 +277,10 @@ attr(valueClass, 'variables') = metadata
 names(dim(valueClass)) = 'valueClass'
 
 	# saving ncdf
-ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncVarFileName, '_processed.nc'))
+ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, ncVarFileName, '_processed.nc'))
 
 	# testing output, squinty eye test
-myNC = nc_open(paste0(ncVarFileName, '_', saveDate, '.nc'))
+myNC = nc_open(paste0(ncOutputPath, ncVarFileName, '_processed.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'tcfdVariable')

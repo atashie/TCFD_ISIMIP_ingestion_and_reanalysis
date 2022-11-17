@@ -1,13 +1,13 @@
 library(data.table)
 library(ncdf4)
 
-userName = 'HMClause'
+userName = 'Corbion'	#'HMClause'
 hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 customerFolder = 'J:\\Cai_data\\TCFD\\locations\\'
 
-customerTable = fread(paste0(customerFolder, 'HMClause_locations_allCucurbit.csv'))
-hazardTable = fread(paste0(hazardFolder, 'Hazard_Table.csv'))
-relHazScores = fread(paste0(hazardFolder, 'Relative_Hazard_Table.csv'))
+customerTable = fread(paste0(customerFolder, 'Corbion_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Scores.csv'))				
 
 dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 	Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
@@ -66,14 +66,52 @@ for(thisHazard in 6:ncol(customerTable))	{
 							Long_Term_Trend_Significance = c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 6], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 6])
 							))
 				}
+				print(c(thisHazard, thisHazardMeasure, thisLocation))
 			}
+			nc_close(hazardMeasureNC)
 		}
 	}
 }
+dataOutput = dataOutput[-1,]
 
+
+for(thisDecade in unique(dataOutput$Decade))	{
+	for(thisScen in unique(dataOutput$Scenario))	{
+		for(thisLoc in unique(dataOutput$Location))	{
+			avgOfAllHazards = NULL
+			for(thisHazard in unique(dataOutput$Hazard))	{
+				avgOfAllHazards = c(avgOfAllHazards, mean(subset(dataOutput, Decade == thisDecade & Scenario == thisScen & Location == thisLoc & Hazard == thisHazard)$Percentile_Score, na.rm=TRUE))
+			}
+
+			locRow = which(customerTable$Location == thisLoc)
+			dataOutput = rbind(dataOutput,
+				data.frame(
+					User = userName,
+					Location = customerTable$Location[locRow],
+					Region = customerTable$Region[locRow],
+					Subregion = customerTable$Subregion[locRow],
+					Lat = customerTable$Lat[locRow],
+					Lon = customerTable$Lon[locRow],
+					Hazard = "Aggregate Climate Score",
+					Hazard_Measure = NA,
+					Decade = thisDecade,
+					Scenario = thisScen,
+					Raw_Hazard_Value = NA,
+					Percentile_Score = mean(avgOfAllHazards, na.rm=TRUE),
+					Relative_Hazard_Score = NA,
+					Decadal_Trend_Strength = NA,
+					Decadal_Trend_Significance = NA,
+					Long_Term_Trend_Strength = NA,
+					Long_Term_Trend_Significance = NA)
+			)
+		}
+	}
+}
+			
 for(thisRow in 1:nrow(relHazScores))	{
 	dataOutput$Relative_Hazard_Score[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = relHazScores$Hazard_Common_Name[thisRow]
 }		
+			
 	
 fwrite(dataOutput, paste0(customerFolder, 'processedOutput_', Sys.Date(), '.csv'))
 	
