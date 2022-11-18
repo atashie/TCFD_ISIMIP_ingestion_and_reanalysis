@@ -648,9 +648,9 @@ dataOutput = dataOutput[-1,]
 
 
 	# defining relativ flood hazard
-basSeqDepth = seq(0.01, 30, length.out=80)
+basSeqDepth = seq(0.01, 10, length.out=80)
 basSeqLikli = seq(1, 100, length.out=80)
-relFloodHazardDepth = (basSeqDepth^3 / max(basSeqDepth^3)) * 25
+relFloodHazardDepth = (basSeqDepth^2 / max(basSeqDepth^2)) * 10 + min(basSeqDepth)
 relFloodHazardLikli = basSeqLikli
 #relFloodHazard = c(rep(0, 33), seq(0.01,10,length.out=(67)))
 dataOutput$Percentile = 1
@@ -660,11 +660,6 @@ for(ll in 1:length(relFloodHazardDepth))	{
 	dataOutput$Percentile[depthRows][which(dataOutput$Raw_Hazard_Value[depthRows] > relFloodHazardDepth[ll])] = ll + 20
 	dataOutput$Percentile[likliRows][which(dataOutput$Raw_Hazard_Value[likliRows] > relFloodHazardLikli[ll])] = ll + 20
 }
-
-
-dataOutput$Relative_Hazard_Score = 'Low'
-dataOutput$Relative_Hazard_Score[dataOutput$Percentile > 33] = 'Medium'
-dataOutput$Relative_Hazard_Score[dataOutput$Percentile > 76] = 'High'
 
 fileName = ifelse(chooseDepth, paste0(customerName, '_', Sys.Date(), '_avgDepth_Footprint_', (locationFootprint*2+1), 'km'), paste0(customerName, '_', Sys.Date(), '_relLikelihood_Footprint_', (locationFootprint*2+1), 'km'))
 fwrite(dataOutput, paste0(dataOutputLoc, fileName, '.csv'))

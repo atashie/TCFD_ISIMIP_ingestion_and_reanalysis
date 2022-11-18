@@ -105,47 +105,47 @@ for(thisScen in 1:length(rcpScenarios))	{
 					# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
 				theDates = rep(dates1019, 4)
 				dataOutArray[j, i, 1, thisScen, 3] = lm(nc_1019 ~ theDates)$coefficients[2] * 10
-				dataOutArray[j, i, 1, thisScen, 4] = cor.test(theDates, nc_1019)$p.value
+				dataOutArray[j, i, 1, thisScen, 4] = cor.test(theDates, nc_1019, method='spearman')$p.value
 				
 				theDates = c(theDates, rep(dates2029, 4))
 				theValues =  c(nc_1019, nc_2029)
 				dataOutArray[j, i, 2, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10
-				dataOutArray[j, i, 2, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 2, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, rep(dates3039, 4))
 				theValues =  c(nc_1019, nc_2029, nc_3039)
 				dataOutArray[j, i, 3, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10
-				dataOutArray[j, i, 3, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 3, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, rep(dates4049, 4))
 				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049)
 				dataOutArray[j, i, 4, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10
-				dataOutArray[j, i, 4, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 4, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, rep(dates5059, 4))
 				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059)
 				dataOutArray[j, i, 5, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10
-				dataOutArray[j, i, 5, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 5, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, rep(dates6069, 4))
 				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069)
 				dataOutArray[j, i, 6, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10
-				dataOutArray[j, i, 6, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 6, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, rep(dates7079, 4))
 				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079)
 				dataOutArray[j, i, 7, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10
-				dataOutArray[j, i, 7, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 7, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, rep(dates8089, 4))
 				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079, nc_8089)
 				dataOutArray[j, i, 8, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10
-				dataOutArray[j, i, 8, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 8, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, rep(dates9099, 4))
 				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079, nc_8089, nc_9099)
 				dataOutArray[j, i, 9, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10
-				dataOutArray[j, i, 9, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 9, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 					# calculating long-term trends (sens slope)
 				dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]
