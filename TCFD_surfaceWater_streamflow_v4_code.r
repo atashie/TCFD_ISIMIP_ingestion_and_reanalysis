@@ -1,13 +1,6 @@
 ########################################################
-### library(hydroGOF)		# for nse calculations
-library(dataRetrieval)	# for streamflow data (I think)
 library(data.table)
-library(sf)
-	sf::sf_use_s2(FALSE) # for problem with intersecting spherical w flat
 library(lubridate)
-library(ncdf4)
-library(magrittr)
-library(maptools)
 library(ncdf4)
 library(easyNCDF)	# for ArrayToNc()
 #library(robslopes)	# for TheilSen()
@@ -21,8 +14,8 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\SurfaceWater_Streamflow\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'dis'
-saveDate = '12NOV2022'
-rcpScenarios = c(26, 60)
+saveDate = '28NOV2022'
+rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6
 
@@ -162,47 +155,47 @@ for(thisScen in 1:length(rcpScenarios))	{
 					# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
 				theDates = datesSeq1019
 				dataOutArray[j, i, 1, thisScen, 3] = lm(data1019 ~ theDates)$coefficients[2] * 10 * scalar
-				dataOutArray[j, i, 1, thisScen, 4] = cor.test(theDates, data1019)$p.value
+				dataOutArray[j, i, 1, thisScen, 4] = cor.test(theDates, data1019, method='spearman')$p.value
 				
 				theDates = c(theDates, datesSeq2029)
 				theValues =  c(data1019, data2029)
 				dataOutArray[j, i, 2, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				dataOutArray[j, i, 2, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 2, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, datesSeq3039)
 				theValues =  c(data1019, data2029, data3039)
 				dataOutArray[j, i, 3, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				dataOutArray[j, i, 3, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 3, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, datesSeq4049)
 				theValues =  c(data1019, data2029, data3039, data4049)
 				dataOutArray[j, i, 4, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				dataOutArray[j, i, 4, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 4, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, datesSeq5059)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059)
 				dataOutArray[j, i, 5, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				dataOutArray[j, i, 5, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 5, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, datesSeq6069)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069)
 				dataOutArray[j, i, 6, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				dataOutArray[j, i, 6, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 6, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, datesSeq7079)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079)
 				dataOutArray[j, i, 7, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				dataOutArray[j, i, 7, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 7, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, datesSeq8089)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089)
 				dataOutArray[j, i, 8, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				dataOutArray[j, i, 8, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 8, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 				
 				theDates = c(theDates, datesSeq9099)
 				theValues =  c(data1019, data2029, data3039, data4049, data5059, data6069, data7079, data8089, data9099)
 				dataOutArray[j, i, 9, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * scalar
-				dataOutArray[j, i, 9, thisScen, 4] = cor.test(theDates, theValues)$p.value
+				dataOutArray[j, i, 9, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
 					
 					# calculating long-term trends (sens slope)
 				dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]
@@ -226,15 +219,19 @@ maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
 maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
-histQuants = rev(quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01)))
+maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
+histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
+histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
 
 for(i in 1:length(whichDecades))	{
 	for(j in 1:(length(histQuants)))	{
 		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] <= histQuants[j]] = j
 		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
+		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] <= histQuants[j]] = j
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
+	dataOutArray[ , , i, 3, 2][maskedLocs60] = NA
 }
 
 
@@ -286,12 +283,16 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,2,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,1])
+
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,3])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,4])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,5])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,6])
 
-image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,2] - nc_testDat[,,1,2,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,1] - nc_testDat[,,1,3,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,1] - nc_testDat[,,1,2,1])
 
-image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,1] - nc_testDat[,,1,1,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,3,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,2,2])

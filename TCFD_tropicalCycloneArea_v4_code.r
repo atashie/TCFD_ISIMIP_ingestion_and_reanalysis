@@ -1,13 +1,6 @@
 #######################################################
-### library(hydroGOF)		# for nse calculations
-library(dataRetrieval)	# for streamflow data (I think)
 library(data.table)
-library(sf)
-	sf::sf_use_s2(FALSE) # for problem with intersecting spherical w flat
 library(lubridate)
-library(ncdf4)
-library(magrittr)
-library(maptools)
 library(ncdf4)
 library(easyNCDF)	# for ArrayToNc()
 #library(robslopes)	# for TheilSen()
@@ -63,16 +56,19 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_years = unique(year(nc_date))
 	missing_data = 1.00000002004088e+20
 
-	dates1019 = which(year(nc_date) == 2006):which(year(nc_date) == 2025)
-	dates2029 = which(year(nc_date) == 2016):which(year(nc_date) == 2035)
-	dates3039 = which(year(nc_date) == 2026):which(year(nc_date) == 2045)
-	dates4049 = which(year(nc_date) == 2036):which(year(nc_date) == 2055)
-	dates5059 = which(year(nc_date) == 2046):which(year(nc_date) == 2065)
-	dates6069 = which(year(nc_date) == 2056):which(year(nc_date) == 2075)
-	dates7079 = which(year(nc_date) == 2066):which(year(nc_date) == 2085)
-	dates8089 = which(year(nc_date) == 2076):which(year(nc_date) == 2095)
-	dates9099 = which(year(nc_date) == 2086):which(year(nc_date) == 2099)
+	dates1019 = which(year(nc_date) == 2006):which(year(nc_date) == 2029)
+	dates2029 = which(year(nc_date) == 2010):which(year(nc_date) == 2039)
+	dates3039 = which(year(nc_date) == 2020):which(year(nc_date) == 2049)
+	dates4049 = which(year(nc_date) == 2030):which(year(nc_date) == 2059)
+	dates5059 = which(year(nc_date) == 2040):which(year(nc_date) == 2069)
+	dates6069 = which(year(nc_date) == 2050):which(year(nc_date) == 2079)
+	dates7079 = which(year(nc_date) == 2060):which(year(nc_date) == 2089)
+	dates8089 = which(year(nc_date) == 2070):which(year(nc_date) == 2099)
+	dates9099 = which(year(nc_date) == 2080):which(year(nc_date) == 2099)
 
+	wt1019 = c(seq(0.1,1,length.out = 4)^2, rep(1, 10), rev(seq(0.1,1,length.out=10)))
+	wtlongs = c(seq(0.1,1,length.out = 10)^2, rep(1, 10), rev(seq(0.1,1,length.out=10)))
+	wt9099 =  c(seq(0.1,1,length.out = 10)^2, rep(1, 10))
 
 	for(i in 1:length(nc_lat))	{
 		for(j in 1:length(nc_lon))	{
@@ -90,15 +86,16 @@ for(thisScen in 1:length(rcpScenarios))	{
 				nc_9099 = c(nc_gfdl[j,i,dates9099],nc_hadgem[j,i,dates9099],nc_ipsl[j,i,dates9099],nc_miroc[j,i,dates9099]) 			
 
 					# defining absolute values
-				dataOutArray[j, i, 1, thisScen, 1] = mean(nc_1019) * 100
-				dataOutArray[j, i, 2, thisScen, 1] = mean(nc_2029) * 100
-				dataOutArray[j, i, 3, thisScen, 1] = mean(nc_3039) * 100
-				dataOutArray[j, i, 4, thisScen, 1] = mean(nc_4049) * 100
-				dataOutArray[j, i, 5, thisScen, 1] = mean(nc_5059) * 100
-				dataOutArray[j, i, 6, thisScen, 1] = mean(nc_6069) * 100
-				dataOutArray[j, i, 7, thisScen, 1] = mean(nc_7079) * 100
-				dataOutArray[j, i, 8, thisScen, 1] = mean(nc_8089) * 100
-				dataOutArray[j, i, 9, thisScen, 1] = mean(nc_9099) * 100
+				dataOutArray[j, i, 1, thisScen, 1] = weighted.mean(nc_1019, rep(wt1019, each = 4)) * 100
+				dataOutArray[j, i, 2, thisScen, 1] = weighted.mean(nc_2029, rep(wtlongs, each = 4)) * 100
+				dataOutArray[j, i, 3, thisScen, 1] = weighted.mean(nc_3039, rep(wtlongs, each = 4)) * 100
+				dataOutArray[j, i, 4, thisScen, 1] = weighted.mean(nc_4049, rep(wtlongs, each = 4)) * 100
+				dataOutArray[j, i, 5, thisScen, 1] = weighted.mean(nc_5059, rep(wtlongs, each = 4)) * 100
+				dataOutArray[j, i, 6, thisScen, 1] = weighted.mean(nc_6069, rep(wtlongs, each = 4)) * 100
+				dataOutArray[j, i, 7, thisScen, 1] = weighted.mean(nc_7079, rep(wtlongs, each = 4)) * 100
+				dataOutArray[j, i, 8, thisScen, 1] = weighted.mean(nc_8089, rep(wtlongs, each = 4)) * 100
+				dataOutArray[j, i, 9, thisScen, 1] = weighted.mean(nc_9099, rep(wt9099, each = 4)) * 100
+
 
 					# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
 				theDates = rep(dates1019, 4)
@@ -162,7 +159,14 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_close(ncin_miroc)
 }
 
-dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+#dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+##### temp fix for not having rcp 8.5
+dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
+	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), 3, length(valueType)))
+old_dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+dataOutArray[ , , , 1:2, ] = old_dataOutArray
+##### end temp fix
+
 
 	# defining quantiles 
 maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
@@ -215,6 +219,9 @@ metadata = list(decade = list(units = 'decades_of_21st_C'))
 attr(decade, 'variables') = metadata
 names(dim(decade)) = 'decade'
 
+#### temp fix for not having rcp 8.5
+rcpScenarios = c(26, 60, 85)
+#### end temp fix for not having rcp 8.5
 rcpScen = rcpScenarios
 dim(rcpScen) = length(rcpScen)
 metadata = list(rcpScen = list(units = 'RCP_scenario'))
@@ -239,6 +246,7 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,2,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,3])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,4])
@@ -249,4 +257,9 @@ image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,2] - nc_testDat[,,1,2,2])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,1] - nc_testDat[,,1,1,1])
 
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,3])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,4])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,5])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,6])
 

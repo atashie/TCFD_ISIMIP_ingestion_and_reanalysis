@@ -61,8 +61,8 @@ newFldFrqFunc = function(oldQ, newQ, probFld)	{
 # reading in climai netcdf data
 ncpath = "J:\\Cai_data\\TCFD\\Flash Floods\\"
 ncVarFileName = 'maxdis'
-saveDate = '15NOV2022'
-rcpScenarios = c(26, 60)
+saveDate = '28NOV2022'
+rcpScenarios = c(26, 60, 85)
 recurIntrvls = c(10, 20, 50, 100, 200, 500)
 valueType = 1:3		# recurrence interval, significance
 whichDecades = seq(10,90,10)
@@ -80,8 +80,6 @@ nc_lon = ncvar_get(ncin_dummy, 'lon')
 myMissingData = NA
 fldRecurArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(recurIntrvls) * length(valueType) * length(rcpScenarios)), 
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(recurIntrvls), length(valueType), length(rcpScenarios)))
-
-
 
 
 for(thisScen in 1:length(rcpScenarios))	{
@@ -206,47 +204,47 @@ for(thisScen in 1:length(rcpScenarios))	{
 				
 				theDates = datesSeq1019
 				theValues = nc_yr10s
-				fldRecurArray[j, i, 1, , 2, thisScen] = cor.test(theDates, theValues)$p.value 
+				fldRecurArray[j, i, 1, , 2, thisScen] = cor.test(theDates, theValues, method='spearman')$p.value 
 				fldRecurArray[j, i, 1, , 3, thisScen] = cor.test(theDates, theValues)$estimate
 
 				theDates = c(theDates, datesSeq2029)
 				theValues = c(theValues, nc_yr20s)
-				fldRecurArray[j, i, 2, , 2, thisScen] = cor.test(theDates, theValues)$p.value 
+				fldRecurArray[j, i, 2, , 2, thisScen] = cor.test(theDates, theValues, method='spearman')$p.value 
 				fldRecurArray[j, i, 2, , 3, thisScen] = cor.test(theDates, theValues)$estimate
 
 				theDates = c(theDates, datesSeq3039)
 				theValues = c(theValues, nc_yr30s)
-				fldRecurArray[j, i, 3, , 2, thisScen] = cor.test(theDates, theValues)$p.value 
+				fldRecurArray[j, i, 3, , 2, thisScen] = cor.test(theDates, theValues, method='spearman')$p.value 
 				fldRecurArray[j, i, 3, , 3, thisScen] = cor.test(theDates, theValues)$estimate
 
 				theDates = c(theDates, datesSeq4049)
 				theValues = c(theValues, nc_yr40s)
-				fldRecurArray[j, i, 4, , 2, thisScen] = cor.test(theDates, theValues)$p.value 
+				fldRecurArray[j, i, 4, , 2, thisScen] = cor.test(theDates, theValues, method='spearman')$p.value 
 				fldRecurArray[j, i, 4, , 3, thisScen] = cor.test(theDates, theValues)$estimate
 
 				theDates = c(theDates, datesSeq5059)
 				theValues = c(theValues, nc_yr50s)
-				fldRecurArray[j, i, 5, , 2, thisScen] = cor.test(theDates, theValues)$p.value 
+				fldRecurArray[j, i, 5, , 2, thisScen] = cor.test(theDates, theValues, method='spearman')$p.value 
 				fldRecurArray[j, i, 5, , 3, thisScen] = cor.test(theDates, theValues)$estimate
 
 				theDates = c(theDates, datesSeq6069)
 				theValues = c(theValues, nc_yr60s)
-				fldRecurArray[j, i, 6, , 2, thisScen] = cor.test(theDates, theValues)$p.value 
+				fldRecurArray[j, i, 6, , 2, thisScen] = cor.test(theDates, theValues, method='spearman')$p.value 
 				fldRecurArray[j, i, 6, , 3, thisScen] = cor.test(theDates, theValues)$estimate
 
 				theDates = c(theDates, datesSeq7079)
 				theValues = c(theValues, nc_yr70s)
-				fldRecurArray[j, i, 7, , 2, thisScen] = cor.test(theDates, theValues)$p.value 
+				fldRecurArray[j, i, 7, , 2, thisScen] = cor.test(theDates, theValues, method='spearman')$p.value 
 				fldRecurArray[j, i, 7, , 3, thisScen] = cor.test(theDates, theValues)$estimate
 
 				theDates = c(theDates, datesSeq8089)
 				theValues = c(theValues, nc_yr80s)
-				fldRecurArray[j, i, 8, , 2, thisScen] = cor.test(theDates, theValues)$p.value 
+				fldRecurArray[j, i, 8, , 2, thisScen] = cor.test(theDates, theValues, method='spearman')$p.value 
 				fldRecurArray[j, i, 8, , 3, thisScen] = cor.test(theDates, theValues)$estimate
 
 				theDates = c(theDates, datesSeq9099)
 				theValues = c(theValues, nc_yr90s)
-				fldRecurArray[j, i, 9, , 2, thisScen] = cor.test(theDates, theValues)$p.value 
+				fldRecurArray[j, i, 9, , 2, thisScen] = cor.test(theDates, theValues, method='spearman')$p.value 
 				fldRecurArray[j, i, 9, , 3, thisScen] = cor.test(theDates, theValues)$estimate
 				
 			}
@@ -258,7 +256,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_close(ncin_miroc)
 }
 saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out4.rds'))
-
+fldRccurArray = readRDS(file=paste0(ncpath, 'data_out4.rds'))
 
 #names(dim(fldRecurArray)) = c('lon', 'lat', 'decade', 'recurInterval', 'rcpScen')
 #ArrayToNc(list(fldRecurArray = fldRecurArray, lon = nc_lon, lat = nc_lat, decade = seq(10,90,10), recurInterval = recurIntrvls), file_path = 'ex.nc')
@@ -320,6 +318,10 @@ image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,3,1])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,1,2] - nc_testDat[,,1,1,1,2])
 
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2,3])
+
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,1,3] - nc_testDat[,,1,1,1,3])
 
 
 
@@ -434,7 +436,7 @@ customerCsv = 'Corbion_Locations_Nov2022 - Sheet1.csv' #'Richs-sample-locations.
 customerTable = fread(paste0(customerPath, customerCsv))
 
 	# defining rcp scenarios, recurrence intervals, and decades of interest; this should not change for the foreseeable future
-rcpScenarios = c('RCP 2.6', 'RCP 6.0')
+rcpScenarios = c('RCP 2.6', 'RCP 6.0', 'RCP 8.5')
 recurIntrvls = c(10, 20, 50, 100, 200, 500)
 whichDecades = seq(10,90,10)
 
