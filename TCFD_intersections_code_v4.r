@@ -1,7 +1,8 @@
 library(data.table)
 library(ncdf4)
 
-userName = 'Corbion'	#'HMClause'
+	# corbion
+userName = 'Corbion'	
 hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\'
 thisDate = Sys.Date()
@@ -9,8 +10,57 @@ thisDate = Sys.Date()
 customerTable = fread(paste0(customerFolder, 'Corbion_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'poopies')
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\Corbion_dave_f_hazards_nov_30.csv'
+appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\Corbion_temp_precip_hazards_dec_6 - Corbion_temp_precip_hazards_dec_6.csv'
+
+	# ITC
+userName = 'ITC'	
+hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\'
+thisDate = Sys.Date()
+
+customerTable = fread(paste0(customerFolder, 'ITC_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Scores.csv'))				
+appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\ITC_temp_precip_hazards_dec_6 - ITC_temp_precip_hazards_dec_6.csv'
+
+	# ITC - Water
+userName = 'ITC - Water'	
+hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\'
+thisDate = Sys.Date()
+
+customerTable = fread(paste0(customerFolder, 'ITC_Locations_Dec2022 - Water Exposure.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Scores.csv'))				
+appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\ITC_temp_precip_hazards_dec_6 - ITC_temp_precip_hazards_dec_6.csv'
+
+	# Driscolls
+userName = 'Driscolls'	
+hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Driscolls_Dec2022\\'
+thisDate = Sys.Date()
+
+customerTable = fread(paste0(customerFolder, 'Driscolls_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_Driscolls_Dec2022 - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Driscolls_Dec2022 - Hazard Scores.csv'))				
+appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Driscolls_Dec2022\\Driscolls_temp_precip_hazards_dec_6 - Driscolls_temp_precip_hazards_dec_6.csv'
+
+
+	# HMClause
+userName = 'HMClause'	
+hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\'
+thisDate = Sys.Date()
+
+customerTable = fread(paste0(customerFolder, 'HMClause_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Scores.csv'))				
+appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\HMClause_temp_precip_hazards_dec_6 - HMClause_temp_precip_hazards_dec_6.csv'
 
 ############################################################################################
 ## basic exposure data
@@ -18,7 +68,8 @@ dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, L
 	Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 	Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
 	Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA)
-	
+
+iter = 0
 for(thisHazard in 6:ncol(customerTable))	{
 	if(any(customerTable[, ..thisHazard]))	{
 		if(names(customerTable)[thisHazard] %in% appendedHazardNames)	{	
@@ -81,12 +132,22 @@ for(thisHazard in 6:ncol(customerTable))	{
 					print(c(thisHazard, thisHazardMeasure, thisLocation))
 				}
 				nc_close(hazardMeasureNC)
+				iter = iter + 1
+				fwrite(dataOutput[-1,], paste0(customerFolder, 'temp_out_', iter, '.csv'))
+				dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
+					Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
+					Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
+					Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA)
 			}
 		}
 	}
 }
-dataOutput = dataOutput[-1,]
-fwrite(dataOutput, paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
+finalOutput = fread(paste0(customerFolder, 'temp_out_', 1, '.csv'))
+for(thisIter in 2:iter)	{
+	finalOutput = rbind(finalOutput, fread(paste0(customerFolder, 'temp_out_', thisIter, '.csv')))
+}
+
+fwrite(finalOutput, paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
 
 
 
@@ -293,7 +354,7 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 
 			} # for each rcp scenario
 		}	else	{	# if there are not historical floods out to 500 yrs
-			dataOutput = rbind(dataOutput,
+			dataOutput = rbind(rbind(rbind(dataOutput,
 				data.table(
 					User = userName,
 					Location = customerTable$Location[j],
@@ -315,7 +376,7 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 					Relative_Hazard_Score_Number = NA,
 					Trend_Aggregated_For_Looker = NA,
 					Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
-					Advanced_Data_Measures_Units = "Yr Flood"), 
+					Advanced_Data_Measures_Units = "Yr Flood")), 
 				data.table(
 					User = userName,
 					Location = customerTable$Location[j],
@@ -337,7 +398,7 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 					Relative_Hazard_Score_Number = NA,
 					Trend_Aggregated_For_Looker = NA,
 					Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
-					Advanced_Data_Measures_Units = "Yr Flood"), 
+					Advanced_Data_Measures_Units = "Yr Flood")), 
 				data.table(
 					User = userName,
 					Location = customerTable$Location[j],
@@ -359,8 +420,7 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 					Relative_Hazard_Score_Number = NA,
 					Trend_Aggregated_For_Looker = NA,
 					Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
-					Advanced_Data_Measures_Units = "Yr Flood"), 				
-				)
+					Advanced_Data_Measures_Units = "Yr Flood"))
 		}
 		print(c(j, thisIntrvl))
 	}
@@ -401,14 +461,15 @@ specializedOutputs = fread(paste0(customerFolder, fileName, thisDate, '.csv'))
 dataOutput = merge(mainHazardOutputs,  specializedOutputs, all = TRUE)
 dataOutput = merge(dataOutput, appendedOutputs, all = TRUE)
 #dataOutput = merge(specializedOutputs, appendedOutputs, all = TRUE)
+allHazards = unique(dataOutput$Hazard)
 
 theScenarios = c('RCP 2.6', 'RCP 4.5', 'RCP 6.0', 'RCP 8.5')
 
 for(thisDecade in unique(dataOutput$Decade))	{
-	for(thisScen in 1:length(theScenarios))	{
+	for(thisScen in c(1,3,4))	{
 		for(thisLoc in unique(dataOutput$Location))	{
 			avgOfAllHazards = NULL
-			for(thisHazard in unique(dataOutput$Hazard))	{
+			for(thisHazard in allHazards)	{
 				newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard)$Percentile_Score
 					# catching exceptions for when we do not have 4.5 or 8.5
 				if(any(is.na(newHazard)))	{
@@ -466,20 +527,34 @@ signifiIncreaseRows = which(dataOutput$Decadal_Trend_Significance < 0.5 & dataOu
 dataOutput$Trend_Aggregated_For_Looker[signifiDecreaseRows] = dataOutput$Decadal_Trend_Strength[signifiDecreaseRows]
 dataOutput$Trend_Aggregated_For_Looker[signifiIncreaseRows] = dataOutput$Decadal_Trend_Strength[signifiIncreaseRows]
 
-fwrite(dataOutput, paste0(customerFolder, 'processedOutputForAllHazards_', thisDate, '.csv'))
+fwrite(dataOutput, paste0(customerFolder, 'processedOutputForAllHazards_', userName, '_', thisDate, '.csv'))
+	
+summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Water Demand'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazard == 'Aggregate Climate Score'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	gg = data.frame(country = unique(dataOutput$Region))
+for(j in unique(dataOutput$Decade))	{
+	hh = NULL
+	for(i in unique(dataOutput$Region)){
+#		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Aggregate Climate Score' & Decade == j)$Percentile))
+#		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Drought' & Decade == j)$Percentile))
+#		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Water Availability' & Decade == j)$Percentile))
+#		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Water Demand' & Decade == j)$Percentile))
+		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Snow Pack' & Decade == j)$Percentile))
+		print(i)
+	}
+	print(j)
+	gg = cbind(gg, hh)
+}
+
+names(gg) = c('Country', 2010,2020,2030,2040,2050,2060,2070,2080,2090)
+fwrite(gg, 'J://Downloads//medianSWEScore.csv')
+
+
+
 	
 	
 	

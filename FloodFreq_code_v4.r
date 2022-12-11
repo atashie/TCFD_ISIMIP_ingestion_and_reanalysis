@@ -5,7 +5,7 @@ library(data.table)
 library(sf)
 	sf::sf_use_s2(FALSE) # for problem with intersecting spherical w flat
 library(lubridate)
-library(ddplyr) # for left_join() merging by date
+library(dplyr) # for left_join() merging by date
 library(ncdf4)
 library(magrittr)
 library(maptools)
@@ -61,7 +61,7 @@ newFldFrqFunc = function(oldQ, newQ, probFld)	{
 # reading in climai netcdf data
 ncpath = "J:\\Cai_data\\TCFD\\Flash Floods\\"
 ncVarFileName = 'maxdis'
-saveDate = '28NOV2022'
+saveDate = '10DEC2022'
 rcpScenarios = c(26, 60, 85)
 recurIntrvls = c(10, 20, 50, 100, 200, 500)
 valueType = 1:3		# recurrence interval, significance
@@ -107,15 +107,15 @@ for(thisScen in 1:length(rcpScenarios))	{
 	missing_data = 1.00000002004088e+20
 
 
-	dates10s = which(year(nc_date) == 2006)[1]:which(year(nc_date) == 2025)[12]
-	dates20s = which(year(nc_date) == 2016)[1]:which(year(nc_date) == 2035)[12]
-	dates30s = which(year(nc_date) == 2026)[1]:which(year(nc_date) == 2045)[12]
-	dates40s = which(year(nc_date) == 2036)[1]:which(year(nc_date) == 2055)[12]
-	dates50s = which(year(nc_date) == 2046)[1]:which(year(nc_date) == 2065)[12]
-	dates60s = which(year(nc_date) == 2056)[1]:which(year(nc_date) == 2075)[12]
-	dates70s = which(year(nc_date) == 2066)[1]:which(year(nc_date) == 2085)[12]
-	dates80s = which(year(nc_date) == 2076)[1]:which(year(nc_date) == 2095)[12]
-	dates90s = which(year(nc_date) == 2086)[1]:which(year(nc_date) == 2099)[12]
+	dates10s = which(year(nc_date) == 2006)[1]:which(year(nc_date) == 2035)[12]
+	dates20s = which(year(nc_date) == 2006)[1]:which(year(nc_date) == 2045)[12]
+	dates30s = which(year(nc_date) == 2015)[1]:which(year(nc_date) == 2055)[12]
+	dates40s = which(year(nc_date) == 2025)[1]:which(year(nc_date) == 2065)[12]
+	dates50s = which(year(nc_date) == 2035)[1]:which(year(nc_date) == 2075)[12]
+	dates60s = which(year(nc_date) == 2045)[1]:which(year(nc_date) == 2085)[12]
+	dates70s = which(year(nc_date) == 2055)[1]:which(year(nc_date) == 2095)[12]
+	dates80s = which(year(nc_date) == 2065)[1]:which(year(nc_date) == 2099)[12]
+	dates90s = which(year(nc_date) == 2075)[1]:which(year(nc_date) == 2099)[12]
 
 
 	for(i in 1:length(nc_lat))	{

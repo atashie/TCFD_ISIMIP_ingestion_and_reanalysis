@@ -21,7 +21,7 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\RootZoneSoilMoisture\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'rootmoist'
-saveDate = '22NOV2022'
+saveDate = '05DEC2022'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -90,6 +90,9 @@ for(thisScen in 1:length(rcpScenarios))	{
 				nc_8089 = c(nc_gfdl[j,i,dates8089],nc_hadgem[j,i,dates8089],nc_ipsl[j,i,dates8089],nc_miroc[j,i,dates8089]) 		
 				nc_9099 = c(nc_gfdl[j,i,dates9099],nc_hadgem[j,i,dates9099],nc_ipsl[j,i,dates9099],nc_miroc[j,i,dates9099]) 			
 
+				histAvg = mean(nc_1019)
+				histQuant20 =  histAvg * 0.80
+
 				datesSeq1019 = rep(seq(first(dates1019), last(dates1019), 12), 4)
 				datesSeq2029 = rep(seq(first(dates2029), last(dates2029), 12), 4)
 				datesSeq3039 = rep(seq(first(dates3039), last(dates3039), 12), 4)
@@ -104,47 +107,47 @@ for(thisScen in 1:length(rcpScenarios))	{
 				data1019 = NULL
 				for(kh in 1:(length(nc_1019)/12))	{
 					data1019 = c(data1019,
-						length(which(nc_1019[(1:12)+(12*(kh-1))] < 30)))
+						max((histQuant20 - (nc_1019[(1:12)+(12*(kh-1))])) / histAvg, 0))
 				}
 				data2029 = NULL
 				for(kh in 1:(length(nc_2029)/12))	{
 					data2029 = c(data2029,
-						length(which(nc_2029[(1:12)+(12*(kh-1))] < 30)))
+						max((histQuant20 - (nc_2029[(1:12)+(12*(kh-1))])) / histAvg, 0))
 				}
 				data3039 = NULL
 				for(kh in 1:(length(nc_3039)/12))	{
 					data3039 = c(data3039,
-						length(which(nc_3039[(1:12)+(12*(kh-1))] < 30)))
+						max((histQuant20 - (nc_3039[(1:12)+(12*(kh-1))])) / histAvg, 0))
 				}
 				data4049 = NULL
 				for(kh in 1:(length(nc_4049)/12))	{
 					data4049 = c(data4049,
-						length(which(nc_4049[(1:12)+(12*(kh-1))] < 30)))
+						max((histQuant20 - (nc_4049[(1:12)+(12*(kh-1))])) / histAvg, 0))
 				}
 				data5059 = NULL
 				for(kh in 1:(length(nc_5059)/12))	{
 					data5059 = c(data5059,
-						length(which(nc_5059[(1:12)+(12*(kh-1))] < 30)))
+						max((histQuant20 - (nc_5059[(1:12)+(12*(kh-1))])) / histAvg, 0))
 				}
 				data6069 = NULL
 				for(kh in 1:(length(nc_6069)/12))	{
 					data6069 = c(data6069,
-						length(which(nc_6069[(1:12)+(12*(kh-1))] < 30)))
+						max((histQuant20 - (nc_6069[(1:12)+(12*(kh-1))])) / histAvg, 0))
 				}
 				data7079 = NULL
 				for(kh in 1:(length(nc_7079)/12))	{
 					data7079 = c(data7079,
-						length(which(nc_7079[(1:12)+(12*(kh-1))] < 30)))
+						max((histQuant20 - (nc_7079[(1:12)+(12*(kh-1))])) / histAvg, 0))
 				}
 				data8089 = NULL
 				for(kh in 1:(length(nc_8089)/12))	{
 					data8089 = c(data8089,
-						length(which(nc_8089[(1:12)+(12*(kh-1))] < 30)))
+						max((histQuant20 - (nc_8089[(1:12)+(12*(kh-1))])) / histAvg, 0))
 				}
 				data9099 = NULL
 				for(kh in 1:(length(nc_9099)/12))	{
 					data9099 = c(data9099,
-						length(which(nc_9099[(1:12)+(12*(kh-1))] < 30)))
+						max((histQuant20 - (nc_9099[(1:12)+(12*(kh-1))])) / histAvg, 0))
 				}
 
 					# defining absolute values
@@ -226,10 +229,11 @@ histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
 maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
-histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs60]
-histQuants = quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, length.out=100))
+histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
+histQuants = quantile(c(histDatSubset26, histDatSubset85, histDatSubset60), seq(0.01, 1, length.out=100))
+histQuants
 
-#	# removing zeroes from non-impacted regions
+	# removing zeroes from non-impacted regions
 #maskedLocs26_zeroes = which(is.na(dataOutArray[ , , 1, 1, 1]) | dataOutArray[ , , 1, 1, 1] == 0)
 #histDatSubset26_zeroes =  dataOutArray[ , , 1, 1, 1][-maskedLocs26_zeroes]
 #maskedLocs60_zeroes = which(is.na(dataOutArray[ , , 1, 2, 1]) | dataOutArray[ , , 1, 2, 1] == 0)
@@ -247,13 +251,13 @@ for(i in 1:length(whichDecades))	{
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
-	dataOutArray[ , , i, 3, 2][maskedLocs60] = NA
+	dataOutArray[ , , i, 3, 2][maskedLocs85] = NA
 }
 
 
 
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Root Zone Soil Moisture - avg number of months below 30cm'))
+metadata = list(tcfdVariable = list(units = 'Drought Intensity - annual soil moisture deficit ratios'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
@@ -288,10 +292,10 @@ attr(valueClass, 'variables') = metadata
 names(dim(valueClass)) = 'valueClass'
 
 	# saving ncdf
-ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, ncVarFileName, 'dryMonths_processed.nc'))
+ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, ncVarFileName, '_WRIbasedDroughtSeverity_processed.nc'))
 
 	# testing output, squinty eye test
-myNC = nc_open(paste0(ncOutputPath, ncVarFileName, 'dryMonths_processed.nc'))
+myNC = nc_open(paste0(ncOutputPath, ncVarFileName, '_WRIbasedDroughtSeverity_processed.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'tcfdVariable')
@@ -300,12 +304,13 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,2,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,1])
+
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,3])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,4])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,5])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,6])
 
-image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,2] - nc_testDat[,,1,2,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,1,2])
 
-image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,1] - nc_testDat[,,1,1,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,1] - nc_testDat[,,1,2,1])

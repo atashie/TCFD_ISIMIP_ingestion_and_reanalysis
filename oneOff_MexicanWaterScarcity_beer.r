@@ -41,6 +41,23 @@ thisHaz$plotDat[thisHaz$plotDat < quantile(thisHaz$plotDat, 0.01)] = quantile(th
 thisHaz$plotDat = thisHaz$plotDat + abs(min(thisHaz$plotDat))
 thisHaz$plotDat = (1 - (thisHaz$plotDat / max(thisHaz$plotDat)))^.07
 
+borders = subset(world, name_sort=='Mexico')
+borders = subset(world, name_sort=='United States of America')
+borders = subset(world, subregion=='Northern America')
+
+
+borders_2 = subset(world, name_sort=='Mexico')
+borders_1 = subset(world, name_sort=='Mexico')
+
+mask <- borders_1 %>%
+st_bbox() %>%
+st_as_sfc() %>%
+st_buffer(5) %>%
+st_difference(borders_2)# %>%
+#st_as_sf()
+
+
+
 
 ggplot() +
 	geom_sf(data = subset(thisHaz, Decade == '2020s'), size=4.6, shape=15, aes(col=plotDat)) +
@@ -58,16 +75,6 @@ ggplot() +
 	coord_sf(xlim = c(-118, -86.7), ylim = c(14.8, 32.63), expand = FALSE)
 #	
 
-
-
-borders = subset(world, name_sort=='Mexico')
-
-mask <- borders %>%
-st_bbox() %>%
-st_as_sfc() %>%
-st_buffer(5) %>%
-st_difference(borders) %>%
-st_as_sf()
 
 
 

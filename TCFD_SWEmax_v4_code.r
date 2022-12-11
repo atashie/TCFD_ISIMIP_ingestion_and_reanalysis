@@ -126,7 +126,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 				data7079 = NULL
 				for(kh in 1:(length(nc_7079)/12))	{
 					data7079 = c(data7079,
-						median(nc_7079[(1:12)+(12*(kh-1))]))
+						max(nc_7079[(1:12)+(12*(kh-1))]))
 				}
 				data8089 = NULL
 				for(kh in 1:(length(nc_8089)/12))	{
