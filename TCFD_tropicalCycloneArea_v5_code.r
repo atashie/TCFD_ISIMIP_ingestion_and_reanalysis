@@ -97,7 +97,6 @@ for(thisScen in 1:length(rcpScenarios))	{
 				nc_9099 = c(nc_gfdl[j,i,dates9099],nc_hadgem[j,i,dates9099],nc_ipsl[j,i,dates9099],nc_miroc[j,i,dates9099]) 			
 
 
-
 					# defining absolute values
 				dataOutArray[j, i, 1, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt1019,4))) * 100
 				dataOutArray[j, i, 2, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt2029,4))) * 100

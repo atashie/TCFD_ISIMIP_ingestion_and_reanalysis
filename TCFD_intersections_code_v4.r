@@ -516,7 +516,7 @@ for(i in 1:length(scenariosRename))	{
 	
 	# identifying relative hazard scores
 for(thisRow in 1:nrow(relHazScores))	{
-	dataOutput$Relative_Hazard_Score[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = relHazScores$Hazard_Common_Name[thisRow]
+	dataOutput$Relative_Hazard_Score[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = paste0(thisRow, '. ', relHazScores$Hazard_Common_Name[thisRow])
 	dataOutput$Relative_Hazard_Score_Number[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = thisRow
 }		
 			
@@ -533,7 +533,11 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & H
 summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Hurricanes' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
 	
+	
+	
+# sample analysis
 	
 	gg = data.frame(country = unique(dataOutput$Region))
 for(j in unique(dataOutput$Decade))	{
@@ -550,12 +554,151 @@ for(j in unique(dataOutput$Decade))	{
 	gg = cbind(gg, hh)
 }
 
+
 names(gg) = c('Country', 2010,2020,2030,2040,2050,2060,2070,2080,2090)
 fwrite(gg, 'J://Downloads//medianSWEScore.csv')
 
 
+dataSub = subset(dataOutput, Scenario == "Middle of the Road" & Hazard_Measure =='Groundwater Recharge (mm per yr)' & Region =="China")
+#dataSub = subset(dataOutput, Scenario == "Middle of the Road" & Hazard_Measure =='Root Zone Soil Moisture (mm per yr)' & Region =="China")
+plot(subset(chinaSM, Location == unique(chinaSM$Location)[1])$Trend_Agg)
+for(i in unique(chinaSM$Location)){ lines(subset(chinaSM, Location == i)$Trend_Agg)}
 
-	
+trend_avg = matrix(NA, nrow=9, ncol=6)
+trend_sum = matrix(NA, nrow=9, ncol=6)
+trend_diff = matrix(NA, nrow=9, ncol=6)
+trend_signif_diff = matrix(NA, nrow=9, ncol=6)
+iter = 0
+for(i in unique(dataSub$Decade))	{
+	iter = iter + 1
+	trend_avg[iter,] = summary(subset(dataSub, Decade == i)$Trend_Agg)
+	trend_sum[iter,] = summary(subset(dataSub, Decade == i)$Trend_Agg) * iter
+	trend_diff[iter,] = summary(subset(dataSub, Decade == i)$Raw_Hazard_Value - subset(dataSub, Decade == 2010)$Raw_Hazard_Value)
+	trend_signif_diff[iter,] = summary(subset(dataSub, Decade == i & Long_Term_Trend_Significance < 0.05)$Raw_Hazard_Value - subset(dataSub, Decade == 2010 & Long_Term_Trend_Significance < 0.05)$Raw_Hazard_Value)
+}
+trend_avg=as.data.frame(trend_avg)
+trend_sum=as.data.frame(trend_sum)
+trend_diff=as.data.frame(trend_diff)
+trend_signif_diff=as.data.frame(trend_signif_diff)
+names(trend_avg) = c('Min','Q1','Med','Mean','Q3','Max')
+names(trend_sum) = c('Min','Q1','Med','Mean','Q3','Max')
+names(trend_diff) = c('Min','Q1','Med','Mean','Q3','Max')
+names(trend_signif_diff) = c('Min','Q1','Med','Mean','Q3','Max')
+row.names(trend_avg) = seq(2010,2090,10)
+row.names(trend_sum) = seq(2010,2090,10)
+row.names(trend_diff) = seq(2010,2090,10)
+row.names(trend_signif_diff) = seq(2010,2090,10)
+fwrite(trend_sum, 'total_rate_of_change_by_decade_GW.csv')
+fwrite(trend_avg, 'avg_rate_of_change_by_decade_GW.csv')
+fwrite(trend_diff, 'median_difference_by_decade_GW.csv')
+fwrite(trend_signif_diff, 'median_difference_of_significant_differences_by_decade_GW.csv')
+
+
+
+dataSummary = data.frame(Country = NA, Region = NA, Measure = NA, the_2010s = NA, the_2020s = NA, the_2030s = NA, the_2040s = NA, the_2050s = NA, the_2060s = NA, the_2070s = NA, the_2080s = NA, the_2090s = NA)
+for(thisMeasure in c("Groundwater Recharge (mm per yr)", "Root Zone Soil Moisture (mm per yr)", "Surface Water (annual total in cubic km)")){
+	measureOutput = subset(dataOutput, Hazard_Measure == thisMeasure)
+	for(cc in unique(measureOutput$Region)){
+		countryOutput = subset(measureOutput, Region == cc)
+		dataSummary = rbind(dataSummary,
+			data.frame(
+				Country = cc,
+				Region = "All",
+				Measure = thisMeasure,
+				the_2010s = mean(subset(countryOutput, Decade == 2010)$Trend_Aggregated_For_Looker),
+				the_2020s = mean(subset(countryOutput, Decade == 2020)$Trend_Aggregated_For_Looker),
+				the_2030s = mean(subset(countryOutput, Decade == 2030)$Trend_Aggregated_For_Looker),
+				the_2040s = mean(subset(countryOutput, Decade == 2040)$Trend_Aggregated_For_Looker),
+				the_2050s = mean(subset(countryOutput, Decade == 2050)$Trend_Aggregated_For_Looker),
+				the_2060s = mean(subset(countryOutput, Decade == 2060)$Trend_Aggregated_For_Looker),
+				the_2070s = mean(subset(countryOutput, Decade == 2070)$Trend_Aggregated_For_Looker),
+				the_2080s = mean(subset(countryOutput, Decade == 2080)$Trend_Aggregated_For_Looker),
+				the_2090s = mean(subset(countryOutput, Decade == 2090)$Trend_Aggregated_For_Looker)
+		))
+
+		for(ss in unique(countryOutput$Subregion))	{
+			subregOutput = subset(countryOutput, Subregion == ss)	
+			dataSummary = rbind(dataSummary,
+				data.frame(
+					Country = cc,
+					Region = ss,
+					Measure = thisMeasure,
+					the_2010s = mean(subset(subregOutput, Decade == 2010)$Trend_Aggregated_For_Looker),
+					the_2020s = mean(subset(subregOutput, Decade == 2020)$Trend_Aggregated_For_Looker),
+					the_2030s = mean(subset(subregOutput, Decade == 2030)$Trend_Aggregated_For_Looker),
+					the_2040s = mean(subset(subregOutput, Decade == 2040)$Trend_Aggregated_For_Looker),
+					the_2050s = mean(subset(subregOutput, Decade == 2050)$Trend_Aggregated_For_Looker),
+					the_2060s = mean(subset(subregOutput, Decade == 2060)$Trend_Aggregated_For_Looker),
+					the_2070s = mean(subset(subregOutput, Decade == 2070)$Trend_Aggregated_For_Looker),
+					the_2080s = mean(subset(subregOutput, Decade == 2080)$Trend_Aggregated_For_Looker),
+					the_2090s = mean(subset(subregOutput, Decade == 2090)$Trend_Aggregated_For_Looker)
+			))
+		}
+	}
+}
+fwrite(dataSummary, 'Trends.csv')
+
+
+
+dataSummary = data.frame(Country = NA, Region = NA, Measure = NA, the_2010s = NA, the_2020s = NA, the_2030s = NA, the_2040s = NA, the_2050s = NA, the_2060s = NA, the_2070s = NA, the_2080s = NA, the_2090s = NA)
+for(thisMeasure in c("Groundwater Recharge (mm per yr)", "Root Zone Soil Moisture (mm per yr)", "Surface Water (annual total in cubic km)")){
+	measureOutput = subset(dataOutput, Hazard_Measure == thisMeasure & Long_Term_Trend_Significance < 0.05)
+	for(cc in unique(measureOutput$Region)){
+		countryOutput = subset(measureOutput, Region == cc)
+		dataSummary = rbind(dataSummary,
+			data.frame(
+				Country = cc,
+				Region = "All",
+				Measure = thisMeasure,
+				the_2010s = mean(subset(countryOutput, Decade == 2010)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2020s = mean(subset(countryOutput, Decade == 2020)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2030s = mean(subset(countryOutput, Decade == 2030)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2040s = mean(subset(countryOutput, Decade == 2040)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2050s = mean(subset(countryOutput, Decade == 2050)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2060s = mean(subset(countryOutput, Decade == 2060)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2070s = mean(subset(countryOutput, Decade == 2070)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2080s = mean(subset(countryOutput, Decade == 2080)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2090s = mean(subset(countryOutput, Decade == 2090)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE)
+		))
+
+		for(ss in unique(countryOutput$Subregion))	{
+			subregOutput = subset(countryOutput, Subregion == ss)	
+			dataSummary = rbind(dataSummary,
+				data.frame(
+					Country = cc,
+					Region = ss,
+					Measure = thisMeasure,
+				the_2010s = mean(subset(subregOutput, Decade == 2010)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2020s = mean(subset(subregOutput, Decade == 2020)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2030s = mean(subset(subregOutput, Decade == 2030)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2040s = mean(subset(subregOutput, Decade == 2040)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2050s = mean(subset(subregOutput, Decade == 2050)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2060s = mean(subset(subregOutput, Decade == 2060)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2070s = mean(subset(subregOutput, Decade == 2070)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2080s = mean(subset(subregOutput, Decade == 2080)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+				the_2090s = mean(subset(subregOutput, Decade == 2090)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE)
+				))
+		}
+	}
+}
+
+fwrite(dataSummary, 'Differences.csv')
+fwrite(dataSummary[which(abs(dataSummary[,-c(1:3)] , 'Differences.csv')
+
+
+
+
+
+
+
+
+
+
+gg = fread('J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\processedOutputForAllHazards_ITC - Water_2022-12-07.csv')
+for(i in unique(gg$Decade))	{
+	print(sum(subset(gg, Decade == i & Scenario == 'Low Emissions' & Hazard_Measure == 'Surface Water (annual total in cubic km)' & Region == 'India')$Trend_Aggregated_For_Looker))
+}	
+
 	
 	
 	
