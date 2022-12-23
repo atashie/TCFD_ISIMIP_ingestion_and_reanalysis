@@ -19,12 +19,30 @@ whichDecades = seq(10,90,10)
 valueType = 1:6
 
 
-	# reading in dummy data for lat lons
-ncname_dummy = paste0('lange2020_ke-tg-meanfield_gfdl-esm2m_ewembi_rcp60_nosoc_co2_let_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
-ncin_dummy = nc_open(paste0(ncpath, ncname_dummy))
-nc_lat = ncvar_get(ncin_dummy, 'lat')	# lat is given from high to low
-nc_lon = ncvar_get(ncin_dummy, 'lon')
+	# initializing start decade
+initDates = 1:14
+ncname_gfdl = paste0('lange2020_ke-tg-meanfield_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
+nc_gfdl_init = ncvar_get(ncin_gfdl,ncVarFileName)[ , , initDates]	# lon, lat, time
+	# identifying lat lons before closing data
+nc_lat = ncvar_get(ncin_gfdl, 'lat')	# lat is given from high to low
+nc_lon = ncvar_get(ncin_gfdl, 'lon')
+nc_close(ncin_gfdl)
 
+ncname_hadgem = paste0('lange2020_ke-tg-meanfield_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
+nc_hadgem_init = ncvar_get(ncin_hadgem,ncVarFileName)[ , , initDates]	# lon, lat, time
+nc_close(ncin_hadgem)
+
+ncname_ipsl = paste0('lange2020_ke-tg-meanfield_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
+nc_ipsl_init = ncvar_get(ncin_ipsl,ncVarFileName)[ , , initDates]	# lon, lat, time
+nc_close(ncin_ipsl)
+
+ncname_miroc = paste0('lange2020_ke-tg-meanfield_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
+nc_miroc_init = ncvar_get(ncin_miroc,ncVarFileName)[ , , initDates]	# lon, lat, time
+nc_close(ncin_miroc)
 
 	# array for holding outputs
 myMissingData = NA
@@ -54,112 +72,58 @@ for(thisScen in 1:length(rcpScenarios))	{
 
 	nc_date = as.Date("1661-01-01") + ncvar_get(ncin_miroc, 'time') * 365.25# time is months after 1661-1-1
 	nc_years = unique(year(nc_date))
+	numYears = length(nc_years)
 	missing_data = 1.00000002004088e+20
-
-	dates1019 = which(year(nc_date) == 2010):which(year(nc_date) == 2019)
-	dates2029 = which(year(nc_date) == 2020):which(year(nc_date) == 2029)
-	dates3039 = which(year(nc_date) == 2030):which(year(nc_date) == 2039)
-	dates4049 = which(year(nc_date) == 2040):which(year(nc_date) == 2049)
-	dates5059 = which(year(nc_date) == 2050):which(year(nc_date) == 2059)
-	dates6069 = which(year(nc_date) == 2060):which(year(nc_date) == 2069)
-	dates7079 = which(year(nc_date) == 2070):which(year(nc_date) == 2079)
-	dates8089 = which(year(nc_date) == 2080):which(year(nc_date) == 2089)
-	dates9099 = which(year(nc_date) == 2090):which(year(nc_date) == 2099)
-
-	wt1019 = c(seq(0.1,1,length.out = (2015 - 2006))^2, 1, rev(seq(0.1,1,length.out=(2099 - 2015)))^2)
-	wt2029 = c(seq(0.1,1,length.out = (2025 - 2006))^2, 1, rev(seq(0.1,1,length.out=(2099 - 2025)))^2)
-	wt3039 = c(seq(0.1,1,length.out = (2035 - 2006))^2, 1, rev(seq(0.1,1,length.out=(2099 - 2035)))^2)
-	wt4049 = c(seq(0.1,1,length.out = (2045 - 2006))^2, 1, rev(seq(0.1,1,length.out=(2099 - 2045)))^2)
-	wt5059 = c(seq(0.1,1,length.out = (2055 - 2006))^2, 1, rev(seq(0.1,1,length.out=(2099 - 2055)))^2)
-	wt6069 = c(seq(0.1,1,length.out = (2065 - 2006))^2, 1, rev(seq(0.1,1,length.out=(2099 - 2065)))^2)
-	wt7079 = c(seq(0.1,1,length.out = (2075 - 2006))^2, 1, rev(seq(0.1,1,length.out=(2099 - 2075)))^2)
-	wt8089 = c(seq(0.1,1,length.out = (2085 - 2006))^2, 1, rev(seq(0.1,1,length.out=(2099 - 2085)))^2)
-	wt9099 = c(seq(0.1,1,length.out = (2095 - 2006))^2, 1, rev(seq(0.1,1,length.out=(2099 - 2095)))^2)
 
 	for(i in 1:length(nc_lat))	{
 		for(j in 1:length(nc_lon))	{
-			nc_dummy = nc_gfdl[j,i,dates1019] # reading in one data set to test for nona
+			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				dat_gfdl = nc_gfdl[j,i,]
-				dat_hadgem = nc_hadgem[j,i,]
-				dat_ipsl = nc_ipsl[j,i,]
-				dat_miroc = nc_miroc[j,i,]
+				gfdl_yrly = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * 100
+				hadgem_yrly = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * 100
+				ipsl_yrly = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates])  * 100
+				miroc_yrly = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * 100
+			
+				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 35, n.points = numYears)$y
+				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 35, n.points = numYears)$y
+				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 35, n.points = numYears)$y
+				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 35, n.points = numYears)$y
 
-				nc_1019 = c(nc_gfdl[j,i,dates1019],nc_hadgem[j,i,dates1019],nc_ipsl[j,i,dates1019],nc_miroc[j,i,dates1019]) 
-				nc_2029 = c(nc_gfdl[j,i,dates2029],nc_hadgem[j,i,dates2029],nc_ipsl[j,i,dates2029],nc_miroc[j,i,dates2029]) 
-				nc_3039 = c(nc_gfdl[j,i,dates3039],nc_hadgem[j,i,dates3039],nc_ipsl[j,i,dates3039],nc_miroc[j,i,dates3039]) 
-				nc_4049 = c(nc_gfdl[j,i,dates4049],nc_hadgem[j,i,dates4049],nc_ipsl[j,i,dates4049],nc_miroc[j,i,dates4049]) 
-				nc_5059 = c(nc_gfdl[j,i,dates5059],nc_hadgem[j,i,dates5059],nc_ipsl[j,i,dates5059],nc_miroc[j,i,dates5059]) 
-				nc_6069 = c(nc_gfdl[j,i,dates6069],nc_hadgem[j,i,dates6069],nc_ipsl[j,i,dates6069],nc_miroc[j,i,dates6069]) 			
-				nc_7079 = c(nc_gfdl[j,i,dates7079],nc_hadgem[j,i,dates7079],nc_ipsl[j,i,dates7079],nc_miroc[j,i,dates7079]) 			
-				nc_8089 = c(nc_gfdl[j,i,dates8089],nc_hadgem[j,i,dates8089],nc_ipsl[j,i,dates8089],nc_miroc[j,i,dates8089]) 		
-				nc_9099 = c(nc_gfdl[j,i,dates9099],nc_hadgem[j,i,dates9099],nc_ipsl[j,i,dates9099],nc_miroc[j,i,dates9099]) 			
+#				dataQuantDiffs = diff(quantile(c(gfdl_yrly, hadgem_yrly, ipsl_yrly, miroc_yrly), c(0.25, 0.5, 0.75)))
+				dataSdDiffs = sd(c(gfdl_yrly, hadgem_yrly, ipsl_yrly, miroc_yrly))
 
-
-					# defining absolute values
-				dataOutArray[j, i, 1, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt1019,4))) * 100
-				dataOutArray[j, i, 2, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt2029,4))) * 100
-				dataOutArray[j, i, 3, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt3039,4))) * 100
-				dataOutArray[j, i, 4, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt4049,4))) * 100
-				dataOutArray[j, i, 5, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt5059,4))) * 100
-				dataOutArray[j, i, 6, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt6069,4))) * 100
-				dataOutArray[j, i, 7, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt7079,4))) * 100
-				dataOutArray[j, i, 8, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt8089,4))) * 100
-				dataOutArray[j, i, 9, thisScen, 1] = mean(weighted.mean(c(dat_gfdl, dat_hadgem, dat_ipsl, dat_miroc), rep(wt9099,4))) * 100
-
-
-					# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
-				theDates = rep(dates1019, 4)
-				dataOutArray[j, i, 1, thisScen, 3] = lm(nc_1019 ~ theDates)$coefficients[2] * 10 * 100
-				dataOutArray[j, i, 1, thisScen, 4] = cor.test(theDates, nc_1019, method='spearman')$p.value
-				
-				theDates = c(theDates, rep(dates2029, 4))
-				theValues =  c(nc_1019, nc_2029)
-				dataOutArray[j, i, 2, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * 100
-				dataOutArray[j, i, 2, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
-				
-				theDates = c(theDates, rep(dates3039, 4))
-				theValues =  c(nc_1019, nc_2029, nc_3039)
-				dataOutArray[j, i, 3, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * 100
-				dataOutArray[j, i, 3, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
-				
-				theDates = c(theDates, rep(dates4049, 4))
-				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049)
-				dataOutArray[j, i, 4, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * 100
-				dataOutArray[j, i, 4, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
-				
-				theDates = c(theDates, rep(dates5059, 4))
-				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059)
-				dataOutArray[j, i, 5, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * 100
-				dataOutArray[j, i, 5, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
-				
-				theDates = c(theDates, rep(dates6069, 4))
-				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069)
-				dataOutArray[j, i, 6, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * 100
-				dataOutArray[j, i, 6, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
-				
-				theDates = c(theDates, rep(dates7079, 4))
-				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079)
-				dataOutArray[j, i, 7, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * 100
-				dataOutArray[j, i, 7, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
-				
-				theDates = c(theDates, rep(dates8089, 4))
-				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079, nc_8089)
-				dataOutArray[j, i, 8, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * 100
-				dataOutArray[j, i, 8, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
-				
-				theDates = c(theDates, rep(dates9099, 4))
-				theValues =  c(nc_1019, nc_2029, nc_3039, nc_4049, nc_5059, nc_6069, nc_7079, nc_8089, nc_9099)
-				dataOutArray[j, i, 9, thisScen, 3] = lm(theValues ~ theDates)$coefficients[2] * 10 * 100
-				dataOutArray[j, i, 9, thisScen, 4] = cor.test(theDates, theValues, method='spearman')$p.value
-
+				for(thisDecade in 1:9)	{
+					theseYears = (thisDecade - 1) * 10 + 5:14
+						# defining absolute values
+					dataSmoothMed = median(c(gfdl_smth[theseYears], hadgem_smth[theseYears], ipsl_smth[theseYears], miroc_smth[theseYears]))
+					dataOutArray[j, i, thisDecade, thisScen, 1] = dataSmoothMed
+					dataOutArray[j, i, thisDecade, thisScen, 5] = max(dataSmoothMed - dataSdDiffs, 0)
+					dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + dataSdDiffs
+						# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
+					theseGfdl = gfdl_smth[theseYears]
+					theseHadgem = hadgem_smth[theseYears]
+					theseIpsl = ipsl_smth[theseYears]
+					theseMiroc =  miroc_smth[theseYears]
+						dataOutArray[j, i, thisDecade, thisScen, 3] = median(mblm(theseGfdl ~ theseYears)$coefficients[2],
+						mblm(theseHadgem ~ theseYears)$coefficients[2],
+						mblm(theseIpsl ~ theseYears)$coefficients[2],
+						mblm(theseMiroc ~ theseYears)$coefficients[2])
+					theseGfdl = gfdl_yrly[theseYears]
+					theseHadgem = hadgem_yrly[theseYears]
+					theseIpsl = ipsl_yrly[theseYears]
+					theseMiroc =  miroc_yrly[theseYears]
+					dataOutArray[j, i, thisDecade, thisScen, 4] = median(cor.test(theseYears, theseGfdl, method='spearman')$p.value,
+						cor.test(theseYears, theseHadgem, method='spearman')$p.value,
+						cor.test(theseYears, theseIpsl, method='spearman')$p.value,
+						cor.test(theseYears, theseMiroc, method='spearman')$p.value, na.rm=TRUE)
+				}	
 					
 					# calculating long-term trends (sens slope)
-				dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]
+#				dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]
 
 					# calculating long-term significance (spearmans)
-				dataOutArray[j, i, , thisScen, 6] = dataOutArray[j, i, 9, thisScen, 4]				
+#				dataOutArray[j, i, , thisScen, 6] = dataOutArray[j, i, 9, thisScen, 4]				
 
 			}
 		}
@@ -193,7 +157,7 @@ histDatSubset26_zeroes =  dataOutArray[ , , 1, 1, 1][-maskedLocs26_zeroes]
 maskedLocs60_zeroes = which(is.na(dataOutArray[ , , 1, 2, 1]) | dataOutArray[ , , 1, 2, 1] == 0)
 histDatSubset60_zeroes =  dataOutArray[ , , 1, 2, 1][-maskedLocs60_zeroes]
 histQuants = quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes), seq(0.01, 1, length.out=80))
-#oldHistQuants
+histQuants
 
 for(i in 1:length(whichDecades))	{
 	dataOutArray[ , , i, 1, 2] = 1
@@ -247,10 +211,10 @@ attr(valueClass, 'variables') = metadata
 names(dim(valueClass)) = 'valueClass'
 
 	# saving ncdf
-ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, ncVarFileName, '_processed.nc'))
+ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, ncVarFileName, 'v2_processed.nc'))
 
 	# testing output, squinty eye test
-myNC = nc_open(paste0(ncOutputPath, ncVarFileName, '_processed.nc'))
+myNC = nc_open(paste0(ncOutputPath, ncVarFileName, 'v2_processed.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'tcfdVariable')

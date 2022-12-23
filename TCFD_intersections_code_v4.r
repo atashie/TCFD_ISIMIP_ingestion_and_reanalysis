@@ -56,7 +56,7 @@ hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 customerFolder = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\'
 thisDate = Sys.Date()
 
-customerTable = fread(paste0(customerFolder, 'HMClause_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+customerTable = fread(paste0(customerFolder, 'HMClause_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Scores.csv'))				
 appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
