@@ -1,0 +1,4 @@
+library(sf)
+
+thegdb = st_read('J:\\Cai_data\\Waterways\\USwaterways.gdb')
+

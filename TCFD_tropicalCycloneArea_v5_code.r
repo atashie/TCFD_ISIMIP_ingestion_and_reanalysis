@@ -13,7 +13,7 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\TropicalCycloneArea\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'let'
-saveDate = '09DEC2022'
+saveDate = '23DEC2022'
 rcpScenarios = c(26, 60)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -21,7 +21,7 @@ valueType = 1:6
 
 	# initializing start decade
 initDates = 1:14
-ncname_gfdl = paste0('lange2020_ke-tg-meanfield_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_gfdl = paste0('lange2020_ke-tg-meanfield_gfdl-esm2m_ewembi_rcp26_nosoc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
 nc_gfdl_init = ncvar_get(ncin_gfdl,ncVarFileName)[ , , initDates]	# lon, lat, time
 	# identifying lat lons before closing data
@@ -29,17 +29,17 @@ nc_lat = ncvar_get(ncin_gfdl, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(ncin_gfdl, 'lon')
 nc_close(ncin_gfdl)
 
-ncname_hadgem = paste0('lange2020_ke-tg-meanfield_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_hadgem = paste0('lange2020_ke-tg-meanfield_hadgem2-es_ewembi_rcp26_nosoc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
 nc_hadgem_init = ncvar_get(ncin_hadgem,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_hadgem)
 
-ncname_ipsl = paste0('lange2020_ke-tg-meanfield_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_ipsl = paste0('lange2020_ke-tg-meanfield_ipsl-cm5a-lr_ewembi_rcp26_nosoc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
 nc_ipsl_init = ncvar_get(ncin_ipsl,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_ipsl)
 
-ncname_miroc = paste0('lange2020_ke-tg-meanfield_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_miroc = paste0('lange2020_ke-tg-meanfield_miroc5_ewembi_rcp26_nosoc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
 nc_miroc_init = ncvar_get(ncin_miroc,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_miroc)
@@ -101,6 +101,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 					dataOutArray[j, i, thisDecade, thisScen, 5] = max(dataSmoothMed - dataSdDiffs, 0)
 					dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + dataSdDiffs
 						# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
+					theseYears = 1:((thisDecade - 1) * 10 + 14)
 					theseGfdl = gfdl_smth[theseYears]
 					theseHadgem = hadgem_smth[theseYears]
 					theseIpsl = ipsl_smth[theseYears]
@@ -140,7 +141,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), 3, length(valueType)))
 old_dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
-dataOutArray[ , , , 1:2, ] = old_dataOutArray
+dataOutArray[ , , , 1:2, ] = old_dataOutArray[ , , , 1:2, ]
 ##### end temp fix
 
 

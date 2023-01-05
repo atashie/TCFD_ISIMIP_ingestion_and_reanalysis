@@ -103,6 +103,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 					dataOutArray[j, i, thisDecade, thisScen, 5] = max(dataSmoothMed - dataSdDiffs, 0)
 					dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + dataSdDiffs
 						# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
+					theseYears = 1:((thisDecade - 1) * 10 + 14)
 					theseGfdl = gfdl_smth[theseYears]
 					theseHadgem = hadgem_smth[theseYears]
 					theseIpsl = ipsl_smth[theseYears]
@@ -145,11 +146,11 @@ dataOutArray[ , , , 1:2, ] = old_dataOutArray
 ##### end temp fix
 
 	# defining quantiles 
-maskedLocs26 = which(!is.na(dataOutArray[ , , 1, 1, 1]))
+maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
 maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
-#histQuants = quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01))
+histQuants = quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01))
 
 	# removing zeroes from non-impacted regions
 maskedLocs26_zeroes = which(is.na(dataOutArray[ , , 1, 1, 1]) | dataOutArray[ , , 1, 1, 1] == 0)

@@ -23,7 +23,7 @@ valueType = 1:6
 
 	# initializing start decade
 initDates = 1:168
-ncname_gfdl = paste0('clm45_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_gfdl = paste0('clm45_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
 nc_gfdl_init = ncvar_get(ncin_gfdl,ncVarFileName)[ , , initDates]	# lon, lat, time
 	# identifying lat lons before closing data
@@ -31,17 +31,17 @@ nc_lat = ncvar_get(ncin_gfdl, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(ncin_gfdl, 'lon')
 nc_close(ncin_gfdl)
 
-ncname_hadgem = paste0('clm45_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_hadgem = paste0('clm45_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
 nc_hadgem_init = ncvar_get(ncin_hadgem,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_hadgem)
 
-ncname_ipsl = paste0('clm45_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_ipsl = paste0('clm45_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
 nc_ipsl_init = ncvar_get(ncin_ipsl,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_ipsl)
 
-ncname_miroc = paste0('clm45_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_miroc = paste0('clm45_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
 nc_miroc_init = ncvar_get(ncin_miroc,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_miroc)
@@ -116,6 +116,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 					dataOutArray[j, i, thisDecade, thisScen, 5] = dataSmoothMed - abs(dataQuantDiffs[1])
 					dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + abs(dataQuantDiffs[2])
 						# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
+					theseYears = 1:((thisDecade - 1) * 10 + 14)
 					theseGfdl = gfdl_yrly[theseYears]
 					theseHadgem = hadgem_yrly[theseYears]
 					theseIpsl = ipsl_yrly[theseYears]
@@ -155,6 +156,7 @@ histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 maskedLocs85 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset85 =  dataOutArray[ , , 1, 2, 1][-maskedLocs85]
 histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
+histQuants
 
 for(i in 1:length(whichDecades))	{
 	for(j in 1:(length(histQuants)))	{

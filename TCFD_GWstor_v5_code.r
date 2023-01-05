@@ -14,7 +14,7 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\GWstorage\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'groundwstor'
-saveDate = '23DEC2022'
+saveDate = '27DEC2022'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -22,7 +22,7 @@ valueType = 1:6
 
 	# initializing start decade
 initDates = 1:168
-ncname_gfdl = paste0('watergap2-2c_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_gfdl = paste0('watergap2-2c_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
 nc_gfdl_init = ncvar_get(ncin_gfdl,ncVarFileName)[ , , initDates]	# lon, lat, time
 	# identifying lat lons before closing data
@@ -30,17 +30,17 @@ nc_lat = ncvar_get(ncin_gfdl, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(ncin_gfdl, 'lon')
 nc_close(ncin_gfdl)
 
-ncname_hadgem = paste0('watergap2-2c_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_hadgem = paste0('watergap2-2c_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
 nc_hadgem_init = ncvar_get(ncin_hadgem,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_hadgem)
 
-ncname_ipsl = paste0('watergap2-2c_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_ipsl = paste0('watergap2-2c_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
 nc_ipsl_init = ncvar_get(ncin_ipsl,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_ipsl)
 
-ncname_miroc = paste0('watergap2-2c_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_miroc = paste0('watergap2-2c_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
 nc_miroc_init = ncvar_get(ncin_miroc,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_miroc)
@@ -81,10 +81,10 @@ for(thisScen in 1:length(rcpScenarios))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * scalar
-				hadgem_all = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * scalar
-				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) * scalar
-				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * scalar
+				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates])
+				hadgem_all = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates])
+				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates])
+				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates])
 
 				gfdl_yrly = NULL
 				hadgem_yrly = NULL
@@ -113,6 +113,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 					dataOutArray[j, i, thisDecade, thisScen, 5] = dataSmoothMed - abs(dataQuantDiffs[1])
 					dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + abs(dataQuantDiffs[2])
 						# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
+					theseYears = 1:((thisDecade - 1) * 10 + 14)
 					theseGfdl = gfdl_yrly[theseYears]
 					theseHadgem = hadgem_yrly[theseYears]
 					theseIpsl = ipsl_yrly[theseYears]
@@ -152,6 +153,7 @@ histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
 histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
 histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
+histQuants
 
 for(i in 1:length(whichDecades))	{
 	for(j in 1:(length(histQuants)))	{

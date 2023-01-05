@@ -77,7 +77,7 @@ for(thisHazard in 6:ncol(customerTable))	{
 		}	else	{
 			hazardMeasures = subset(hazardTable, Hazard == names(customerTable)[thisHazard])
 			for(thisHazardMeasure in 1:nrow(hazardMeasures))	{
-				hazardMeasureNC = nc_open(paste0('J:\\Cai_data\\TCFD\\ProcessedNCs\\', hazardMeasures$Hazard_Measure[thisHazardMeasure], '_processed.nc'))
+				hazardMeasureNC = nc_open(paste0('J:\\Cai_data\\TCFD\\ProcessedNCs\\', hazardMeasures$Hazard_Measure[thisHazardMeasure], 'v2_processed.nc'))
 				nc_lats = ncvar_get(hazardMeasureNC, 'lat')
 				nc_lons = ncvar_get(hazardMeasureNC, 'lon')
 				nc_decades = 2000 + ncvar_get(hazardMeasureNC, 'decade')
@@ -457,6 +457,7 @@ fwrite(dataOutput, paste0(customerFolder, fileName, thisDate, '.csv'))
 mainHazardOutputs = fread(paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
 appendedOutputs = subset(fread(appendedHazardFileLoc), Scenario %in% c('RCP 2.6', 'RCP 4.5', 'RCP 8.5'))
 appendedOutputs$Relative_Hazard_Score = NA	;	appendedOutputs$Relative_Hazard_Score_Number = NA	;	appendedOutputs$Trend_Aggregated_For_Looker = NA	
+appendedOutputs$Location[appendedOutputs$Location == "Sarapaka Village Burgampahad Mandal District Bhadradri Kothagudem Telangana 507 128"] = "ITC Limited - Paperboards & Specialty Papers Division, PB. No.4 BHADRACHALAM, Sarapaka, Telangana 507128"
 specializedOutputs = fread(paste0(customerFolder, fileName, thisDate, '.csv'))
 dataOutput = merge(mainHazardOutputs,  specializedOutputs, all = TRUE)
 dataOutput = merge(dataOutput, appendedOutputs, all = TRUE)
@@ -464,21 +465,47 @@ dataOutput = merge(dataOutput, appendedOutputs, all = TRUE)
 allHazards = unique(dataOutput$Hazard)
 
 theScenarios = c('RCP 2.6', 'RCP 4.5', 'RCP 6.0', 'RCP 8.5')
+scenarioRename = c('Low Emissions', 'Middle of the Road', 'Middle of the Road', 'High Emissions')
 
 for(thisDecade in unique(dataOutput$Decade))	{
 	for(thisScen in c(1,3,4))	{
 		for(thisLoc in unique(dataOutput$Location))	{
+			locRow = which(customerTable$Location == thisLoc)
 			avgOfAllHazards = NULL
 			for(thisHazard in allHazards)	{
-				newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard)$Percentile_Score
+				newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard)
 					# catching exceptions for when we do not have 4.5 or 8.5
-				if(any(is.na(newHazard)))	{
-					newHazard[which(is.na(newHazard))] = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen - 1] & Location == thisLoc & Hazard == thisHazard)$Percentile_Score[which(is.na(newHazard))]
+				if(nrow(newHazard) == 0 | any(is.na(newHazard$Percentile_Score)))	{
+					newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen - 1] & Location == thisLoc & Hazard == thisHazard)
 				}
-				avgOfAllHazards = c(avgOfAllHazards, mean(newHazard, na.rm=TRUE))
+				dataOutput = rbind(dataOutput,
+					data.frame(
+						User = userName,
+						Location = customerTable$Location[locRow],
+						Region = customerTable$Region[locRow],
+						Subregion = customerTable$Subregion[locRow],
+						Lat = customerTable$Lat[locRow],
+						Lon = customerTable$Lon[locRow],
+						Hazard = thisHazard,
+						Hazard_Measure = 'Aggregate Score',
+						Decade = thisDecade,
+						Scenario = scenarioRename[thisScen],
+						Raw_Hazard_Value = NA,
+						Percentile_Score = mean(newHazard$Percentile_Score, na.rm=TRUE),
+						Relative_Hazard_Score = NA,
+						Decadal_Trend_Strength = NA,
+						Decadal_Trend_Significance = NA,
+						Long_Term_Trend_Strength = NA,
+						Long_Term_Trend_Significance = NA,
+						Relative_Hazard_Score_Number = NA,
+						Trend_Aggregated_For_Looker = NA,
+						Advanced_Data_Measures = NA,
+						Advanced_Data_Measures_Units = NA)
+				)
+
+				avgOfAllHazards = c(avgOfAllHazards, mean(newHazard$Percentile_Score, na.rm=TRUE))
 			}
 
-			locRow = which(customerTable$Location == thisLoc)
 			dataOutput = rbind(dataOutput,
 				data.frame(
 					User = userName,
@@ -488,9 +515,9 @@ for(thisDecade in unique(dataOutput$Decade))	{
 					Lat = customerTable$Lat[locRow],
 					Lon = customerTable$Lon[locRow],
 					Hazard = "Aggregate Climate Score",
-					Hazard_Measure = NA,
+					Hazard_Measure = "Aggregate Score",
 					Decade = thisDecade,
-					Scenario = theScenarios[thisScen],
+					Scenario = scenarioRename[thisScen],
 					Raw_Hazard_Value = NA,
 					Percentile_Score = mean(avgOfAllHazards, na.rm=TRUE),
 					Relative_Hazard_Score = NA,
@@ -507,12 +534,12 @@ for(thisDecade in unique(dataOutput$Decade))	{
 	}
 }
 
+
 	# quick fix to rename scenarios
 scenariosRename = c('Low Emissions', 'Middle of the Road', 'Middle of the Road', 'High Emissions')
 for(i in 1:length(scenariosRename))	{
 	dataOutput$Scenario[dataOutput$Scenario == theScenarios[i]] = scenariosRename[i]
 }
-	
 	
 	# identifying relative hazard scores
 for(thisRow in 1:nrow(relHazScores))	{
@@ -699,6 +726,44 @@ for(i in unique(gg$Decade))	{
 	print(sum(subset(gg, Decade == i & Scenario == 'Low Emissions' & Hazard_Measure == 'Surface Water (annual total in cubic km)' & Region == 'India')$Trend_Aggregated_For_Looker))
 }	
 
+	
+	
+	
+	
+# some sanity checking
+		
+subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Middle of the Road')[1:99,]
+subset(dataOutput, Hazard_Measure == 'Aggregate Score' & Scenario == 'Middle of the Road')[1:99,]
+subset(dataOutput, Hazard_Measure == 'Aggregate Score' & Scenario == 'Low Emissions')[1:99,]
+subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'High Emissions')[1:99,]
+subset(dataOutput, Hazard_Measure == 'Aggregate Score' & Scenario == 'High Emissions')[1:99,]
+
+mean(subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Middle of the Road')$Percentile)
+mean(subset(dataOutput, Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Middle of the Road')$Percentile)
+
+mean(subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'High Emissions')$Percentile)
+mean(subset(dataOutput, Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'High Emissions')$Percentile)
+
+mean(subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Low Emissions')$Percentile)
+mean(subset(dataOutput, Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Low Emissions')$Percentile)
+
+for(thisScen in unique(dataOutput$Scenario))	{
+	for(thisLoc in unique(dataOutput$Location))	{
+		dataSub = subset(dataOutput, Scenario == thisScen & Location == thisLoc & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score')
+		png(filename=paste0('J:\\Downloads\\', substr(thisLoc, 1, 10), " - ", thisScen, '.png'))
+		plot(dataSub$Decade, dataSub$Percentile, ylim = c(1,100), lwd = 3, type = 'l',
+			ylab = 'Percentile', xlab = 'Decade', main = paste0(substr(thisLoc, 1, 10), " - ", thisScen))
+		for(thisHazard in unique(dataOutput$Hazard))	{
+			
+			dataSub = subset(dataOutput, Scenario == thisScen & Location == thisLoc & Hazard == thisHazard & Hazard_Measure == 'Aggregate Score')
+			lines(dataSub$Decade, dataSub$Percentile, col = 'grey30', lwd = 1.5)
+		}
+		dev.off()
+	}
+}
+
+	
+	
 	
 	
 	

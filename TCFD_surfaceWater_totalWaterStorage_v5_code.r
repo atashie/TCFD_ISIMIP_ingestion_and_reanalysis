@@ -18,10 +18,10 @@ library(mblm)		# for sens slope mlbm()
 
 #########################################
 # reading in climai netcdf data
-ncpath = "J:\\Cai_data\\TCFD\\SurfaceWater_Streamflow\\"
+ncpath = "J:\\Cai_data\\TCFD\\TotalWaterStorage\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-ncVarFileName = 'dis'
-saveDate = '12DEC2022'
+ncVarFileName = 'tws'
+saveDate = '29DEC2022'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -29,7 +29,7 @@ valueType = 1:6
 
 	# initializing start decade
 initDates = 1:168
-ncname_gfdl = paste0('matsiro_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_gfdl = paste0('clm45_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
 nc_gfdl_init = ncvar_get(ncin_gfdl,ncVarFileName)[ , , initDates]	# lon, lat, time
 	# identifying lat lons before closing data
@@ -37,17 +37,17 @@ nc_lat = ncvar_get(ncin_gfdl, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(ncin_gfdl, 'lon')
 nc_close(ncin_gfdl)
 
-ncname_hadgem = paste0('matsiro_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_hadgem = paste0('clm45_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
 nc_hadgem_init = ncvar_get(ncin_hadgem,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_hadgem)
 
-ncname_ipsl = paste0('matsiro_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_ipsl = paste0('clm45_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
 nc_ipsl_init = ncvar_get(ncin_ipsl,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_ipsl)
 
-ncname_miroc = paste0('matsiro_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_miroc = paste0('clm45_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
 nc_miroc_init = ncvar_get(ncin_miroc,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_miroc)
@@ -57,25 +57,24 @@ myMissingData = NA
 dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(rcpScenarios), length(valueType)))
 
-scalar = 60*60*24*30.4375 / (1000 * 1000 * 1000)
 
 for(thisScen in 1:length(rcpScenarios))	{
 	rcpScenNum = rcpScenarios[thisScen]
 	rcpScen = paste0('rcp', rcpScenNum)
 
-	ncname_gfdl = paste0('matsiro_gfdl-esm2m_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_gfdl = paste0('clm45_gfdl-esm2m_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
 	nc_gfdl = ncvar_get(ncin_gfdl,ncVarFileName)	# lon, lat, time
 
-	ncname_hadgem = paste0('matsiro_hadgem2-es_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_hadgem = paste0('clm45_hadgem2-es_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
 	nc_hadgem = ncvar_get(ncin_hadgem,ncVarFileName)	# lon, lat, time
 	
-	ncname_ipsl = paste0('matsiro_ipsl-cm5a-lr_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_ipsl = paste0('clm45_ipsl-cm5a-lr_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
 	nc_ipsl = ncvar_get(ncin_ipsl,ncVarFileName)	# lon, lat, time
 	
-	ncname_miroc = paste0('matsiro_miroc5_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_miroc = paste0('clm45_miroc5_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
 	nc_miroc = ncvar_get(ncin_miroc,ncVarFileName)	# lon, lat, time
 
@@ -86,16 +85,13 @@ for(thisScen in 1:length(rcpScenarios))	{
 
 	for(i in 1:length(nc_lat))	{
 		for(j in 1:length(nc_lon))	{
-			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
+			nc_dummy = nc_gfdl[j,i,] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * scalar
-				hadgem_all = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * scalar
-				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) * scalar
-				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * scalar
-
-				histAvg = max(mean(c(gfdl_all[1:180], hadgem_all[1:180], ipsl_all[1:180], miroc_all[1:180])), 0.000000001)
-				hist80Pct =  histAvg * 0.80
+				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates])
+				hadgem_all = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates])
+				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates])
+				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates])
 
 				gfdl_yrly = NULL
 				hadgem_yrly = NULL
@@ -103,24 +99,12 @@ for(thisScen in 1:length(rcpScenarios))	{
 				miroc_yrly = NULL
 				for(thisYear in nc_years)	{
 					theseDates = which(year(nc_date) == thisYear)
-					theseVals = hist80Pct - gfdl_all[theseDates]
-					theseVals[theseVals < 0] = 0
-					gfdl_yrly = c(gfdl_yrly, sum(theseVals / histAvg))
-					
-					theseVals = hist80Pct - hadgem_all[theseDates]
-					theseVals[theseVals < 0] = 0
-					hadgem_yrly = c(hadgem_yrly, sum(theseVals / histAvg))
-					
-					theseVals = hist80Pct - ipsl_all[theseDates]
-					theseVals[theseVals < 0] = 0
-					ipsl_yrly = c(ipsl_yrly, sum(theseVals / histAvg))
-					
-					theseVals = hist80Pct - miroc_all[theseDates]
-					theseVals[theseVals < 0] = 0
-					miroc_yrly = c(miroc_yrly, sum(theseVals / histAvg))
+					gfdl_yrly = c(gfdl_yrly, median(gfdl_all[theseDates]))
+					hadgem_yrly = c(hadgem_yrly, median(hadgem_all[theseDates]))
+					ipsl_yrly = c(ipsl_yrly, median(ipsl_all[theseDates]))
+					miroc_yrly = c(miroc_yrly, median(miroc_all[theseDates]))
 				}
-
-
+				
 				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
 				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
 				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
@@ -168,42 +152,31 @@ for(thisScen in 1:length(rcpScenarios))	{
 
 dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
 
-	# defining quantiles 
+		# defining quantiles 
 maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
 maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
 histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
-histQuants = quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01))
-
-	# removing zeroes from non-impacted regions
-#maskedLocs26_zeroes = which(is.na(dataOutArray[ , , 1, 1, 1]) | dataOutArray[ , , 1, 1, 1] == 0)
-#histDatSubset26_zeroes =  dataOutArray[ , , 1, 1, 1][-maskedLocs26_zeroes]
-#maskedLocs60_zeroes = which(is.na(dataOutArray[ , , 1, 2, 1]) | dataOutArray[ , , 1, 2, 1] == 0)
-#histDatSubset60_zeroes =  dataOutArray[ , , 1, 2, 1][-maskedLocs60_zeroes]
-#histQuants = quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes), seq(0.01, 1, length.out=80))
-#histQuants
+histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
+histQuants
 
 for(i in 1:length(whichDecades))	{
-	dataOutArray[ , , i, 1, 2] = 1
-	dataOutArray[ , , i, 2, 2] = 1
-	dataOutArray[ , , i, 3, 2] = 1
 	for(j in 1:(length(histQuants)))	{
-		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j
-		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j
-		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] > histQuants[j]] = j
+		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] <= histQuants[j]] = j
+		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
+		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] <= histQuants[j]] = j
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
-	dataOutArray[ , , i, 3, 2][maskedLocs85] = NA
+	dataOutArray[ , , i, 3, 2][maskedLocs60] = NA
 }
 
 
 
-
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Drought Intensity - annual streamflow deficit ratios'))
+metadata = list(tcfdVariable = list(units = 'Total Water Storage - annual median in mm'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
@@ -238,10 +211,10 @@ attr(valueClass, 'variables') = metadata
 names(dim(valueClass)) = 'valueClass'
 
 	# saving ncdf
-ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, ncVarFileName, 'v2_WRIbasedDroughtSeverity_processed.nc'))
+ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, ncVarFileName, 'v2_processed.nc'))
 
-	# testing output, squinty eye test 
-myNC = nc_open(paste0(ncOutputPath, ncVarFileName, 'v2_WRIbasedDroughtSeverity_processed.nc'))
+	# testing output, squinty eye test
+myNC = nc_open(paste0(ncOutputPath, ncVarFileName, 'v2_processed.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'tcfdVariable')
@@ -249,12 +222,16 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,2,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,1])
+
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,3])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,4])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,5])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,6])
 
-image(nc_lon, rev(nc_lat), nc_testDat[,,9,2,2] - nc_testDat[,,1,2,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,1] - nc_testDat[,,1,3,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,1] - nc_testDat[,,1,2,1])
 
-image(nc_lon, rev(nc_lat), nc_testDat[,,9,1,1] - nc_testDat[,,1,1,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,3,2])
+image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,2,2])

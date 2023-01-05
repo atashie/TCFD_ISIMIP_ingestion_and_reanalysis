@@ -1,0 +1,87 @@
+
+Marc Robert
+own couple thousand acres out west
+	manage for ag and water potential
+	more focused on legal and effeciency of use rather than climate side of water rights
+initially reticent about potential utility of CAi to their business
+rolled eyes heavily at 'we want to pick your brains'
+	'we are not in the brains picking business'
+specific to US (and Aus)
+	legal status to the rights that we own (i.e., high seniority)
+	has the water been used historically (affects rights)
+	are there ways to enhance water effeciency
+		fallow or change crops
+	is there a market for our excess water
+		interested in offering our water to potential buyers
+	is the community in which we operate supportive of those actions
+'climate is impacting the macro, but we are not focused on climate variability' directly
+most of their time is building relationships (esp. with farmers)
+how to you assess improvements in effeciency of water use	
+	assess historical practices
+	typically dealing with annual crops
+		easy to turn on and off
+	act more as landlords than as farmers
+		use leases to change 
+	important: difficult to prove how water use effeciency has been increased
+		prove to gov't agency
+	usually sell water to municipalities, govts, and occassionally to environmental groups
+	water is metered
+		nonetheless, fed gov't will request whole plots are herbicided for validation
+on-site storage
+	there is additionally strong interest in impounding water on site in reservoirs or moreso recharging aquifers
+not focused on the 6-month horizon
+	we are selling 100-yr lease on water
+	but there are other folks who may been
+		esp. in Australia, with junior water players who speculate based on seasonal hydrologic cycle
+		market is not as effecient in US to do so
+	it might be useful on the water storage side 
+	generally thinking on the 20-30yr time horizon
+might be a great business in buying spill water from flood retention dams in cali
+use hydrogeologists to map gw for long term assurity around rights
+	quantify water volume
+	what is recharge rate
+	what depth could we take down water level without impacting 
+	least favorite way of doing business, 
+	could we refill, and use as an underground reservoir?
+	and if refilled, would 
+	basins and aquifers not spatially conforming
+who would the seasonal projections be usefule for 
+	municipalities, veles water index (partnered with nasdaq) [the NQH2O?]
+discusses the NQH2O favoribly
+	wishes that it were more liquid, but the illiquidity makes it not worth their while
+	
+wishes that there were more flexibility in the US market, as there is in the Aus market
+
+surface water 80%, groundwater 20% (and surface water is the preferred)
+trends that matter:
+	heat (for ET)
+	invest in companies that run hydroelectricity
+	forest fire
+
+fire prevention system that is mobile
+	can be put around fire prone places with high value
+		hotels, vineyards
+a correlary:
+	we sell water supply insurance, and everyone will need to build a water supply portfolio
+	identifying locations that are likely in need supplemental water in the near future
+there are not that many players in this field
+
+
+
+
+start_time <- Sys.time()
+a=mblm(y~x)
+b=mblm(y~x)
+c=mblm(y~x)
+d=mblm(y~x)
+mean(c(a$coef[2],b$coef[2],c$coef[2],d$coef[2]))
+end_time <- Sys.time()
+end_time - start_time
+
+start_time <- Sys.time()
+mblm(yy~xx)
+end_time <- Sys.time()
+end_time - start_time
+
+
+
