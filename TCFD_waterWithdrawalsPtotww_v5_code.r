@@ -15,7 +15,7 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\PotentialTotalWaterWithdrawal\\"
 ncVarFileName = 'ptotww'
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-saveDate = '29DEC2022'
+saveDate = '08JAN2022'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -117,6 +117,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 					dataOutArray[j, i, thisDecade, thisScen, 5] = dataSmoothMed - abs(dataQuantDiffs[1])
 					dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + abs(dataQuantDiffs[2])
 						# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
+					theseYears = 1:((thisDecade - 1) * 10 + 14)
 					theseGfdl = gfdl_yrly[theseYears]
 					theseHadgem = hadgem_yrly[theseYears]
 					theseIpsl = ipsl_yrly[theseYears]
@@ -129,7 +130,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 						cor.test(theseYears, theseHadgem, method='spearman')$p.value,
 						cor.test(theseYears, theseIpsl, method='spearman')$p.value,
 						cor.test(theseYears, theseMiroc, method='spearman')$p.value, na.rm=TRUE)
-				}	
+					}	
 					
 					# calculating long-term trends (sens slope)
 	#			dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]

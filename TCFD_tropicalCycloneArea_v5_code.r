@@ -13,7 +13,7 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\TropicalCycloneArea\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'let'
-saveDate = '23DEC2022'
+saveDate = '07JAN2023'
 rcpScenarios = c(26, 60)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -157,15 +157,15 @@ maskedLocs26_zeroes = which(is.na(dataOutArray[ , , 1, 1, 1]) | dataOutArray[ , 
 histDatSubset26_zeroes =  dataOutArray[ , , 1, 1, 1][-maskedLocs26_zeroes]
 maskedLocs60_zeroes = which(is.na(dataOutArray[ , , 1, 2, 1]) | dataOutArray[ , , 1, 2, 1] == 0)
 histDatSubset60_zeroes =  dataOutArray[ , , 1, 2, 1][-maskedLocs60_zeroes]
-histQuants = quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes), seq(0.01, 1, length.out=80))
+histQuants = quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes), seq(0.01, 1, length.out=100))
 histQuants
 
 for(i in 1:length(whichDecades))	{
 	dataOutArray[ , , i, 1, 2] = 1
 	dataOutArray[ , , i, 2, 2] = 1
 	for(j in 1:(length(histQuants)))	{
-		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j + 20
-		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j + 20
+		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j + 0
+		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j + 0
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA

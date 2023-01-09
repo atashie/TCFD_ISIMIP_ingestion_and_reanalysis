@@ -13,7 +13,7 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\SWE\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'swe'
-saveDate = '23DEC2022'
+saveDate = '08JAN2022'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -153,6 +153,7 @@ histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
 histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
 histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
+histQuants
 
 for(i in 1:length(whichDecades))	{
 	for(j in 1:(length(histQuants)))	{

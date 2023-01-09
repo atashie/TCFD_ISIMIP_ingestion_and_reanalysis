@@ -14,7 +14,7 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\SurfaceWater_Streamflow\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'dis'
-saveDate = '23DEC2022'
+saveDate = '06JAN2022'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6

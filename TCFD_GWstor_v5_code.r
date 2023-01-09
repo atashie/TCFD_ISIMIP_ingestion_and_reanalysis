@@ -14,7 +14,7 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\GWstorage\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'groundwstor'
-saveDate = '27DEC2022'
+saveDate = '05JAN2022'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6

@@ -543,8 +543,7 @@ for(i in 1:length(scenariosRename))	{
 	
 	# identifying relative hazard scores
 for(thisRow in 1:nrow(relHazScores))	{
-#	dataOutput$Relative_Hazard_Score[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = paste0(thisRow, '. ', relHazScores$Hazard_Common_Name[thisRow])
-	dataOutput$Relative_Hazard_Score[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = paste0(relHazScores$Hazard_Common_Name[thisRow])
+	dataOutput$Relative_Hazard_Score[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = paste0(thisRow, '. ', relHazScores$Hazard_Common_Name[thisRow])
 	dataOutput$Relative_Hazard_Score_Number[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = thisRow
 }		
 			
