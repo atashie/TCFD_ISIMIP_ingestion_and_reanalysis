@@ -1,0 +1,20 @@
+J:\Cai_data\TCFD\locations\ITC_Dec2022
+
+theCols = 
+for(thisScen in unique(dataOutput$Scenario))	{
+	for(thisLoc in unique(dataOutput$Location))	{
+		dataSub = subset(dataOutput, Scenario == thisScen & Location == thisLoc & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score')
+		png(filename=paste0('J:\\Downloads\\', substr(thisLoc, 1, 10), " - ", thisScen, '.png'))
+		plot(dataSub$Decade, dataSub$Percentile, ylim = c(1,100), lwd = 3, type = 'l',
+			ylab = 'Percentile', xlab = 'Decade', main = paste0(substr(thisLoc, 1, 10), " - ", thisScen))
+		for(thisHazard in unique(dataOutput$Hazard))	{
+			
+			dataSub = subset(dataOutput, Scenario == thisScen & Location == thisLoc & Hazard == thisHazard & Hazard_Measure == 'Aggregate Score')
+			lines(dataSub$Decade, dataSub$Percentile, col = 'grey30', lwd = 1.5)
+		}
+		dev.off()
+	}
+}
+
+dataSub = subset(dataOutput, Scenario = 'RCP 2.6' & Location = unique(data
+plot(subset(data

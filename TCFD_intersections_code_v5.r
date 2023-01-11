@@ -77,7 +77,7 @@ for(thisHazard in 6:ncol(customerTable))	{
 		}	else	{
 			hazardMeasures = subset(hazardTable, Hazard == names(customerTable)[thisHazard])
 			for(thisHazardMeasure in 1:nrow(hazardMeasures))	{
-				hazardMeasureNC = nc_open(paste0('J:\\Cai_data\\TCFD\\ProcessedNCs\\', hazardMeasures$Hazard_Measure[thisHazardMeasure], '_processed.nc'))
+				hazardMeasureNC = nc_open(paste0('J:\\Cai_data\\TCFD\\ProcessedNCs\\', hazardMeasures$Hazard_Measure[thisHazardMeasure], 'v2_processed.nc'))
 				nc_lats = ncvar_get(hazardMeasureNC, 'lat')
 				nc_lons = ncvar_get(hazardMeasureNC, 'lon')
 				nc_decades = 2000 + ncvar_get(hazardMeasureNC, 'decade')
@@ -103,6 +103,8 @@ for(thisHazard in 6:ncol(customerTable))	{
 							}
 						}
 		
+						theseData = ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , , ]
+						
 						
 						dataOutput = rbind(dataOutput,
 							data.frame(
@@ -116,13 +118,13 @@ for(thisHazard in 6:ncol(customerTable))	{
 								Hazard_Measure = paste0(hazardMeasures$Hazard_Measure_Common_Name[thisHazardMeasure], ' ', hazardMeasures$Hazard_Measure_Units[thisHazardMeasure]),
 								Decade = nc_decades,
 								Scenario = rep(c('RCP 2.6', 'RCP 6.0', 'RCP 8.5'), each = 9),
-								Raw_Hazard_Value = c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 1], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 1], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 3, 1]),
-								Percentile_Score = c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 2], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 2], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 3, 2]),
+								Raw_Hazard_Value = c(theseData[ , 1, 1], theseData[ , 2, 1], theseData[ , 3, 1]),
+								Percentile_Score = c(theseData[ , 1, 2], theseData[ , 2, 2], theseData[ , 3, 2]),
 								Relative_Hazard_Score = NA,
-								Decadal_Trend_Strength = 	 	c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 3], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 3], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 3, 3]),
-								Decadal_Trend_Significance = 	c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 4], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 4], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 3, 4]),
-								Long_Term_Trend_Strength = 		c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 5], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 5], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 3, 5]),
-								Long_Term_Trend_Significance =	c(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 1, 6], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 2, 6], ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, , 3, 6]),
+								Decadal_Trend_Strength = 	 	c(theseData[ , 1, 3], theseData[ , 2, 3], theseData[ , 3, 3]),
+								Decadal_Trend_Significance = 	c(theseData[ , 1, 4], theseData[ , 2, 4], theseData[ , 3, 4]),
+								Long_Term_Trend_Strength = 		c(theseData[ , 1, 5], theseData[ , 2, 5], theseData[ , 3, 5]),
+								Long_Term_Trend_Significance =	c(theseData[ , 1, 6], theseData[ , 2, 6], theseData[ , 3, 6]),
 								Relative_Hazard_Score_Number = NA,
 								Trend_Aggregated_For_Looker = NA,
 								Advanced_Data_Measures = NA,
@@ -457,7 +459,7 @@ fwrite(dataOutput, paste0(customerFolder, fileName, thisDate, '.csv'))
 mainHazardOutputs = fread(paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
 appendedOutputs = subset(fread(appendedHazardFileLoc), Scenario %in% c('RCP 2.6', 'RCP 4.5', 'RCP 8.5'))
 appendedOutputs$Relative_Hazard_Score = NA	;	appendedOutputs$Relative_Hazard_Score_Number = NA	;	appendedOutputs$Trend_Aggregated_For_Looker = NA	
-#appendedOutputs$Location[appendedOutputs$Location == "Sarapaka Village Burgampahad Mandal District Bhadradri Kothagudem Telangana 507 128"] = "ITC Limited - Paperboards & Specialty Papers Division, PB. No.4 BHADRACHALAM, Sarapaka, Telangana 507128"
+appendedOutputs$Location[appendedOutputs$Location == "Sarapaka Village Burgampahad Mandal District Bhadradri Kothagudem Telangana 507 128"] = "ITC Limited - Paperboards & Specialty Papers Division, PB. No.4 BHADRACHALAM, Sarapaka, Telangana 507128"
 specializedOutputs = fread(paste0(customerFolder, fileName, thisDate, '.csv'))
 dataOutput = merge(mainHazardOutputs,  specializedOutputs, all = TRUE)
 dataOutput = merge(dataOutput, appendedOutputs, all = TRUE)

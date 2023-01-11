@@ -175,7 +175,7 @@ for(i in 1:length(whichDecades))	{
 
 
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Total Consumptive Water Use - mm / yr'))
+metadata = list(tcfdVariable = list(units = 'Total Demand for Water - mm / yr'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
@@ -235,3 +235,4 @@ image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,1] - nc_testDat[,,1,2,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,3,2])
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,2,2])
 
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,2,6] - nc_testDat[,,1,2,5])
