@@ -87,10 +87,10 @@ for(thisScen in 1:length(rcpScenarios))	{
 				ipsl_yrly = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates])  * 100
 				miroc_yrly = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * 100
 			
-				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 35, n.points = numYears)$y
-				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 35, n.points = numYears)$y
-				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 35, n.points = numYears)$y
-				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 35, n.points = numYears)$y
+				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
+				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
+				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
+				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
 
 #				dataQuantDiffs = diff(quantile(c(gfdl_yrly, hadgem_yrly, ipsl_yrly, miroc_yrly), c(0.25, 0.5, 0.75)))
 				dataSdDiffs = sd(c(gfdl_yrly, hadgem_yrly, ipsl_yrly, miroc_yrly))

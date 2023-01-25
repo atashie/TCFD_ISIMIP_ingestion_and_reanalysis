@@ -101,7 +101,7 @@ fldRecurArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * lengt
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(recurIntrvls), length(valueType), length(rcpScenarios)))
 
 
-for(thisScen in 1:length(rcpScenarios))	{
+for(thisScen in c(3))	{
 	rcpScenNum = rcpScenarios[thisScen]
 	rcpScen = paste0('rcp', rcpScenNum)
 	
@@ -129,7 +129,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 		# for samlmu()
 	nonZeroGenerator = sample(seq(0.0001,0.001,length.out=100), length(nc_years))
 				
-	for(i in 1:length(nc_lat))	{
+	for(i in 1:length(which(nc_lat > -55)))	{
 		for(j in 1:length(nc_lon))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
@@ -205,15 +205,19 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_close(ncin_hadgem)
 	nc_close(ncin_ipsl)
 	nc_close(ncin_miroc)
+	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out6.rds')) # rcp 8.5
+#	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out5.rds')) # rcp 2.6
+#	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out4.rds')) # rcp 6.0
 }
-saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out4.rds'))
-fldRccurArray = readRDS(file=paste0(ncpath, 'data_out4.rds'))
+#saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out6.rds'))
+
+fldRccurArray = readRDS(file=paste0(ncpath, 'data_outCombined.rds'))
 
 #names(dim(fldRecurArray)) = c('lon', 'lat', 'decade', 'recurInterval', 'rcpScen')
 #ArrayToNc(list(fldRecurArray = fldRecurArray, lon = nc_lon, lat = nc_lat, decade = seq(10,90,10), recurInterval = recurIntrvls), file_path = 'ex.nc')
 
 
-fldRecurIntrvl = fldRecurArray
+fldRecurIntrvl =fldRccurArray
 metadata = list(fldRecurIntrvl = list(units = 'recurrence interval ( / yr)'))
 attr(fldRecurIntrvl, 'variables') = metadata
 names(dim(fldRecurIntrvl)) = c('lon', 'lat', 'decade', 'recurInterval', 'valueTypes', 'rcpScen')
@@ -256,9 +260,11 @@ names(dim(rcpScen)) = 'rcpScen'
 
 
 ArrayToNc(list(fldRecurIntrvl, lon, lat, decade, recurInterval, valueTypes, rcpScen), file_path = paste0(ncpath, 'floodRecurIntervals_v5.nc'))
+#ArrayToNc(list(fldRecurIntrvl, lon, lat, decade, recurInterval, valueTypes, rcpScen), file_path = paste0(ncpath, 'floodRecurIntervals_v5_scen2.nc'))
 
 	# testing output, squinty eye test
 myNC = nc_open(paste0(ncpath, 'floodRecurIntervals_v5.nc'))
+#myNC = nc_open(paste0(ncpath, 'floodRecurIntervals_v5_scen2.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'fldRecurIntrvl')

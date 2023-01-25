@@ -10,7 +10,7 @@ thisDate = Sys.Date()
 customerTable = fread(paste0(customerFolder, 'Corbion_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\Corbion_temp_precip_hazards_dec_6 - Corbion_temp_precip_hazards_dec_6.csv'
 
 	# ITC
@@ -22,7 +22,7 @@ thisDate = Sys.Date()
 customerTable = fread(paste0(customerFolder, 'ITC_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\ITC_temp_precip_hazards_dec_6 - ITC_temp_precip_hazards_dec_6.csv'
 
 	# ITC - Water
@@ -34,7 +34,7 @@ thisDate = Sys.Date()
 customerTable = fread(paste0(customerFolder, 'ITC_Locations_Dec2022 - Water Exposure.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 #appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\ITC_temp_precip_hazards_dec_6 - ITC_temp_precip_hazards_dec_6.csv'
 
 	# Driscolls
@@ -46,7 +46,7 @@ thisDate = Sys.Date()
 customerTable = fread(paste0(customerFolder, 'Driscolls_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_Driscolls_Dec2022 - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Driscolls_Dec2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Driscolls_Dec2022\\Driscolls_temp_precip_hazards_dec_6 - Driscolls_temp_precip_hazards_dec_6.csv'
 
 
@@ -59,7 +59,7 @@ thisDate = Sys.Date()
 customerTable = fread(paste0(customerFolder, 'HMClause_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\HMClause_temp_precip_hazards_dec_6 - HMClause_temp_precip_hazards_dec_6.csv'
 
 ############################################################################################
@@ -67,7 +67,7 @@ appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\HMClau
 dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 	Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 	Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-	Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA)
+	Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA)
 
 iter = 0
 for(thisHazard in 6:ncol(customerTable))	{
@@ -116,19 +116,21 @@ for(thisHazard in 6:ncol(customerTable))	{
 								Lon = customerTable$Lon[thisLocation],
 								Hazard = hazardMeasures$Hazard[thisHazardMeasure],
 								Hazard_Measure = paste0(hazardMeasures$Hazard_Measure_Common_Name[thisHazardMeasure], ' ', hazardMeasures$Hazard_Measure_Units[thisHazardMeasure]),
-								Decade = nc_decades,
+								Decade = rep(nc_decades, 3),
 								Scenario = rep(c('RCP 2.6', 'RCP 6.0', 'RCP 8.5'), each = 9),
 								Raw_Hazard_Value = c(theseData[ , 1, 1], theseData[ , 2, 1], theseData[ , 3, 1]),
 								Percentile_Score = c(theseData[ , 1, 2], theseData[ , 2, 2], theseData[ , 3, 2]),
 								Relative_Hazard_Score = NA,
 								Decadal_Trend_Strength = 	 	c(theseData[ , 1, 3], theseData[ , 2, 3], theseData[ , 3, 3]),
 								Decadal_Trend_Significance = 	c(theseData[ , 1, 4], theseData[ , 2, 4], theseData[ , 3, 4]),
-								Long_Term_Trend_Strength = 		c(theseData[ , 1, 5], theseData[ , 2, 5], theseData[ , 3, 5]),
-								Long_Term_Trend_Significance =	c(theseData[ , 1, 6], theseData[ , 2, 6], theseData[ , 3, 6]),
+								Long_Term_Trend_Strength = 		c(rep(theseData[9, 1, 3], 9), rep(theseData[9, 2, 3], 9), rep(theseData[9, 3, 3], 9)),
+								Long_Term_Trend_Significance =	c(rep(theseData[9, 1, 4], 9), rep(theseData[9, 2, 4], 9), rep(theseData[9, 3, 4], 9)),
 								Relative_Hazard_Score_Number = NA,
 								Trend_Aggregated_For_Looker = NA,
 								Advanced_Data_Measures = NA,
-								Advanced_Data_Measures_Units = NA)
+								Advanced_Data_Measures_Units = NA,
+								Raw_Hazard_Value_25th = c(theseData[ , 1, 5], theseData[ , 2, 5], theseData[ , 3, 5]),
+								Raw_Hazard_Value_75th = c(theseData[ , 1, 6], theseData[ , 2, 6], theseData[ , 3, 6]))
 						)
 					}
 					print(c(thisHazard, thisHazardMeasure, thisLocation))
@@ -139,7 +141,7 @@ for(thisHazard in 6:ncol(customerTable))	{
 				dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 					Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 					Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-					Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA)
+					Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA)
 			}
 		}
 	}
@@ -165,8 +167,8 @@ fwrite(finalOutput, paste0(customerFolder, 'processedOutput_', thisDate, '.csv')
 
 
 ###################################################################################################################################################################################################
-#### specialized data, for now just localized flooding
-# step 3 intersecting recurrence intervals with flood depth
+#### specialized data, for now just localized flooding and coastal flooding
+# step 3a intersecting recurrence intervals with flood depth
 library(raster)
 locationFootprint = 3		# how big is the footprint of the location of interest? in number of 'boxes' to search to the left and right (so 0 is equal to 1 km^2, 1 is 3x3=9 km^2, 2 is 5x5=25 km^2, 3 is 7x7=49, 4 is 9x9=81, etc.
 dataOutputLoc = 'J:\\Cai_data\\TCFD\\CustomerOutputs\\'
@@ -181,7 +183,7 @@ whichDecades = seq(10,90,10)
 	
 	# read in flood recurrence data
 ncpath = "J:\\Cai_data\\TCFD\\Flash Floods\\"
-fldRcrIntNC = nc_open(paste0(ncpath, 'floodRecurIntervals_v4.nc'))
+fldRcrIntNC = nc_open(paste0(ncpath, 'floodRecurIntervals_v5.nc'))
 nc_lat = ncvar_get(fldRcrIntNC, 'lat')
 nc_lon = ncvar_get(fldRcrIntNC, 'lon')
 fldRcrVals = ncvar_get(fldRcrIntNC, 'fldRecurIntrvl')
@@ -191,7 +193,7 @@ fldRcrVals = ncvar_get(fldRcrIntNC, 'fldRecurIntrvl')
 dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 	Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 	Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-	Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA)
+	Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th = NA)
 	
 	# read in historic floods data
 fileLoc = 'J:\\Cai_data\\TCFD\\CurrentFloodHazard'
@@ -298,7 +300,10 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 									Relative_Hazard_Score_Number = NA,
 									Trend_Aggregated_For_Looker = NA,
 									Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
-									Advanced_Data_Measures_Units = "Yr Flood"))
+									Advanced_Data_Measures_Units = "Yr Flood",
+									Raw_Hazard_Value_25th = NA,
+									Raw_Hazard_Value_75th = NA))
+
 
 						} 	else	{ # if all theseFloodImpacts are NAs
 							dataOutput = rbind(dataOutput,
@@ -323,7 +328,10 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 									Relative_Hazard_Score_Number = NA,
 									Trend_Aggregated_For_Looker = NA,
 									Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
-									Advanced_Data_Measures_Units = "Yr Flood"))
+									Advanced_Data_Measures_Units = "Yr Flood",
+									Raw_Hazard_Value_25th = NA,
+									Raw_Hazard_Value_75th = NA))
+
 						}
 					}	else	{ # if thisFldRcrVal < 10 yr recurrence
 						dataOutput = rbind(dataOutput,
@@ -348,7 +356,10 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 								Relative_Hazard_Score_Number = NA,
 								Trend_Aggregated_For_Looker = NA,
 								Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
-								Advanced_Data_Measures_Units = "Yr Flood"))
+								Advanced_Data_Measures_Units = "Yr Flood",
+								Raw_Hazard_Value_25th = NA,
+								Raw_Hazard_Value_75th = NA))
+
 					}
 				} # for each decade
 
@@ -378,7 +389,9 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 					Relative_Hazard_Score_Number = NA,
 					Trend_Aggregated_For_Looker = NA,
 					Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
-					Advanced_Data_Measures_Units = "Yr Flood")), 
+					Advanced_Data_Measures_Units = "Yr Flood",
+					Raw_Hazard_Value_25th = NA,
+					Raw_Hazard_Value_75th = NA)), 
 				data.table(
 					User = userName,
 					Location = customerTable$Location[j],
@@ -400,7 +413,9 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 					Relative_Hazard_Score_Number = NA,
 					Trend_Aggregated_For_Looker = NA,
 					Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
-					Advanced_Data_Measures_Units = "Yr Flood")), 
+					Advanced_Data_Measures_Units = "Yr Flood",
+					Raw_Hazard_Value_25th = NA,
+					Raw_Hazard_Value_75th = NA)), 
 				data.table(
 					User = userName,
 					Location = customerTable$Location[j],
@@ -422,7 +437,10 @@ for(thisIntrvl in 1:length(recurIntrvls))	{
 					Relative_Hazard_Score_Number = NA,
 					Trend_Aggregated_For_Looker = NA,
 					Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
-					Advanced_Data_Measures_Units = "Yr Flood"))
+					Advanced_Data_Measures_Units = "Yr Flood",
+					Raw_Hazard_Value_25th = NA,
+					Raw_Hazard_Value_75th = NA))
+
 		}
 		print(c(j, thisIntrvl))
 	}
@@ -447,8 +465,179 @@ for(ll in 1:length(relFloodHazardDepth))	{
 	dataOutput$Percentile_Score[likliRows][which(dataOutput$Raw_Hazard_Value[likliRows] > relFloodHazardLikli[ll])] = ll + 20
 }
 
-fileName = paste0(userName, '_', thisDate, '_highRestFlood_', (locationFootprint*2+1), 'km')
-fwrite(dataOutput, paste0(customerFolder, fileName, thisDate, '.csv'))
+fileName_localFlood = paste0(userName, '_', thisDate, '_highRestFlood_', (locationFootprint*2+1), 'km')
+fwrite(dataOutput, paste0(customerFolder, fileName_localFlood, thisDate, '.csv'))
+
+
+
+
+#########
+# step 3b intersecting sea level rise with DEMs
+
+
+#########################################
+# reading in climate netcdf data
+ncpath = "J:\\Cai_data\\TCFD\\SeaLevelRise\\globalDEM\\"
+ncname = 'srtm30plus_v11_land.nc'
+ncin = nc_open(paste0(ncpath, ncname))
+nc_lon = ncvar_get(ncin, 'lon')
+nc_lat = rev(ncvar_get(ncin, 'lat'))
+nc_close(ncin)
+nc_elev = brick(paste0(ncpath, ncname), 'elev')
+
+ncpath = "J:\\Cai_data\\TCFD\\SeaLevelRise\\"
+ncVarFileName = 'sea_level_change'
+seaL_nc = nc_open(paste0(ncpath, ncVarFileName, '_glblGrdv2_processed.nc'))
+seaL_lat = ncvar_get(seaL_nc, 'lat')	# lat is given from high to low
+seaL_lon = ncvar_get(seaL_nc, 'lon')
+seaL_scen = ncvar_get(seaL_nc, 'rcpScen')
+seaL_elev = ncvar_get(seaL_nc, 'tcfdVariable')
+nc_close(seaL_nc)
+
+whichDecades = seq(10,90,10)
+
+# initializing data output
+dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
+	Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
+	Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
+	Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th = NA)
+
+for(j in 1:nrow(customerTable))	{
+
+	closeSeaLons = order(abs(customerTable$Lon[j] - seaL_lon))[1:3]
+	closeSeaLats = order(abs(customerTable$Lat[j] - seaL_lat))[1:3]
+	
+	closeDemLons = order(abs(customerTable$Lon[j] - nc_lon))[1]
+	closeDemLats = order(abs(customerTable$Lat[j] - nc_lat))[1]
+
+	if(any(!is.na(seaL_elev[closeSeaLons, closeSeaLats, , , 1])))	{
+
+			# ensuring dem is on a land tile
+		if(is.na(nc_elev[closeDemLats, closeDemLons]))	{
+			closeDemLons = closeDemLons + 1
+				if(is.na(nc_elev[closeDemLats, closeDemLons]))	{
+					closeDemLons = closeDemLons - 2
+						if(is.na(nc_elev[closeDemLats, closeDemLons]))	{
+							closeDemLons = closeDemLons + 1
+							closeDemLats = closeDemLats + 1
+							if(is.na(nc_elev[closeDemLats, closeDemLons]))	{
+								closeDemLats = closeDemLats - 2
+		}}}}
+		avgElev = nc_elev[closeDemLats, closeDemLons]
+
+		for(thisScen in 1:length(seaL_scen))	{
+			seaLvlTrend_all =  mean(seaL_elev[closeSeaLons, closeSeaLats, 9, thisScen, 3], na.rm=TRUE) / 1000
+			seaLvlSignif_all = mean(seaL_elev[closeSeaLons, closeSeaLats, 9, thisScen, 4], na.rm=TRUE)
+					
+			for(thisDecade in 1:length(whichDecades))	{
+				seaLvlVal =	   avgElev - mean(seaL_elev[closeSeaLons, closeSeaLats, thisDecade, thisScen, 1], na.rm=TRUE) / 1000
+				seaLvlTrend =  mean(seaL_elev[closeSeaLons, closeSeaLats, thisDecade, thisScen, 3], na.rm=TRUE) / 1000
+				seaLvlSignif = mean(seaL_elev[closeSeaLons, closeSeaLats, thisDecade, thisScen, 4], na.rm=TRUE)
+				seaLvl25th =   avgElev - mean(seaL_elev[closeSeaLons, closeSeaLats, thisDecade, thisScen, 5], na.rm=TRUE) / 1000
+				seaLvl75th =   avgElev - mean(seaL_elev[closeSeaLons, closeSeaLats, thisDecade, thisScen, 6], na.rm=TRUE) / 1000
+			
+
+				dataOutput = rbind(dataOutput,
+							data.table(
+								User = userName,
+								Location = customerTable$Location[j],
+								Region = customerTable$Region[j],
+								Subregion = customerTable$Subregion[j],
+								Lat = customerTable$Lat[j],
+								Lon = customerTable$Lon[j],
+								Hazard = "Coastal Flood",
+								Hazard_Measure = "Sea Level Rise",
+								Decade = 2000 + whichDecades[thisDecade],
+								Scenario = seaL_scen[thisScen],
+								Raw_Hazard_Value = as.numeric(seaLvlVal),					# Raw_Hazard_Value
+								Percentile_Score = NA,												# Percentile_Score
+								Relative_Hazard_Score = NA,											# Relative_Hazard_Score
+								Decadal_Trend_Strength = seaLvlTrend,	# Decadal_Trend_Strength
+								Decadal_Trend_Significance = seaLvlSignif,						# Decadal_Trend_Significance
+								Long_Term_Trend_Strength = seaLvlTrend_all,										# Long_Term_Trend_Strength
+								Long_Term_Trend_Significance = seaLvlSignif_all,					# Long_Term_Trend_Significance					
+								Relative_Hazard_Score_Number = NA,
+								Trend_Aggregated_For_Looker = NA,
+								Advanced_Data_Measures =  NA,
+								Advanced_Data_Measures_Units = NA,
+								Raw_Hazard_Value_25th = as.numeric(seaLvl25th),
+								Raw_Hazard_Value_75th = as.numeric(seaLvl75th))
+				)
+			}
+		}
+	}	else	{
+		dataOutput = rbind(dataOutput,
+					data.table(
+						User = userName,
+						Location = customerTable$Location[j],
+						Region = customerTable$Region[j],
+						Subregion = customerTable$Subregion[j],
+						Lat = customerTable$Lat[j],
+						Lon = customerTable$Lon[j],
+						Hazard = "Coastal Flood",
+						Hazard_Measure = "Sea Level Rise",
+						Decade = rep(2000 + whichDecades, length(seaL_scen)),
+						Scenario = rep(seaL_scen, each=length(whichDecades)),
+						Raw_Hazard_Value = 9999,								# Raw_Hazard_Value
+						Percentile_Score = NA,								# Percentile_Score
+						Relative_Hazard_Score = NA,							# Relative_Hazard_Score
+						Decadal_Trend_Strength = 0,							# Decadal_Trend_Strength
+						Decadal_Trend_Significance = 1,		# Decadal_Trend_Significance
+						Long_Term_Trend_Strength = 0,						# Long_Term_Trend_Strength
+						Long_Term_Trend_Significance = 1,	# Long_Term_Trend_Significance
+						Relative_Hazard_Score_Number = NA,
+						Trend_Aggregated_For_Looker = NA,
+						Advanced_Data_Measures = NA,
+						Advanced_Data_Measures_Units = NA,
+						Raw_Hazard_Value_25th = 9999,
+						Raw_Hazard_Value_75th = 9999))
+	}
+}
+	
+dataOutput$Raw_Hazard_Value = as.numeric(dataOutput$Raw_Hazard_Value)
+dataOutput = dataOutput[-1,]
+
+
+# in Key West, buildings must be 7 ft above sea level (or on piers of that height): https://www.cityofkeywest-fl.gov/671/Construction-in-Flood-Zones
+	# 7 ft ~ 2.1336
+basSeqSeaLevElev = seq(0, 1, length.out=80)
+relSeaLevElevHaz = -(basSeqSeaLevElev^2 / max(basSeqSeaLevElev^2)) * (10 + 2.1336) + 2.1336
+
+dataOutput$Percentile_Score = 1
+for(ll in 1:length(relSeaLevElevHaz))	{
+	dataOutput$Percentile_Score[which(dataOutput$Raw_Hazard_Value < relSeaLevElevHaz[ll])] = ll + 20
+}
+
+fileName_seaLevelRise = paste0(userName, '_', thisDate, '_seaLevelRise', (locationFootprint*2+1), 'km')
+fwrite(dataOutput, paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#################
+
+
+
+
+
+
 
 
 
@@ -459,8 +648,10 @@ fwrite(dataOutput, paste0(customerFolder, fileName, thisDate, '.csv'))
 mainHazardOutputs = fread(paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
 appendedOutputs = subset(fread(appendedHazardFileLoc), Scenario %in% c('RCP 2.6', 'RCP 4.5', 'RCP 8.5'))
 appendedOutputs$Relative_Hazard_Score = NA	;	appendedOutputs$Relative_Hazard_Score_Number = NA	;	appendedOutputs$Trend_Aggregated_For_Looker = NA	
-appendedOutputs$Location[appendedOutputs$Location == "Sarapaka Village Burgampahad Mandal District Bhadradri Kothagudem Telangana 507 128"] = "ITC Limited - Paperboards & Specialty Papers Division, PB. No.4 BHADRACHALAM, Sarapaka, Telangana 507128"
-specializedOutputs = fread(paste0(customerFolder, fileName, thisDate, '.csv'))
+#appendedOutputs$Location[appendedOutputs$Location == "Sarapaka Village Burgampahad Mandal District Bhadradri Kothagudem Telangana 507 128"] = "ITC Limited - Paperboards & Specialty Papers Division, PB. No.4 BHADRACHALAM, Sarapaka, Telangana 507128"
+specializedOutput_SLR = fread(paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv'))
+specializedOutput_LRF = fread(paste0(customerFolder, fileName_localFlood, thisDate, '.csv'))
+specializedOutputs = merge(specializedOutput_LRF, specializedOutput_SLR, all = TRUE)
 dataOutput = merge(mainHazardOutputs,  specializedOutputs, all = TRUE)
 dataOutput = merge(dataOutput, appendedOutputs, all = TRUE)
 #dataOutput = merge(specializedOutputs, appendedOutputs, all = TRUE)
@@ -502,7 +693,10 @@ for(thisDecade in unique(dataOutput$Decade))	{
 						Relative_Hazard_Score_Number = NA,
 						Trend_Aggregated_For_Looker = NA,
 						Advanced_Data_Measures = NA,
-						Advanced_Data_Measures_Units = NA)
+						Advanced_Data_Measures_Units = NA,
+						Raw_Hazard_Value_25th = NA,
+						Raw_Hazard_Value_75th = NA)
+
 				)
 
 				avgOfAllHazards = c(avgOfAllHazards, mean(newHazard$Percentile_Score, na.rm=TRUE))
@@ -530,7 +724,9 @@ for(thisDecade in unique(dataOutput$Decade))	{
 					Relative_Hazard_Score_Number = NA,
 					Trend_Aggregated_For_Looker = NA,
 					Advanced_Data_Measures = NA,
-					Advanced_Data_Measures_Units = NA)
+					Advanced_Data_Measures_Units = NA,
+					Raw_Hazard_Value_25th = NA,
+					Raw_Hazard_Value_75th = NA)
 			)
 		}
 	}
@@ -563,6 +759,7 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazar
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
 plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Hurricanes' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'River Flood (Regional)' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
 	
 	
 	
