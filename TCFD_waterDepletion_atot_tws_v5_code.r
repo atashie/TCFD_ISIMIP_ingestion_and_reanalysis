@@ -31,7 +31,7 @@ for(i in scenarios)	{
 	cmsaf.sub(var1 = ncVarFileName3, var2 = ncVarFileName2, infile1 = paste0(ncpath3, ncname_gfdl3), infile2 = file.path('J:\\Downloads\\secsToMonths_atotuse.nc'),
 		outfile = file.path('J:\\Downloads\\remaininWater.nc'), overwrite = TRUE)
 	cmsaf.div(var1 = ncVarFileName2, var2 = ncVarFileName3, infile1 = file.path('J:\\Downloads\\secsToMonths_atotuse.nc'), infile2 = file.path('J:\\Downloads\\remaininWater.nc'),
-		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterStress_gfdl', i, '.nc')), overwrite = TRUE)
+		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterDepletion_gfdl', i, '.nc')), overwrite = TRUE)
 
 	nc_gfdl_init = nc_open(file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterDepletion_gfdl', i, '.nc')))
 	nc_lat = ncvar_get(nc_gfdl_init, 'lat')	# lat is given from high to low
@@ -48,7 +48,7 @@ for(i in scenarios)	{
 	cmsaf.sub(var1 = ncVarFileName3, var2 = ncVarFileName2, infile1 = paste0(ncpath3, ncname_hadgem3), infile2 = file.path('J:\\Downloads\\secsToMonths_atotuse.nc'),
 		outfile = file.path('J:\\Downloads\\remaininWater.nc'), overwrite = TRUE)
 	cmsaf.div(var1 = ncVarFileName2, var2 = ncVarFileName3, infile1 = file.path('J:\\Downloads\\secsToMonths_atotuse.nc'), infile2 = file.path('J:\\Downloads\\remaininWater.nc'),
-		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterStress_hadgem', i, '.nc')), overwrite = TRUE)
+		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterDepletion_hadgem', i, '.nc')), overwrite = TRUE)
 
 	nc_hadgem_init = nc_open(file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterDepletion_hadgem', i, '.nc')))
 	nc_lat = ncvar_get(nc_hadgem_init, 'lat')	# lat is given from high to low
@@ -66,7 +66,7 @@ for(i in scenarios)	{
 	cmsaf.sub(var1 = ncVarFileName3, var2 = ncVarFileName2, infile1 = paste0(ncpath3, ncname_ipsl3), infile2 = file.path('J:\\Downloads\\secsToMonths_atotuse.nc'),
 		outfile = file.path('J:\\Downloads\\remaininWater.nc'), overwrite = TRUE)
 	cmsaf.div(var1 = ncVarFileName2, var2 = ncVarFileName3, infile1 = file.path('J:\\Downloads\\secsToMonths_atotuse.nc'), infile2 = file.path('J:\\Downloads\\remaininWater.nc'),
-		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterStress_ipsl', i, '.nc')), overwrite = TRUE)
+		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterDepletion_ipsl', i, '.nc')), overwrite = TRUE)
 
 	nc_ipsl_init = nc_open(file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterDepletion_ipsl', i, '.nc')))
 	nc_lat = ncvar_get(nc_ipsl_init, 'lat')	# lat is given from high to low
@@ -83,7 +83,7 @@ for(i in scenarios)	{
 	cmsaf.sub(var1 = ncVarFileName3, var2 = ncVarFileName2, infile1 = paste0(ncpath3, ncname_miroc3), infile2 = file.path('J:\\Downloads\\secsToMonths_atotuse.nc'),
 		outfile = file.path('J:\\Downloads\\remaininWater.nc'), overwrite = TRUE)
 	cmsaf.div(var1 = ncVarFileName2, var2 = ncVarFileName3, infile1 = file.path('J:\\Downloads\\secsToMonths_atotuse.nc'), infile2 = file.path('J:\\Downloads\\remaininWater.nc'),
-		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterStress_miroc', i, '.nc')), overwrite = TRUE)
+		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterDepletion_miroc', i, '.nc')), overwrite = TRUE)
 
 	nc_miroc_init = nc_open(file.path(paste0('J:\\Cai_data\\TCFD\\WaterStress\\baselineWaterDepletion_miroc', i, '.nc')))
 	nc_lat = ncvar_get(nc_miroc_init, 'lat')	# lat is given from high to low
@@ -95,11 +95,11 @@ for(i in scenarios)	{
 
 
 ###########################################
-
+library(zoo)
 
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncpath = 'J:\\Cai_data\\TCFD\\WaterStress\\'
-saveDate = '12JAN2022'
+saveDate = '26JAN2022'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -163,62 +163,71 @@ for(thisScen in 1:length(rcpScenarios))	{
 		for(j in 1:length(nc_lon))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
-				print(c(i, j))
-				gfdl_all = na.fill(c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]), 'extend') * scalar
-				if(any(gfdl_all < 0) | any(gfdl_all > 1))	{	gfdl_all[which(gfdl_all < 0 | gfdl_all > 1)] = 1	}
-				hadgem_all = na.fill(c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]),  'extend')* scalar
-				if(any(hadgem_all < 0) | any(hadgem_all > 1))	{	hadgem_all[which(hadgem_all < 0 | hadgem_all > 1)] = 1	}
-				ipsl_all = na.fill(c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]),  'extend') * scalar
-				if(any(ipsl_all < 0) | any(ipsl_all > 1))	{	ipsl_all[which(ipsl_all < 0 | ipsl_all > 1)] = 1	}
-				miroc_all = na.fill(c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]),  'extend') * scalar
-				if(any(miroc_all < 0) | any(miroc_all > 1))	{	miroc_all[which(miroc_all < 0 | miroc_all > 1)] = 1	}
+				thisGfdl = nc_gfdl[j,i, -initDates]
+				thisHadgem = nc_hadgem[j,i, -initDates]
+				thisIpsl = nc_ipsl[j,i, -initDates]
+				thisMiroc = nc_miroc[j,i, -initDates]
+				if(length(which(!is.na(thisGfdl))) > 10 &
+				   length(which(!is.na(thisHadgem))) > 10 &
+				   length(which(!is.na(thisIpsl))) > 10 &
+				   length(which(!is.na(thisMiroc))) > 10)	{
+					print(c(i, j))
+					gfdl_all = na.fill(c(nc_gfdl_init[j,i, initDates], thisGfdl), 'extend') * scalar
+					if(any(gfdl_all < 0) | any(gfdl_all > 1))	{	gfdl_all[which(gfdl_all < 0 | gfdl_all > 1)] = 1	}
+					hadgem_all = na.fill(c(nc_hadgem_init[j,i, initDates], thisHadgem),  'extend')* scalar
+					if(any(hadgem_all < 0) | any(hadgem_all > 1))	{	hadgem_all[which(hadgem_all < 0 | hadgem_all > 1)] = 1	}
+					ipsl_all = na.fill(c(nc_ipsl_init[j,i, initDates], thisIpsl),  'extend') * scalar
+					if(any(ipsl_all < 0) | any(ipsl_all > 1))	{	ipsl_all[which(ipsl_all < 0 | ipsl_all > 1)] = 1	}
+					miroc_all = na.fill(c(nc_miroc_init[j,i, initDates], thisMiroc),  'extend') * scalar
+					if(any(miroc_all < 0) | any(miroc_all > 1))	{	miroc_all[which(miroc_all < 0 | miroc_all > 1)] = 1	}
 
-				gfdl_yrly = NULL
-				hadgem_yrly = NULL
-				ipsl_yrly = NULL
-				miroc_yrly = NULL
-				for(thisYear in nc_years)	{
-					theseDates = which(year(nc_date) == thisYear)
-					gfdl_yrly = c(gfdl_yrly, mean(gfdl_all[theseDates], na.rm=TRUE))
-					hadgem_yrly = c(hadgem_yrly, mean(hadgem_all[theseDates], na.rm=TRUE))
-					ipsl_yrly = c(ipsl_yrly, mean(ipsl_all[theseDates], na.rm=TRUE))
-					miroc_yrly = c(miroc_yrly, mean(miroc_all[theseDates], na.rm=TRUE))
-				}
-				
-				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 20, n.points = numYears)$y
-				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 20, n.points = numYears)$y
-				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 20, n.points = numYears)$y
-				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 20, n.points = numYears)$y
-
-
-				for(thisDecade in 1:9)	{
-					theseYears = (thisDecade - 1) * 10 + 5:14
-						# defining absolute values
-					dataSmoothMed = median(c(gfdl_smth[theseYears], hadgem_smth[theseYears], ipsl_smth[theseYears], miroc_smth[theseYears]))
-					dataOutArray[j, i, thisDecade, thisScen, 1] = dataSmoothMed
-					dataQuantDiffs = diff(quantile(c(gfdl_yrly[theseYears], hadgem_yrly[theseYears], ipsl_yrly[theseYears], miroc_yrly[theseYears]), c(0.25, 0.5, 0.75)))
-					dataOutArray[j, i, thisDecade, thisScen, 5] = dataSmoothMed - abs(dataQuantDiffs[1])
-					dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + abs(dataQuantDiffs[2])
-						# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
-					theseGfdl = gfdl_yrly[theseYears]
-					theseHadgem = hadgem_yrly[theseYears]
-					theseIpsl = ipsl_yrly[theseYears]
-					theseMiroc =  miroc_yrly[theseYears]
-					dataOutArray[j, i, thisDecade, thisScen, 3] = median(mblm(theseGfdl ~ theseYears)$coefficients[2],
-						mblm(theseHadgem ~ theseYears)$coefficients[2],
-						mblm(theseIpsl ~ theseYears)$coefficients[2],
-						mblm(theseMiroc ~ theseYears)$coefficients[2])
-					dataOutArray[j, i, thisDecade, thisScen, 4] = median(cor.test(theseYears, theseGfdl, method='spearman')$p.value,
-						cor.test(theseYears, theseHadgem, method='spearman')$p.value,
-						cor.test(theseYears, theseIpsl, method='spearman')$p.value,
-						cor.test(theseYears, theseMiroc, method='spearman')$p.value, na.rm=TRUE)
-				}	
+					gfdl_yrly = NULL
+					hadgem_yrly = NULL
+					ipsl_yrly = NULL
+					miroc_yrly = NULL
+					for(thisYear in nc_years)	{
+						theseDates = which(year(nc_date) == thisYear)
+						gfdl_yrly = c(gfdl_yrly, mean(gfdl_all[theseDates], na.rm=TRUE))
+						hadgem_yrly = c(hadgem_yrly, mean(hadgem_all[theseDates], na.rm=TRUE))
+						ipsl_yrly = c(ipsl_yrly, mean(ipsl_all[theseDates], na.rm=TRUE))
+						miroc_yrly = c(miroc_yrly, mean(miroc_all[theseDates], na.rm=TRUE))
+					}
 					
-					# calculating long-term trends (sens slope)
-	#			dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]
+					gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 20, n.points = numYears)$y
+					hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 20, n.points = numYears)$y
+					ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 20, n.points = numYears)$y
+					miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 20, n.points = numYears)$y
 
-					# calculating long-term significance (spearmans)
-	#			dataOutArray[j, i, , thisScen, 6] = dataOutArray[j, i, 9, thisScen, 4]				
+
+					for(thisDecade in 1:9)	{
+						theseYears = (thisDecade - 1) * 10 + 5:14
+							# defining absolute values
+						dataSmoothMed = median(c(gfdl_smth[theseYears], hadgem_smth[theseYears], ipsl_smth[theseYears], miroc_smth[theseYears]))
+						dataOutArray[j, i, thisDecade, thisScen, 1] = dataSmoothMed
+						dataQuantDiffs = diff(quantile(c(gfdl_yrly[theseYears], hadgem_yrly[theseYears], ipsl_yrly[theseYears], miroc_yrly[theseYears]), c(0.25, 0.5, 0.75)))
+						dataOutArray[j, i, thisDecade, thisScen, 5] = dataSmoothMed - abs(dataQuantDiffs[1])
+						dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + abs(dataQuantDiffs[2])
+							# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
+						theseGfdl = gfdl_yrly[theseYears]
+						theseHadgem = hadgem_yrly[theseYears]
+						theseIpsl = ipsl_yrly[theseYears]
+						theseMiroc =  miroc_yrly[theseYears]
+						dataOutArray[j, i, thisDecade, thisScen, 3] = median(mblm(theseGfdl ~ theseYears)$coefficients[2],
+							mblm(theseHadgem ~ theseYears)$coefficients[2],
+							mblm(theseIpsl ~ theseYears)$coefficients[2],
+							mblm(theseMiroc ~ theseYears)$coefficients[2])
+						dataOutArray[j, i, thisDecade, thisScen, 4] = median(cor.test(theseYears, theseGfdl, method='spearman')$p.value,
+							cor.test(theseYears, theseHadgem, method='spearman')$p.value,
+							cor.test(theseYears, theseIpsl, method='spearman')$p.value,
+							cor.test(theseYears, theseMiroc, method='spearman')$p.value, na.rm=TRUE)
+					}	
+						
+						# calculating long-term trends (sens slope)
+		#			dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]
+
+						# calculating long-term significance (spearmans)
+		#			dataOutArray[j, i, , thisScen, 6] = dataOutArray[j, i, 9, thisScen, 4]				
+				}
 			}
 		}
 	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
@@ -318,3 +327,88 @@ image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,3,2])
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,2,2])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,2,6] - nc_testDat[,,1,2,5])
+
+
+
+
+
+
+# fancy plots
+library(sf)
+library(ggplot2)
+library(viridis)
+geomData = st_as_sf(data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 1, 1, 1])), coords = c('lon', 'lat'))
+geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 1, 1, 1]))
+df_sub = subset(geomData, lat > -5000)
+latlonBox = c(25, 65, -10, 60) #(minlat, maxlat, minlon, maxlon)
+latlonBox = c(-55, 75, -180, 180) #(minlat, maxlat, minlon, maxlon)
+myTitle = 'Sugar Beet Yield'
+mySubtitle = 'nonirrigated'
+ggplot(data = df_sub, aes(fill = plotData, y = lat, x = lon)) +
+	geom_tile(width = 1, height = 1)	+
+#	geom_sf(data = df_sub, aes(fill = plotData, color = plotData)) +
+	borders('world', xlim=range(df_sub$lon), ylim=range(df_sub$lat), 
+            colour='gray90', size=.2)	+
+	theme_light()	+
+	theme(panel.ontop=FALSE, panel.background=element_blank()) +
+	scale_fill_viridis()	+
+#	scale_colour_distiller(palette='Spectral', 
+#                         limits=c(quantile(df_sub, .7, na.rm=T), 
+#                                  quantile(df_sub, .999, na.rm=T))) +
+    coord_quickmap(xlim=c(latlonBox[3], latlonBox[4]), ylim=c(latlonBox[1], latlonBox[2])) +
+    labs(title=myTitle, subtitle=mySubtitle, 
+         x="Longitude", y="Latitude", 
+         fill=expression(tons / hectare / year))
+	
+
+
+
+
+
+
+
+
+library(rnaturalearth)
+library(maps)
+sf_use_s2(FALSE)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+st_as_sf(world)
+geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 9, 3, 3]))
+geomData_sf = st_as_sf(geomData, coords=c('lon','lat'), remove=FALSE, crs=4326, agr='constant')
+
+geomJoin = st_join(world, geomData_sf, join = st_intersects)
+
+geomAvg = aggregate(plotData ~ sovereignt, mean, data = geomJoin)#, na.action = na.pass)
+geomAvgMrg = merge(geomAvg, world, by = 'sovereignt')
+geomAvgMrg_sf = st_as_sf(geomAvgMrg)
+
+
+ggplot(data = geomAvgMrg_sf) +
+#	scale_colour_viridis_c(alpha = 1) +
+#	scale_colour_gradientn(colours=rev(c('#F2F3F3', '#F2F3F3', '#FFF2F2', '#FFE5E5', 'orangered1', 'red1','red3','firebrick')),name='drought') +
+#	scale_fill_gradient2(low='firebrick', mid='#DBDDDF', high='#196CE1', midpoint = .5, na.value = NA, limits = c(0,1),
+#		breaks = c(.25, .5, .75), labels = c('severe drought', 'drought', 'wet conditions'), name='SPEI 3 month') +
+#	geom_sf(data = california, fill = '#DBDDDF', color = '#1A232F', size=1.4) +
+#	geom_sf(data = states, fill = '#DBDDDF')	+
+#	geom_sf(data = counties, fill = NA, color = gray(.5))
+#	geom_sf(data = world, fill = NA, color = gray(0.05), size=0.8) +
+	geom_sf(data = geomAvgMrg_sf, size=6.4, shape=15, aes(fill=plotData)) +
+	scale_fill_viridis_c(option = 'turbo', trans = scales::pseudo_log_trans(sigma = 0.001))+#, trans = 'log10') +
+#	ylim(-2,2) geomAvgMrg_sf
+#	geom_sf(data = mask, fill='#F2F3F3', color='#F2F3F3') +
+#	geom_sf(data = counties, fill = NA, color = '#666D74') +
+#	geom_sf(data = states, fill = NA, color = '#1A232F', size=1.4) +
+#	geom_sf(data = cityLocs_sf, size=4.4, stroke = 1.1, shape=21, col='white', fill='grey20')+ #c(rep('#039CE2',8), rep('#FDB600',7), '#23AF41')) +
+	theme(panel.grid = element_line(colour='#F2F3F3')) +
+	theme(panel.background = element_rect(fill = '#F2F3F3', colour='#F2F3F3')) +
+	theme(legend.position = 'bottom',
+		legend.background = element_rect(fill='white', colour='grey10')) +
+	guides(fill=guide_legend(title="Water Depletion")) +
+	coord_sf(xlim = c(-180, 180), ylim = c(-60, 90), expand = FALSE)
+#	
+
+
+	theme_light()	+
+	theme(panel.ontop=FALSE, panel.background=element_blank()) +
+	scale_fill_viridis()	+

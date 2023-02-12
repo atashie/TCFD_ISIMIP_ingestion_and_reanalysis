@@ -1,5 +1,6 @@
 library(data.table)
 library(ncdf4)
+startTime = proc.time()
 
 	# corbion
 userName = 'Corbion'	
@@ -75,7 +76,7 @@ for(thisHazard in 6:ncol(customerTable))	{
 		if(names(customerTable)[thisHazard] %in% appendedHazardNames)	{	
 			print(c('this hazard must be run independently and appended later:     ', names(customerTable)[thisHazard]))
 		}	else	{
-			hazardMeasures = subset(hazardTable, Hazard == names(customerTable)[thisHazard])
+			hazardMeasures = subset(hazardTable, Hazard == names(customerTable)[thisHazard] & Included_In_Core_Product)
 			for(thisHazardMeasure in 1:nrow(hazardMeasures))	{
 				hazardMeasureNC = nc_open(paste0('J:\\Cai_data\\TCFD\\ProcessedNCs\\', hazardMeasures$Hazard_Measure[thisHazardMeasure], 'v2_processed.nc'))
 				nc_lats = ncvar_get(hazardMeasureNC, 'lat')
@@ -491,6 +492,7 @@ seaL_nc = nc_open(paste0(ncpath, ncVarFileName, '_glblGrdv2_processed.nc'))
 seaL_lat = ncvar_get(seaL_nc, 'lat')	# lat is given from high to low
 seaL_lon = ncvar_get(seaL_nc, 'lon')
 seaL_scen = ncvar_get(seaL_nc, 'rcpScen')
+seal_scenRename = c('RCP 2.6', 'RCP 6.0', 'RCP 8.5')
 seaL_elev = ncvar_get(seaL_nc, 'tcfdVariable')
 nc_close(seaL_nc)
 
@@ -548,7 +550,7 @@ for(j in 1:nrow(customerTable))	{
 								Hazard = "Coastal Flood",
 								Hazard_Measure = "Sea Level Rise",
 								Decade = 2000 + whichDecades[thisDecade],
-								Scenario = seaL_scen[thisScen],
+								Scenario = seal_scenRename[thisScen],
 								Raw_Hazard_Value = as.numeric(seaLvlVal),					# Raw_Hazard_Value
 								Percentile_Score = NA,												# Percentile_Score
 								Relative_Hazard_Score = NA,											# Relative_Hazard_Score
@@ -577,8 +579,8 @@ for(j in 1:nrow(customerTable))	{
 						Hazard = "Coastal Flood",
 						Hazard_Measure = "Sea Level Rise",
 						Decade = rep(2000 + whichDecades, length(seaL_scen)),
-						Scenario = rep(seaL_scen, each=length(whichDecades)),
-						Raw_Hazard_Value = 9999,								# Raw_Hazard_Value
+						Scenario = rep(seal_scenRename, each=length(whichDecades)),
+						Raw_Hazard_Value = 1000,								# Raw_Hazard_Value
 						Percentile_Score = NA,								# Percentile_Score
 						Relative_Hazard_Score = NA,							# Relative_Hazard_Score
 						Decadal_Trend_Strength = 0,							# Decadal_Trend_Strength
@@ -589,8 +591,8 @@ for(j in 1:nrow(customerTable))	{
 						Trend_Aggregated_For_Looker = NA,
 						Advanced_Data_Measures = NA,
 						Advanced_Data_Measures_Units = NA,
-						Raw_Hazard_Value_25th = 9999,
-						Raw_Hazard_Value_75th = 9999))
+						Raw_Hazard_Value_25th = 1000,
+						Raw_Hazard_Value_75th = 1000))
 	}
 }
 	
@@ -610,20 +612,6 @@ for(ll in 1:length(relSeaLevElevHaz))	{
 
 fileName_seaLevelRise = paste0(userName, '_', thisDate, '_seaLevelRise', (locationFootprint*2+1), 'km')
 fwrite(dataOutput, paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv'))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -654,6 +642,7 @@ specializedOutput_LRF = fread(paste0(customerFolder, fileName_localFlood, thisDa
 specializedOutputs = merge(specializedOutput_LRF, specializedOutput_SLR, all = TRUE)
 dataOutput = merge(mainHazardOutputs,  specializedOutputs, all = TRUE)
 dataOutput = merge(dataOutput, appendedOutputs, all = TRUE)
+#dataOutput = fread(paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
 #dataOutput = merge(specializedOutputs, appendedOutputs, all = TRUE)
 allHazards = unique(dataOutput$Hazard)
 
@@ -744,7 +733,13 @@ for(thisRow in 1:nrow(relHazScores))	{
 	dataOutput$Relative_Hazard_Score[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = paste0(thisRow, '. ', relHazScores$Hazard_Common_Name[thisRow])
 	dataOutput$Relative_Hazard_Score_Number[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = thisRow
 }		
-			
+	
+	# initializing each scenario as 2010s middle of the road
+dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'Low Emissions'),  ]$Percentile_Score = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Percentile_Score
+dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'High Emissions'), ]$Percentile_Score = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Percentile_Score
+dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'Low Emissions'),  ]$Raw_Hazard_Value = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Raw_Hazard_Value
+dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'High Emissions'), ]$Raw_Hazard_Value = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Raw_Hazard_Value
+	
 	# aggregating trends for looker db
 dataOutput$Trend_Aggregated_For_Looker = 0
 signifiDecreaseRows = which(dataOutput$Decadal_Trend_Significance < 0.5 & dataOutput$Long_Term_Trend_Significance < 0.05 & dataOutput$Decadal_Trend_Strength < 0 & dataOutput$Long_Term_Trend_Strength < 0)
@@ -758,10 +753,11 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & H
 summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Water Scarcity' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
 plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Hurricanes' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
 plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'River Flood (Regional)' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
 	
-	
+proc.time() - startTime
 	
 # sample analysis
 	

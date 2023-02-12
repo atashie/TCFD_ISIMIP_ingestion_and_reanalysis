@@ -58,7 +58,7 @@ dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(rcpScenarios), length(valueType)))
 
 
-for(thisScen in 1:length(rcpScenarios))	{
+for(thisScen in 2:length(rcpScenarios))	{
 	rcpScenNum = rcpScenarios[thisScen]
 	rcpScen = paste0('rcp', rcpScenNum)
 
