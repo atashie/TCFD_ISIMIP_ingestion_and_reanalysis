@@ -49,6 +49,7 @@ myMissingData = NA
 dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(rcpScenarios), length(valueType)))
 
+scalar = 100
 
 for(thisScen in 1:length(rcpScenarios))	{
 	rcpScenNum = rcpScenarios[thisScen]
@@ -80,10 +81,10 @@ for(thisScen in 1:length(rcpScenarios))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				gfdl_yrly = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * 100
-				hadgem_yrly = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * 100
-				ipsl_yrly = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates])  * 100
-				miroc_yrly = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * 100
+				gfdl_yrly = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * scalar
+				hadgem_yrly = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * scalar
+				ipsl_yrly = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates])  * scalar
+				miroc_yrly = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * scalar
 			
 				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
 				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
@@ -136,7 +137,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_close(ncin_miroc)
 }
 
-#dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
 ##### temp fix for not having rcp 8.5
 dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), 3, length(valueType)))
@@ -145,27 +146,30 @@ dataOutArray[ , , , 1:2, ] = old_dataOutArray[ , , , 1:2, ]
 ##### end temp fix
 
 
-	# defining quantiles 
+
+	# removing zeroes from non-impacted regions
 maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
 maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
-#histQuants = quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01))
+histQuants = quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, length.out=80))
+histQuants
 
-	# removing zeroes from non-impacted regions
-maskedLocs26_zeroes = which(is.na(dataOutArray[ , , 1, 1, 1]) | dataOutArray[ , , 1, 1, 1] == 0)
+minSignif = 0.7
+	# removing low values from non-impacted regions
+maskedLocs26_zeroes = which(is.na(dataOutArray[ , , 1, 1, 1]) | dataOutArray[ , , 1, 1, 1] < minSignif)
 histDatSubset26_zeroes =  dataOutArray[ , , 1, 1, 1][-maskedLocs26_zeroes]
-maskedLocs60_zeroes = which(is.na(dataOutArray[ , , 1, 2, 1]) | dataOutArray[ , , 1, 2, 1] == 0)
+maskedLocs60_zeroes = which(is.na(dataOutArray[ , , 1, 2, 1]) | dataOutArray[ , , 1, 2, 1] < minSignif)
 histDatSubset60_zeroes =  dataOutArray[ , , 1, 2, 1][-maskedLocs60_zeroes]
-histQuants = quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes), seq(0.01, 1, length.out=100))
+histQuants = quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes), seq(0.01, 1, length.out=80))
 histQuants
 
 for(i in 1:length(whichDecades))	{
 	dataOutArray[ , , i, 1, 2] = 1
 	dataOutArray[ , , i, 2, 2] = 1
 	for(j in 1:(length(histQuants)))	{
-		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j + 0
-		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j + 0
+		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j + 20
+		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j + 20
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA

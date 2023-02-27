@@ -160,6 +160,7 @@ histQuants = quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(
 histQuants
 
 for(i in 1:length(whichDecades))	{
+	dataOutArray[ , , i, , 2] = 1
 	for(j in 1:(length(histQuants)))	{
 		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] >= histQuants[j]] = j
 		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] >= histQuants[j]] = j

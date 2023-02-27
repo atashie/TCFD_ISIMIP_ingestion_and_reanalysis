@@ -1,67 +1,106 @@
 library(data.table)
 library(ncdf4)
+
 startTime = proc.time()
+thisDate = Sys.Date()
+hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 
 	# corbion
-userName = 'Corbion'	
-hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\'
-thisDate = Sys.Date()
+#userName = 'Corbion'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\'
 
-customerTable = fread(paste0(customerFolder, 'Corbion_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
-hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Definitions.csv'))							# 
-relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\Corbion_temp_precip_hazards_dec_6 - Corbion_temp_precip_hazards_dec_6.csv'
+#customerTable = fread(paste0(customerFolder, 'Corbion_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\Corbion_temp_precip_hazards_dec_6 - Corbion_temp_precip_hazards_dec_6.csv'
 
 	# ITC
-userName = 'ITC'	
-hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\'
-thisDate = Sys.Date()
+#userName = 'ITC'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\'
 
-customerTable = fread(paste0(customerFolder, 'ITC_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
-hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Definitions.csv'))							# 
-relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\ITC_temp_precip_hazards_dec_6 - ITC_temp_precip_hazards_dec_6.csv'
+#customerTable = fread(paste0(customerFolder, 'ITC_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\ITC_temp_precip_hazards_dec_6 - ITC_temp_precip_hazards_dec_6.csv'
 
 	# ITC - Water
-userName = 'ITC - Water'	
-hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\'
-thisDate = Sys.Date()
+#userName = 'ITC - Water'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\'
 
-customerTable = fread(paste0(customerFolder, 'ITC_Locations_Dec2022 - Water Exposure.csv')) #'HMClause_locations_allCucurbit.csv'
-hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Definitions.csv'))							# 
-relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#customerTable = fread(paste0(customerFolder, 'ITC_Locations_Dec2022 - Water Exposure.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_ITC_Dec2022 - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 #appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ITC_Dec2022\\ITC_temp_precip_hazards_dec_6 - ITC_temp_precip_hazards_dec_6.csv'
 
 	# Driscolls
-userName = 'Driscolls'	
-hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Driscolls_Dec2022\\'
-thisDate = Sys.Date()
+#userName = 'Driscolls'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Driscolls_Dec2022\\'
 
-customerTable = fread(paste0(customerFolder, 'Driscolls_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
-hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_Driscolls_Dec2022 - Hazard Definitions.csv'))							# 
-relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Driscolls_Dec2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Driscolls_Dec2022\\Driscolls_temp_precip_hazards_dec_6 - Driscolls_temp_precip_hazards_dec_6.csv'
+#customerTable = fread(paste0(customerFolder, 'Driscolls_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Driscolls_Dec2022 - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Driscolls_Dec2022\\Driscolls_temp_precip_hazards_dec_6 - Driscolls_temp_precip_hazards_dec_6.csv'
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Driscolls_Dec2022\\Sales_davesData.csv'
 
 
 	# HMClause
-userName = 'HMClause'	
-hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\'
-thisDate = Sys.Date()
+#userName = 'HMClause'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\'
 
-customerTable = fread(paste0(customerFolder, 'HMClause_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
-hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Definitions.csv'))							# 
-relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Sea Level Rise', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\HMClause_temp_precip_hazards_dec_6 - HMClause_temp_precip_hazards_dec_6.csv'
+#customerTable = fread(paste0(customerFolder, 'HMClause_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\HMClause_temp_precip_hazards_dec_6 - HMClause_temp_precip_hazards_dec_6.csv'
+
+
+	# Nuveen - Spain
+#userName = 'Nuveen - Spain'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Nuveen_Feb2023\\'
+
+#customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_Jan2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\HMClause_temp_precip_hazards_dec_6 - HMClause_temp_precip_hazards_dec_6.csv'
+
+
+	# EQ Cap
+#userName = 'Sales'	
+#hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\EQCap_Feb2023\\'
+#thisDate = Sys.Date()
+
+#customerTable = fread(paste0(customerFolder, 'EQCap_Locations_Dec2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\EQCap_Feb2023\\EQ_cap_temp_precip_hazards_feb_11.csv'
+
+
+	# suntory - Japan Demo
+userName = 'Kurita'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Sunotory_Feb2023\\'
+
+customerTable = fread(paste0(customerFolder, 'Suntory - Hops Supplier Locations - For_exposure.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Sunotory_Feb2023\\Kurita_temp_precip_hazards_feb_18.csv'
+
+	# Indigo - South Africa
+#userName = 'Indigo'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Indigo_Feb2023\\'
+
+#customerTable = fread(paste0(customerFolder, 'SA - Exposure Locations - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Indigo_Feb2023\\Indigo_temp_precip_hazards_feb_22.csv'
 
 ############################################################################################
 ## basic exposure data
@@ -603,14 +642,14 @@ dataOutput = dataOutput[-1,]
 # in Key West, buildings must be 7 ft above sea level (or on piers of that height): https://www.cityofkeywest-fl.gov/671/Construction-in-Flood-Zones
 	# 7 ft ~ 2.1336
 basSeqSeaLevElev = seq(0, 1, length.out=80)
-relSeaLevElevHaz = -(basSeqSeaLevElev^2 / max(basSeqSeaLevElev^2)) * (10 + 2.1336) + 2.1336
+relSeaLevElevHaz = -(basSeqSeaLevElev^2 / max(basSeqSeaLevElev^2)) * (10 + 2.1336 * 2) + 2.1336 * 2
 
 dataOutput$Percentile_Score = 1
 for(ll in 1:length(relSeaLevElevHaz))	{
 	dataOutput$Percentile_Score[which(dataOutput$Raw_Hazard_Value < relSeaLevElevHaz[ll])] = ll + 20
 }
 
-fileName_seaLevelRise = paste0(userName, '_', thisDate, '_seaLevelRise', (locationFootprint*2+1), 'km')
+fileName_seaLevelRise = paste0(userName, '_', thisDate, '_seaLevelRise_1km')
 fwrite(dataOutput, paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv'))
 
 
@@ -739,6 +778,8 @@ dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'Low Emissio
 dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'High Emissions'), ]$Percentile_Score = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Percentile_Score
 dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'Low Emissions'),  ]$Raw_Hazard_Value = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Raw_Hazard_Value
 dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'High Emissions'), ]$Raw_Hazard_Value = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Raw_Hazard_Value
+dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'Low Emissions'),  ]$Relative_Hazard_Score = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Relative_Hazard_Score
+dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'High Emissions'), ]$Relative_Hazard_Score = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Relative_Hazard_Score
 	
 	# aggregating trends for looker db
 dataOutput$Trend_Aggregated_For_Looker = 0
@@ -749,15 +790,28 @@ dataOutput$Trend_Aggregated_For_Looker[signifiIncreaseRows] = dataOutput$Decadal
 
 fwrite(dataOutput, paste0(customerFolder, 'processedOutputForAllHazards_', userName, '_', thisDate, '.csv'))
 	
-summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Water Demand'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Water Scarcity'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Water Scarcity' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Hurricanes' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'River Flood (Regional)' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
+par(mfrow = c(3,3))
+thisLoc = 2
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'River Flood (Regional)' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'River Flood (Local)' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Coastal Flood' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Water Availability' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Intense Precipitation' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Extreme Heat' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Extreme Cold' & Location == customerTable$Location[thisLoc])$Percentile)	
+
+plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Coastal Flood' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
 	
 proc.time() - startTime
+
+unique(dataOutput$Region)
+dataOutput$Region[which(dataOutput$Region == 'US')] = 'USA'
 	
 # sample analysis
 	
@@ -932,14 +986,14 @@ subset(dataOutput, Hazard_Measure == 'Aggregate Score' & Scenario == 'Middle of 
 subset(dataOutput, Hazard_Measure == 'Aggregate Score' & Scenario == 'Low Emissions')[1:99,c(2,7:12)]
 subset(dataOutput, Hazard_Measure == 'Aggregate Score' & Scenario == 'High Emissions')[1:99,c(2,7:12)]
 
-mean(subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Middle of the Road')$Percentile)
-mean(subset(dataOutput, Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Middle of the Road')$Percentile)
+summary(subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Low Emissions')$Percentile)
+summary(subset(dataOutput, Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Low Emissions')$Percentile)
 
-mean(subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'High Emissions')$Percentile)
-mean(subset(dataOutput, Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'High Emissions')$Percentile)
+summary(subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Middle of the Road')$Percentile)
+summary(subset(dataOutput, Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Middle of the Road')$Percentile)
 
-mean(subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Low Emissions')$Percentile)
-mean(subset(dataOutput, Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'Low Emissions')$Percentile)
+summary(subset(dataOutput, Hazard != 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'High Emissions')$Percentile)
+summary(subset(dataOutput, Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score' & Scenario == 'High Emissions')$Percentile)
 
 for(thisScen in unique(dataOutput$Scenario))	{
 	for(thisLoc in unique(dataOutput$Location))	{

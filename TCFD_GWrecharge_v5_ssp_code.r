@@ -56,7 +56,7 @@ myMissingData = NA
 dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(rcpScenarios), length(valueType)))
 
-scalar = 60*60*24*30.4375
+scalar = 60*60*24*30.4375 # mm / s to mm / month
 
 for(thisScen in 1:length(rcpScenarios))	{
 	rcpScenNum = rcpScenarios[thisScen]
@@ -64,24 +64,18 @@ for(thisScen in 1:length(rcpScenarios))	{
 
 	ncname_gfdl = paste0('cwatm_gfdl-esm4_w5e5_', rcpScen, '_2015soc_default_', ncVarFileName, '_global_monthly_2015_2100.nc')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
-	nc_gfdl = ncvar_get(ncin_gfdl,ncVarFileName)	# lon, lat, time
 
 	ncname_mpi = paste0('cwatm_mpi-esm1-2-hr_w5e5_', rcpScen, '_2015soc_default_', ncVarFileName, '_global_monthly_2015_2100.nc')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_mpi = nc_open(paste0(ncpath, ncname_mpi))
-	nc_mpi = ncvar_get(ncin_mpi,ncVarFileName)	# lon, lat, time
 
 	ncname_ipsl = paste0('cwatm_ipsl-cm6a-lr_w5e5_', rcpScen, '_2015soc_default_', ncVarFileName, '_global_monthly_2015_2100.nc')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
-	nc_ipsl = ncvar_get(ncin_ipsl,ncVarFileName)	# lon, lat, time
 
 	ncname_mri = paste0('cwatm_mri-esm2-0_w5e5_', rcpScen, '_2015soc_default_', ncVarFileName, '_global_monthly_2015_2100.nc')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_mri = nc_open(paste0(ncpath, ncname_mri))
-	nc_mri = ncvar_get(ncin_mri,ncVarFileName)	# lon, lat, time
 
 	ncname_ukesm = paste0('cwatm_ukesm1-0-ll_w5e5_', rcpScen, '_2015soc_default_', ncVarFileName, '_global_monthly_2015_2100.nc')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_ukesm = nc_open(paste0(ncpath, ncname_ukesm))
-	nc_ukesm = ncvar_get(ncin_ukesm,ncVarFileName)	# lon, lat, time
-
 
 	nc_date = as.Date("1600-01-15") + ncvar_get(ncin_ukesm, 'time')# time is months after 1601-1-1
 	nc_years = unique(year(nc_date))
@@ -89,15 +83,21 @@ for(thisScen in 1:length(rcpScenarios))	{
 	missing_data = 1.00000002004088e+20
 
 	for(i in 1:length(nc_lat))	{
+		nc_gfdl = ncvar_get(ncin_gfdl,ncVarFileName)[ ,i , ]	# lon, lat, time
+		nc_mpi = ncvar_get(ncin_mpi,ncVarFileName)[ , i, ]	# lon, lat, time
+		nc_ipsl = ncvar_get(ncin_ipsl,ncVarFileName)[ , i, ]	# lon, lat, time
+		nc_mri = ncvar_get(ncin_mri,ncVarFileName)[ , i, ]	# lon, lat, time
+		nc_ukesm = ncvar_get(ncin_ukesm,ncVarFileName)[ , i, ]	# lon, lat, time
+
 		for(j in 1:length(nc_lon))	{
-			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
+			nc_dummy = nc_gfdl[j, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * scalar
-				mpi_all = c(nc_mpi_init[j,i, initDates], nc_mpi[j,i, -initDates]) * scalar
-				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) * scalar
-				mri_all = c(nc_mri_init[j,i, initDates], nc_mri[j,i, -initDates]) * scalar
-				ukesm_all = c(nc_ukesm_init[j,i, initDates], nc_ukesm[j,i, -initDates]) * scalar
+				gfdl_all = c(nc_gfdl_init[j, i, initDates], nc_gfdl[j, -initDates]) * scalar
+				mpi_all = c(nc_mpi_init[j, i, initDates], nc_mpi[j, -initDates]) * scalar
+				ipsl_all = c(nc_ipsl_init[j, i, initDates], nc_ipsl[j, -initDates]) * scalar
+				mri_all = c(nc_mri_init[j, i, initDates], nc_mri[j, -initDates]) * scalar
+				ukesm_all = c(nc_ukesm_init[j, i, initDates], nc_ukesm[j, -initDates]) * scalar
 
 				gfdl_yrly = NULL
 				mpi_yrly = NULL
@@ -177,18 +177,17 @@ for(thisScen in 1:length(rcpScenarios))	{
 	#			dataOutArray[j, i, , thisScen, 6] = dataOutArray[j, i, 9, thisScen, 4]				
 			}
 		}
-	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
+		saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
 	}
 	nc_close(ncin_gfdl)
 	nc_close(ncin_mpi)
 	nc_close(ncin_ipsl)
 	nc_close(ncin_mri)
 	nc_close(ncin_ukesm)
-	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
+	saveRDS(dataOutArray, file=paste0(ncpath, thisScen, 'data_out.rds'))
 }
 
 dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
-
 	# defining quantiles 
 maskedLocs126 = which(is.na(dataOutArray[ , , 1, 1, 1]))
 histDatSubset126 =  dataOutArray[ , , 1, 1, 1][-maskedLocs126]
@@ -205,9 +204,9 @@ for(i in 1:length(whichDecades))	{
 		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
 		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] <= histQuants[j]] = j
 	}
-	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
-	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
-	dataOutArray[ , , i, 3, 2][maskedLocs60] = NA
+	dataOutArray[ , , i, 1, 2][maskedLocs126] = NA
+	dataOutArray[ , , i, 2, 2][maskedLocs370] = NA
+	dataOutArray[ , , i, 3, 2][maskedLocs585] = NA
 }
 
 
@@ -237,7 +236,7 @@ names(dim(decade)) = 'decade'
 
 rcpScen = rcpScenarios
 dim(rcpScen) = length(rcpScen)
-metadata = list(rcpScen = list(units = 'SSP_scenario'))
+metadata = list(rcpScen = list(units = 'SSP_scenario')) 
 attr(rcpScen, 'variables') = metadata
 names(dim(rcpScen)) = 'rcpScen'
 

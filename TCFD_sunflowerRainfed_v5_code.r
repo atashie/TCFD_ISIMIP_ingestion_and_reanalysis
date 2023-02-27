@@ -12,11 +12,11 @@ library(zoo)		# for na.fill()
 
 #########################################
 # reading in climai netcdf data
-ncpath = "J:\\Cai_data\\TCFD\\SoyRainfed\\"
+ncpath = "J:\\Cai_data\\TCFD\\SunflowerRainfed\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-ncVarFileName = 'yield-soy-noirr'
-saveDate = '17FEB2023'
-rcpScenarios = c(26, 60, 85)
+ncVarFileName = 'yield-sun-noirr'
+saveDate = '21FEB2023'
+rcpScenarios = c(26, 60)
 whichDecades = seq(10,90,10)
 valueType = 1:6
 
@@ -24,7 +24,7 @@ valueType = 1:6
 
 	# initializing start decade
 initDates = 1:14
-ncname_gfdl = paste0('clm45_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_gfdl = paste0('lpjml_gfdl-esm2m_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
 nc_gfdl_init = ncvar_get(ncin_gfdl,ncVarFileName)[ , , initDates]	# lon, lat, time
 	# identifying lat lons before closing data
@@ -32,17 +32,17 @@ nc_lat = ncvar_get(ncin_gfdl, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(ncin_gfdl, 'lon')
 nc_close(ncin_gfdl)
 
-ncname_hadgem = paste0('clm45_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_hadgem = paste0('lpjml_hadgem2-es_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_hadgem-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
 nc_hadgem_init = ncvar_get(ncin_hadgem,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_hadgem)
 
-ncname_ipsl = paste0('clm45_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_ipsl = paste0('lpjml_ipsl-cm5a-lr_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_ipsl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
 nc_ipsl_init = ncvar_get(ncin_ipsl,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_ipsl)
 
-ncname_miroc = paste0('clm45_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+ncname_miroc = paste0('lpjml_miroc5_ewembi_rcp26_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_miroc-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
 nc_miroc_init = ncvar_get(ncin_miroc,ncVarFileName)[ , , initDates]	# lon, lat, time
 nc_close(ncin_miroc)
@@ -57,19 +57,19 @@ for(thisScen in 1:length(rcpScenarios))	{
 	rcpScenNum = rcpScenarios[thisScen]
 	rcpScen = paste0('rcp', rcpScenNum)
 
-	ncname_gfdl = paste0('clm45_gfdl-esm2m_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_gfdl = paste0('lpjml_gfdl-esm2m_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_gfdl = nc_open(paste0(ncpath, ncname_gfdl))
 	nc_gfdl = ncvar_get(ncin_gfdl,ncVarFileName)	# lon, lat, time
 
-	ncname_hadgem = paste0('clm45_hadgem2-es_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_hadgem = paste0('lpjml_hadgem2-es_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_hadgem = nc_open(paste0(ncpath, ncname_hadgem))
 	nc_hadgem = ncvar_get(ncin_hadgem,ncVarFileName)	# lon, lat, time
 	
-	ncname_ipsl = paste0('clm45_ipsl-cm5a-lr_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_ipsl = paste0('lpjml_ipsl-cm5a-lr_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_ipsl = nc_open(paste0(ncpath, ncname_ipsl))
 	nc_ipsl = ncvar_get(ncin_ipsl,ncVarFileName)	# lon, lat, time
 	
-	ncname_miroc = paste0('clm45_miroc5_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
+	ncname_miroc = paste0('lpjml_miroc5_ewembi_',rcpScen,'_2005soc_co2_', ncVarFileName, '_global_annual_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
 	ncin_miroc = nc_open(paste0(ncpath, ncname_miroc))
 	nc_miroc = ncvar_get(ncin_miroc,ncVarFileName)	# lon, lat, time
 
@@ -139,34 +139,41 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_close(ncin_miroc)
 }
 
+
 dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+##### temp fix for not having rcp 8.5
+dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
+	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), 3, length(valueType)))
+old_dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+dataOutArray[ , , , 1:2, ] = old_dataOutArray[ , , , 1:2, ]
+##### end temp fix
+
+
+
 
 	# defining quantiles 
 maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
 maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
-maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
-histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
-histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
+histQuants = rev(quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01)))
 histQuants
 
 for(i in 1:length(whichDecades))	{
-	dataOutArray[ , , i, , 2] = 1
+	dataOutArray[ , , i, 1, 2] = 1
+	dataOutArray[ , , i, 2, 2] = 1
 	for(j in 1:(length(histQuants)))	{
 		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] <= histQuants[j]] = j
 		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
-		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] <= histQuants[j]] = j
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
-	dataOutArray[ , , i, 3, 2][maskedLocs85] = NA
 }
 
 
 
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Soy Yield (nonirrigated) - tons / ha / yr'))
+metadata = list(tcfdVariable = list(units = 'Sunflower Yield (irrigated) - tons / ha / yr'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
@@ -188,7 +195,7 @@ metadata = list(decade = list(units = 'decades_of_21st_C'))
 attr(decade, 'variables') = metadata
 names(dim(decade)) = 'decade'
 
-rcpScen = rcpScenarios
+rcpScen = c(rcpScenarios, 85)
 dim(rcpScen) = length(rcpScen)
 metadata = list(rcpScen = list(units = 'RCP_scenario'))
 attr(rcpScen, 'variables') = metadata

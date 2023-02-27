@@ -94,7 +94,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) * scalar
 				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * scalar
 
-				histAvg = max(mean(c(gfdl_all[1:180], hadgem_all[1:180], ipsl_all[1:180], miroc_all[1:180])), 0.000000001)
+				histAvg = max(median(c(gfdl_all[1:180], hadgem_all[1:180], ipsl_all[1:180], miroc_all[1:180])), 0.000000001)
 				hist80Pct =  histAvg * 0.80
 
 				gfdl_yrly = NULL
@@ -105,26 +105,26 @@ for(thisScen in 1:length(rcpScenarios))	{
 					theseDates = which(year(nc_date) == thisYear)
 					theseVals = hist80Pct - gfdl_all[theseDates]
 					theseVals[theseVals < 0] = 0
-					gfdl_yrly = c(gfdl_yrly, sum(theseVals / histAvg))
+					gfdl_yrly = c(gfdl_yrly, sum((histAvg - theseVals) / histAvg))
 					
 					theseVals = hist80Pct - hadgem_all[theseDates]
 					theseVals[theseVals < 0] = 0
-					hadgem_yrly = c(hadgem_yrly, sum(theseVals / histAvg))
+					hadgem_yrly = c(hadgem_yrly, sum((histAvg - theseVals) / histAvg))
 					
 					theseVals = hist80Pct - ipsl_all[theseDates]
 					theseVals[theseVals < 0] = 0
-					ipsl_yrly = c(ipsl_yrly, sum(theseVals / histAvg))
+					ipsl_yrly = c(ipsl_yrly, sum((histAvg - theseVals) / histAvg))
 					
 					theseVals = hist80Pct - miroc_all[theseDates]
 					theseVals[theseVals < 0] = 0
-					miroc_yrly = c(miroc_yrly, sum(theseVals / histAvg))
+					miroc_yrly = c(miroc_yrly, sum((histAvg - theseVals) / histAvg))
 				}
 
 
-				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
+				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 15, n.points = numYears)$y
+				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 15, n.points = numYears)$y
+				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 15, n.points = numYears)$y
+				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 15, n.points = numYears)$y
 
 
 				for(thisDecade in 1:9)	{
@@ -167,6 +167,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 }
 
 dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+dataOutArray = dataOutArray * 1
 
 	# defining quantiles 
 maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
