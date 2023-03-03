@@ -6,14 +6,15 @@ library(easyNCDF)	# for ArrayToNc()
 #library(robslopes)	# for TheilSen()
 #library(trend)		# for sens.slope()
 library(mblm)		# for sens slope mlbm()
+library(zoo)		# for na.fill()
 
 
 
 #########################################
 # reading in climai netcdf data
-ncpath = "J:\\Cai_data\\TCFD\\SoyIrrigated\\"
+ncpath = "J:\\Cai_data\\TCFD\\SunflowerIrrigated\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-ncVarFileName = 'yield-soy-firr'
+ncVarFileName = 'yield-sun-firr'
 saveDate = '16JAN2023'
 rcpScenarios = c(26, 60)
 whichDecades = seq(10,90,10)
@@ -82,10 +83,10 @@ for(thisScen in 1:length(rcpScenarios))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				gfdl_yrly = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates])
-				hadgem_yrly = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates])
-				ipsl_yrly = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates])
-				miroc_yrly = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates])
+				gfdl_yrly = na.fill(c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]), 'extend')
+				hadgem_yrly = na.fill(c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]), 'extend')
+				ipsl_yrly = na.fill(c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]), 'extend')
+				miroc_yrly = na.fill(c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]), 'extend')
 			
 				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
 				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
@@ -139,33 +140,39 @@ for(thisScen in 1:length(rcpScenarios))	{
 }
 
 dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+##### temp fix for not having rcp 8.5
+dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
+	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), 3, length(valueType)))
+old_dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+dataOutArray[ , , , 1:2, ] = old_dataOutArray[ , , , 1:2, ]
+##### end temp fix
+
+
+
 
 	# defining quantiles 
 maskedLocs26 = which(is.na(dataOutArray[ , , 1, 1, 1]))
 histDatSubset26 =  dataOutArray[ , , 1, 1, 1][-maskedLocs26]
 maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
-maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
-histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
-histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
-hist
+histQuants = rev(quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, 0.01)))
+histQuants
 
 for(i in 1:length(whichDecades))	{
-	dataOutArray[ , , i, , 2] = 1
+	dataOutArray[ , , i, 1, 2] = 1
+	dataOutArray[ , , i, 2, 2] = 1
 	for(j in 1:(length(histQuants)))	{
 		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] <= histQuants[j]] = j
 		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
-		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] <= histQuants[j]] = j
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
-	dataOutArray[ , , i, 3, 2][maskedLocs85] = NA
 }
 
 
 
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Soy Yield (irrigated) - tons / ha / yr'))
+metadata = list(tcfdVariable = list(units = 'Sunflower Yield (irrigated) - tons / ha / yr'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
@@ -187,7 +194,7 @@ metadata = list(decade = list(units = 'decades_of_21st_C'))
 attr(decade, 'variables') = metadata
 names(dim(decade)) = 'decade'
 
-rcpScen = rcpScenarios
+rcpScen = c(rcpScenarios, 85)
 dim(rcpScen) = length(rcpScen)
 metadata = list(rcpScen = list(units = 'RCP_scenario'))
 attr(rcpScen, 'variables') = metadata

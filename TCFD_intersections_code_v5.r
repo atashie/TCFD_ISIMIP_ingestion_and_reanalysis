@@ -102,6 +102,17 @@ appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Sunotory_Feb2023\\Kurita
 #appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 #appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Indigo_Feb2023\\Indigo_temp_precip_hazards_feb_22.csv'
 
+	# UBS Demo
+userName = 'UBS'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\UBS_Feb2023\\'
+
+customerTable = fread(paste0(customerFolder, 'UBS Demo - Exposure Locations - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\UBS_Feb2023\\UBS_temp_precip_hazards_feb_26.csv'
+
+
 ############################################################################################
 ## basic exposure data
 dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
@@ -674,6 +685,7 @@ fwrite(dataOutput, paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv
 #### calculating aggregated score and relative hazard values
 mainHazardOutputs = fread(paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
 appendedOutputs = subset(fread(appendedHazardFileLoc), Scenario %in% c('RCP 2.6', 'RCP 4.5', 'RCP 8.5'))
+appendedOutputs$Location[which(appendedOutputs$Location == 5027017)] = '05027017'
 appendedOutputs$Relative_Hazard_Score = NA	;	appendedOutputs$Relative_Hazard_Score_Number = NA	;	appendedOutputs$Trend_Aggregated_For_Looker = NA	
 #appendedOutputs$Location[appendedOutputs$Location == "Sarapaka Village Burgampahad Mandal District Bhadradri Kothagudem Telangana 507 128"] = "ITC Limited - Paperboards & Specialty Papers Division, PB. No.4 BHADRACHALAM, Sarapaka, Telangana 507128"
 specializedOutput_SLR = fread(paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv'))
@@ -767,6 +779,9 @@ for(i in 1:length(scenariosRename))	{
 	dataOutput$Scenario[dataOutput$Scenario == theScenarios[i]] = scenariosRename[i]
 }
 	
+	# quick fix to set NA tends to 0s for looker
+dataOutput$Trend_Aggregated_For_Looker[which(is.na(dataOutput$Trend_Aggregated_For_Looker))] = 0
+	
 	# identifying relative hazard scores
 for(thisRow in 1:nrow(relHazScores))	{
 	dataOutput$Relative_Hazard_Score[which(dataOutput$Percentile_Score > relHazScores$Hazard_Percentile[thisRow])] = paste0(thisRow, '. ', relHazScores$Hazard_Common_Name[thisRow])
@@ -795,7 +810,7 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazar
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 2
+thisLoc = 18
 plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'River Flood (Regional)' & Location == customerTable$Location[thisLoc])$Percentile)	
