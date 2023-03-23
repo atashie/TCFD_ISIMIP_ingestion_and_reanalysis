@@ -15,7 +15,7 @@ library(mblm)		# for sens slope mlbm()
 ncpath = "J:\\Cai_data\\TCFD\\GWrecharge\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncVarFileName = 'qr'
-saveDate = '23DEC2022'
+saveDate = '02MAR2023'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -78,16 +78,17 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_years = unique(year(nc_date))
 	numYears = length(nc_years)
 	missing_data = 1.00000002004088e+20
+	nonZeroGenerator = sample(seq(0.0001,0.001,length.out=1000), length(nc_years) * 12, replace = TRUE)
 
 	for(i in 1:length(nc_lat))	{
 		for(j in 1:length(nc_lon))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * scalar
-				hadgem_all = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * scalar
-				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) * scalar
-				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * scalar
+				gfdl_all = (c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) + nonZeroGenerator) * scalar
+				hadgem_all = (c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) + nonZeroGenerator) * scalar
+				ipsl_all = (c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) + nonZeroGenerator) * scalar
+				miroc_all = (c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) + nonZeroGenerator) * scalar
 
 				gfdl_yrly = NULL
 				hadgem_yrly = NULL
@@ -95,16 +96,33 @@ for(thisScen in 1:length(rcpScenarios))	{
 				miroc_yrly = NULL
 				for(thisYear in nc_years)	{
 					theseDates = which(year(nc_date) == thisYear)
-					gfdl_yrly = c(gfdl_yrly, sum(gfdl_all[theseDates]))
+					gfdl_yrly =   c(gfdl_yrly,   sum(gfdl_all[theseDates]))
 					hadgem_yrly = c(hadgem_yrly, sum(hadgem_all[theseDates]))
-					ipsl_yrly = c(ipsl_yrly, sum(ipsl_all[theseDates]))
-					miroc_yrly = c(miroc_yrly, sum(miroc_all[theseDates]))
+					ipsl_yrly =   c(ipsl_yrly,   sum(ipsl_all[theseDates]))
+					miroc_yrly =  c(miroc_yrly,  sum(miroc_all[theseDates]))
 				}
 				
-				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
+				gfdl_cv = NULL
+				hadgem_cv = NULL
+				ipsl_cv = NULL
+				miroc_cv = NULL
+				truncYears = 5:(numYears - 4)
+				for(thisYear in truncYears)	{
+					theseYears = seq(thisYear - 4, thisYear + 4, 1)
+					gfdl_cv =   c(gfdl_cv,   sd(gfdl_yrly[theseYears]))
+					hadgem_cv = c(hadgem_cv, sd(hadgem_yrly[theseYears]))
+					ipsl_cv =   c(ipsl_cv,   sd(ipsl_yrly[theseYears]))
+					miroc_cv =  c(miroc_cv,  sd(miroc_yrly[theseYears]))
+				}
+				gfdl_cv =   c(rep(median(gfdl_cv[1:14]), 4),  gfdl_cv,   rep(median(last(gfdl_cv, 10)), 4))
+				hadgem_cv = c(rep(median(hadgem_cv[1:14]), 4), hadgem_cv, rep(median(last(miroc_cv, 10)), 4))
+				ipsl_cv =   c(rep(median(ipsl_cv[1:14]), 4),  ipsl_cv,   rep(median(last(ipsl_cv, 10)), 4))
+				miroc_cv =  c(rep(median(miroc_cv[1:14]), 4), miroc_cv,  rep(median(last(miroc_cv, 10)), 4))
+
+				gfdl_smth = ksmooth(nc_years, gfdl_cv, kernel = 'normal', bandwidth = 30, n.points = numYears)$y
+				hadgem_smth = ksmooth(nc_years, hadgem_cv, kernel = 'normal', bandwidth = 30, n.points = numYears)$y
+				ipsl_smth = ksmooth(nc_years, ipsl_cv, kernel = 'normal', bandwidth = 30, n.points = numYears)$y
+				miroc_smth = ksmooth(nc_years, miroc_cv, kernel = 'normal', bandwidth = 30, n.points = numYears)$y
 
 
 				for(thisDecade in 1:9)	{
@@ -112,15 +130,15 @@ for(thisScen in 1:length(rcpScenarios))	{
 						# defining absolute values
 					dataSmoothMed = median(c(gfdl_smth[theseYears], hadgem_smth[theseYears], ipsl_smth[theseYears], miroc_smth[theseYears]))
 					dataOutArray[j, i, thisDecade, thisScen, 1] = dataSmoothMed
-					dataQuantDiffs = diff(quantile(c(gfdl_yrly[theseYears], hadgem_yrly[theseYears], ipsl_yrly[theseYears], miroc_yrly[theseYears]), c(0.25, 0.5, 0.75)))
+					dataQuantDiffs = diff(quantile(c(gfdl_cv[theseYears], hadgem_cv[theseYears], ipsl_cv[theseYears], miroc_cv[theseYears]), c(0.25, 0.5, 0.75)))
 					dataOutArray[j, i, thisDecade, thisScen, 5] = dataSmoothMed - abs(dataQuantDiffs[1])
 					dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + abs(dataQuantDiffs[2])
 						# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
 					theseYears = 1:((thisDecade - 1) * 10 + 14)
-					theseGfdl = gfdl_yrly[theseYears]
-					theseHadgem = hadgem_yrly[theseYears]
-					theseIpsl = ipsl_yrly[theseYears]
-					theseMiroc =  miroc_yrly[theseYears]
+					theseGfdl = gfdl_cv[theseYears]
+					theseHadgem = hadgem_cv[theseYears]
+					theseIpsl = ipsl_cv[theseYears]
+					theseMiroc =  miroc_cv[theseYears]
 					dataOutArray[j, i, thisDecade, thisScen, 3] = median(mblm(theseGfdl ~ theseYears)$coefficients[2],
 						mblm(theseHadgem ~ theseYears)$coefficients[2],
 						mblm(theseIpsl ~ theseYears)$coefficients[2],
@@ -155,14 +173,15 @@ maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 maskedLocs85 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset85 =  dataOutArray[ , , 1, 2, 1][-maskedLocs85]
-histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
+histQuants = quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01))
 histQuants
 
 for(i in 1:length(whichDecades))	{
+	dataOutArray[ , , i, , 2] = 1
 	for(j in 1:(length(histQuants)))	{
-		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] <= histQuants[j]] = j
-		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
-		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] <= histQuants[j]] = j
+		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j
+		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j
+		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] > histQuants[j]] = j
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
@@ -173,7 +192,7 @@ for(i in 1:length(whichDecades))	{
 
 
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Groundwater Recharge - annual total in mm'))
+metadata = list(tcfdVariable = list(units = 'Groundwater Recharge - Interannual SD'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
@@ -208,10 +227,10 @@ attr(valueClass, 'variables') = metadata
 names(dim(valueClass)) = 'valueClass'
 
 	# saving ncdf
-ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, ncVarFileName, 'v2_processed.nc'))
+ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath, 'qr_interannualSD_v2_processed.nc'))
 
 	# testing output, squinty eye test
-myNC = nc_open(paste0(ncOutputPath, ncVarFileName, 'v2_processed.nc'))
+myNC = nc_open(paste0(ncOutputPath, 'qr_interannualSD_v2_processed.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'tcfdVariable')

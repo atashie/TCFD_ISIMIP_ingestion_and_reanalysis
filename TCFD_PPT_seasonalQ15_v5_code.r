@@ -1,4 +1,4 @@
-#############################
+##############################################
 library(data.table)
 library(lubridate)
 library(ncdf4)
@@ -6,87 +6,16 @@ library(easyNCDF)	# for ArrayToNc()
 #library(robslopes)	# for TheilSen()
 #library(trend)		# for sens.slope()
 library(mblm)		# for sens slope mlbm()
-library(zoo)		# for na.fill()
-library(cmsafops)
 
 
 
 #########################################
 # reading in climai netcdf data
-ncpath = "J:\\Cai_data\\TCFD\\Precipitation\\"
-ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-ncVarFileName1 = 'rainf'
-ncVarFileName2 = 'snowf'
-saveDate = '28FEB2023'
-scenarios = c(26, 60, 85)
-
-for(i in scenarios)	{
-		# pre-processing all data
-		# first, fgdl
-	ncname_gfdl1 = paste0('clm45_gfdl-esm2m_ewembi_rcp', i, '_2005soc_co2_', ncVarFileName1, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
-	ncname_gfdl2 = paste0('clm45_gfdl-esm2m_ewembi_rcp', i, '_2005soc_co2_', ncVarFileName2, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
-
-	cmsaf.add(var1 = ncVarFileName1, var2 = ncVarFileName2, infile1 = file.path(paste0(ncpath, ncname_gfdl1)), infile2 = file.path(paste0(ncpath, ncname_gfdl2)),
-		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\Precipitation\\totPrecip_gfdl_', i, '.nc')), overwrite = TRUE)
-
-	nc_gfdl_init = nc_open(file.path(paste0('J:\\Cai_data\\TCFD\\Precipitation\\totPrecip_gfdl_', i, '.nc')))
-	nc_lat = ncvar_get(nc_gfdl_init, 'lat')	# lat is given from high to low
-	nc_lon = ncvar_get(nc_gfdl_init, 'lon')
-	nc_testDat = ncvar_get(nc_gfdl_init, ncVarFileName1)
-	image(nc_lon, rev(nc_lat),  nc_testDat[,,1] + nc_testDat[,,3] + nc_testDat[,,5] + nc_testDat[,,7] + nc_testDat[,,9] + nc_testDat[,,11])
-	nc_close(nc_gfdl_init)
-
-
-		# next, hadgem
-	ncname_gfdl1 = paste0('clm45_hadgem2-es_ewembi_rcp', i, '_2005soc_co2_', ncVarFileName1, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
-	ncname_gfdl2 = paste0('clm45_hadgem2-es_ewembi_rcp', i, '_2005soc_co2_', ncVarFileName2, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
-
-	cmsaf.add(var1 = ncVarFileName1, var2 = ncVarFileName2, infile1 = file.path(paste0(ncpath, ncname_gfdl1)), infile2 = file.path(paste0(ncpath, ncname_gfdl2)),
-		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\Precipitation\\totPrecip_hadgem_', i, '.nc')), overwrite = TRUE)
-
-	nc_hadgem_init = nc_open(file.path(paste0('J:\\Cai_data\\TCFD\\Precipitation\\totPrecip_hadgem_', i, '.nc')))
-	nc_lat = ncvar_get(nc_hadgem_init, 'lat')	# lat is given from high to low
-	nc_lon = ncvar_get(nc_hadgem_init, 'lon')
-	nc_testDat = ncvar_get(nc_hadgem_init, ncVarFileName1)
-	image(nc_lon, rev(nc_lat),  nc_testDat[,,1] + nc_testDat[,,3] + nc_testDat[,,5] + nc_testDat[,,7] + nc_testDat[,,9] + nc_testDat[,,11])
-	nc_close(nc_hadgem_init)
-
-
-		# next, ipsl
-	ncname_gfdl1 = paste0('clm45_ipsl-cm5a-lr_ewembi_rcp', i, '_2005soc_co2_', ncVarFileName1, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
-	ncname_gfdl2 = paste0('clm45_ipsl-cm5a-lr_ewembi_rcp', i, '_2005soc_co2_', ncVarFileName2, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
-
-	cmsaf.add(var1 = ncVarFileName1, var2 = ncVarFileName2, infile1 = file.path(paste0(ncpath, ncname_gfdl1)), infile2 = file.path(paste0(ncpath, ncname_gfdl2)),
-		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\Precipitation\\totPrecip_ipsl_', i, '.nc')), overwrite = TRUE)
-
-	nc_ipsl_init = nc_open(file.path(paste0('J:\\Cai_data\\TCFD\\Precipitation\\totPrecip_ipsl_', i, '.nc')))
-	nc_lat = ncvar_get(nc_ipsl_init, 'lat')	# lat is given from high to low
-	nc_lon = ncvar_get(nc_ipsl_init, 'lon')
-	nc_testDat = ncvar_get(nc_ipsl_init, ncVarFileName1)
-	image(nc_lon, rev(nc_lat),  nc_testDat[,,1] + nc_testDat[,,3] + nc_testDat[,,5] + nc_testDat[,,7] + nc_testDat[,,9] + nc_testDat[,,11])
-	nc_close(nc_ipsl_init)
-
-
-		# next, miroc
-	ncname_gfdl1 = paste0('clm45_miroc5_ewembi_rcp', i, '_2005soc_co2_', ncVarFileName1, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
-	ncname_gfdl2 = paste0('clm45_miroc5_ewembi_rcp', i, '_2005soc_co2_', ncVarFileName2, '_global_monthly_2006_2099.nc4')#"clm45_gfdl-esm2m_ewembi_rcp60_2005soc_co2_burntarea_global_monthly_2006_2099.nc4"  
-
-	cmsaf.add(var1 = ncVarFileName1, var2 = ncVarFileName2, infile1 = file.path(paste0(ncpath, ncname_gfdl1)), infile2 = file.path(paste0(ncpath, ncname_gfdl2)),
-		outfile = file.path(paste0('J:\\Cai_data\\TCFD\\Precipitation\\totPrecip_miroc_', i, '.nc')), overwrite = TRUE)
-
-	nc_miroc_init = nc_open(file.path(paste0('J:\\Cai_data\\TCFD\\Precipitation\\totPrecip_miroc_', i, '.nc')))
-	nc_lat = ncvar_get(nc_miroc_init, 'lat')	# lat is given from high to low
-	nc_lon = ncvar_get(nc_miroc_init, 'lon')
-	nc_testDat = ncvar_get(nc_miroc_init, ncVarFileName1)
-	image(nc_lon, rev(nc_lat),  nc_testDat[,,1] + nc_testDat[,,3] + nc_testDat[,,5] + nc_testDat[,,7] + nc_testDat[,,9] + nc_testDat[,,11])
-	nc_close(nc_miroc_init)
-}
-
-
 ###########################################
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 ncpath = "J:\\Cai_data\\TCFD\\Precipitation\\"
-saveDate = '28FEB2023'
+saveDate = '10MAR2023'
+ncVarFileName1 = 'rainf'
 rcpScenarios = c(26, 60, 85)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -144,70 +73,59 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_years = unique(year(nc_date))
 	numYears = length(nc_years)
 	missing_data = 1.00000002004088e+20
-
+	nonZeroGenerator = sample(seq(0.0001,0.001,length.out=1000), length(nc_years) * 12, replace = TRUE)
 
 	for(i in 1:length(nc_lat))	{
 		for(j in 1:length(nc_lon))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
-				thisGfdl = nc_gfdl[j,i, -initDates]
-				thisHadgem = nc_hadgem[j,i, -initDates]
-				thisIpsl = nc_ipsl[j,i, -initDates]
-				thisMiroc = nc_miroc[j,i, -initDates]
-				if(length(which(!is.na(thisGfdl))) > 10 &
-				   length(which(!is.na(thisHadgem))) > 10 &
-				   length(which(!is.na(thisIpsl))) > 10 &
-				   length(which(!is.na(thisMiroc))) > 10)	{
+				print(c(i, j))
+				gfdl_all = (c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) + nonZeroGenerator) * scalar
+				hadgem_all = (c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) + nonZeroGenerator) * scalar
+				ipsl_all = (c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) + nonZeroGenerator) * scalar
+				miroc_all = (c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) + nonZeroGenerator) * scalar
 
-					gfdl_all = na.fill(c(nc_gfdl_init[j,i, initDates], thisGfdl), 'extend') * scalar
-					hadgem_all = na.fill(c(nc_hadgem_init[j,i, initDates], thisHadgem),  'extend')* scalar
-					ipsl_all = na.fill(c(nc_ipsl_init[j,i, initDates], thisIpsl),  'extend') * scalar
-					miroc_all = na.fill(c(nc_miroc_init[j,i, initDates], thisMiroc),  'extend') * scalar
-	
-					gfdl_yrly = NULL
-					hadgem_yrly = NULL
-					ipsl_yrly = NULL
-					miroc_yrly = NULL
-					for(thisYear in nc_years)	{
-						theseDates = which(year(nc_date) == thisYear)
-						gfdl_yrly = c(gfdl_yrly, mean(gfdl_all[theseDates], na.rm=TRUE)*12)
-						hadgem_yrly = c(hadgem_yrly, mean(hadgem_all[theseDates], na.rm=TRUE)*12)
-						ipsl_yrly = c(ipsl_yrly, mean(ipsl_all[theseDates], na.rm=TRUE)*12)
-						miroc_yrly = c(miroc_yrly, mean(miroc_all[theseDates], na.rm=TRUE)*12)
-					}
-					
-					gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-					hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-					ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-					miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
-					
-					print(c(i, j))
-					print(summary(c(gfdl_smth, hadgem_smth, ipsl_smth, miroc_smth)))
+				gfdl_yrly = NULL
+				hadgem_yrly = NULL
+				ipsl_yrly = NULL
+				miroc_yrly = NULL
+				for(thisYear in nc_years)	{
+					theseDates = which(year(nc_date) == thisYear)
+					gfdl_yrly =   c(gfdl_yrly,   quantile(gfdl_all[theseDates], 0.15))
+					hadgem_yrly = c(hadgem_yrly, quantile(hadgem_all[theseDates], 0.15))
+					ipsl_yrly =   c(ipsl_yrly,   quantile(ipsl_all[theseDates], 0.15))
+					miroc_yrly =  c(miroc_yrly,  quantile(miroc_all[theseDates], 0.15))
+				}
+				
+				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
+				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
+				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
+				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
 
 
-
-					for(thisDecade in 1:9)	{
-						theseYears = (thisDecade - 1) * 10 + 5:14
-							# defining absolute values
-						dataSmoothMed = median(c(gfdl_smth[theseYears], hadgem_smth[theseYears], ipsl_smth[theseYears], miroc_smth[theseYears]))
-						dataOutArray[j, i, thisDecade, thisScen, 1] = dataSmoothMed
-						dataQuantDiffs = diff(quantile(c(gfdl_yrly[theseYears], hadgem_yrly[theseYears], ipsl_yrly[theseYears], miroc_yrly[theseYears]), c(0.25, 0.5, 0.75)))
-						dataOutArray[j, i, thisDecade, thisScen, 5] = dataSmoothMed - abs(dataQuantDiffs[1])
-						dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + abs(dataQuantDiffs[2])
-							# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
-						theseGfdl = gfdl_yrly[theseYears]
-						theseHadgem = hadgem_yrly[theseYears]
-						theseIpsl = ipsl_yrly[theseYears]
-						theseMiroc =  miroc_yrly[theseYears]
-						dataOutArray[j, i, thisDecade, thisScen, 3] = median(mblm(theseGfdl ~ theseYears)$coefficients[2],
-							mblm(theseHadgem ~ theseYears)$coefficients[2],
-							mblm(theseIpsl ~ theseYears)$coefficients[2],
-							mblm(theseMiroc ~ theseYears)$coefficients[2])
-						dataOutArray[j, i, thisDecade, thisScen, 4] = median(cor.test(theseYears, theseGfdl, method='spearman')$p.value,
-							cor.test(theseYears, theseHadgem, method='spearman')$p.value,
-							cor.test(theseYears, theseIpsl, method='spearman')$p.value,
-							cor.test(theseYears, theseMiroc, method='spearman')$p.value, na.rm=TRUE)
-					}	
+				for(thisDecade in 1:9)	{
+					theseYears = (thisDecade - 1) * 10 + 5:14
+						# defining absolute values
+					dataSmoothMed = median(c(gfdl_smth[theseYears], hadgem_smth[theseYears], ipsl_smth[theseYears], miroc_smth[theseYears]))
+					dataOutArray[j, i, thisDecade, thisScen, 1] = dataSmoothMed
+					dataQuantDiffs = diff(quantile(c(gfdl_yrly[theseYears], hadgem_yrly[theseYears], ipsl_yrly[theseYears], miroc_yrly[theseYears]), c(0.25, 0.5, 0.75)))
+					dataOutArray[j, i, thisDecade, thisScen, 5] = dataSmoothMed - abs(dataQuantDiffs[1])
+					dataOutArray[j, i, thisDecade, thisScen, 6] =  dataSmoothMed + abs(dataQuantDiffs[2])
+						# calculating decadal trends (sens slope) and 	decadal significance (spearmans)	
+					theseYears = 1:((thisDecade - 1) * 10 + 14)
+					theseGfdl = gfdl_yrly[theseYears]
+					theseHadgem = hadgem_yrly[theseYears]
+					theseIpsl = ipsl_yrly[theseYears]
+					theseMiroc =  miroc_yrly[theseYears]
+					dataOutArray[j, i, thisDecade, thisScen, 3] = median(mblm(theseGfdl ~ theseYears)$coefficients[2],
+						mblm(theseHadgem ~ theseYears)$coefficients[2],
+						mblm(theseIpsl ~ theseYears)$coefficients[2],
+						mblm(theseMiroc ~ theseYears)$coefficients[2])
+					dataOutArray[j, i, thisDecade, thisScen, 4] = median(cor.test(theseYears, theseGfdl, method='spearman')$p.value,
+						cor.test(theseYears, theseHadgem, method='spearman')$p.value,
+						cor.test(theseYears, theseIpsl, method='spearman')$p.value,
+						cor.test(theseYears, theseMiroc, method='spearman')$p.value, na.rm=TRUE)
+				}	
 						
 						# calculating long-term trends (sens slope)
 		#			dataOutArray[j, i, , thisScen, 5] = dataOutArray[j, i, 9, thisScen, 3]
@@ -234,14 +152,17 @@ maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
 histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
-histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
+histQuants = quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01))
 histQuants
 
 for(i in 1:length(whichDecades))	{
+	dataOutArray[ , , i, 1, 2] = 1
+	dataOutArray[ , , i, 2, 2] = 1
+	dataOutArray[ , , i, 3, 2] = 1
 	for(j in 1:(length(histQuants)))	{
-		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] <= histQuants[j]] = j
-		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
-		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] <= histQuants[j]] = j
+		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j
+		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j
+		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] > histQuants[j]] = j
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
@@ -250,7 +171,7 @@ for(i in 1:length(whichDecades))	{
 
 
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Total Precip [mm/yr]'))
+metadata = list(tcfdVariable = list(units = 'Precip Seasonal 15th Quantile'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
@@ -285,10 +206,10 @@ attr(valueClass, 'variables') = metadata
 names(dim(valueClass)) = 'valueClass'
 
 	# saving ncdf
-ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath,'Total_Precipitation_v2_processed.nc'))
+ArrayToNc(list(tcfdVariable, lon, lat, decade, rcpScen, valueClass), file_path = paste0(ncOutputPath,'Precipitation_seasonalQ15_v2_processed.nc'))
 
 	# testing output, squinty eye test
-myNC = nc_open(paste0(ncOutputPath, 'Total_Precipitation_v2_processed.nc'))
+myNC = nc_open(paste0(ncOutputPath, 'Precipitation_seasonalQ15_v2_processed.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'tcfdVariable')

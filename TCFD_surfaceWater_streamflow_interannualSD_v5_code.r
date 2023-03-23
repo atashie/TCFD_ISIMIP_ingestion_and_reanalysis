@@ -95,10 +95,10 @@ for(thisScen in 1:length(rcpScenarios))	{
 				miroc_yrly = NULL
 				for(thisYear in nc_years)	{
 					theseDates = which(year(nc_date) == thisYear)
-					gfdl_yrly =   c(gfdl_yrly,   mean(gfdl_all[theseDates]))
-					hadgem_yrly = c(hadgem_yrly, mean(hadgem_all[theseDates]))
-					ipsl_yrly =   c(ipsl_yrly,   mean(ipsl_all[theseDates]))
-					miroc_yrly =  c(miroc_yrly,  mean(miroc_all[theseDates]))
+					gfdl_yrly =   c(gfdl_yrly,   mean(gfdl_all[theseDates]) * 12)
+					hadgem_yrly = c(hadgem_yrly, mean(hadgem_all[theseDates]) * 12)
+					ipsl_yrly =   c(ipsl_yrly,   mean(ipsl_all[theseDates]) * 12)
+					miroc_yrly =  c(miroc_yrly,  mean(miroc_all[theseDates]) * 12)
 				}
 				
 				gfdl_cv = NULL

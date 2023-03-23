@@ -13,7 +13,9 @@ hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 #hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
 #relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_Corbion_Nov2022 - Hazard Scores.csv'))				
 #appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\Corbion_temp_precip_hazards_dec_6 - Corbion_temp_precip_hazards_dec_6.csv'
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\Corbion_temp_precip_hazards_mar_16.csv'
+#aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#aggScoreExceptionsValues = c(0, 38, 30)
 
 	# ITC
 #userName = 'ITC'	
@@ -83,14 +85,14 @@ hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 
 
 	# suntory - Japan Demo
-userName = 'Kurita'	
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Sunotory_Feb2023\\'
+#userName = 'Kurita'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Sunotory_Feb2023\\'
 
-customerTable = fread(paste0(customerFolder, 'Suntory - Hops Supplier Locations - For_exposure.csv')) #'HMClause_locations_allCucurbit.csv'
-hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
-relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Sunotory_Feb2023\\Kurita_temp_precip_hazards_feb_18.csv'
+#customerTable = fread(paste0(customerFolder, 'Suntory - Hops Supplier Locations - For_exposure.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Sunotory_Feb2023\\Kurita_temp_precip_hazards_feb_18.csv'
 
 	# Indigo - South Africa
 #userName = 'Indigo'	
@@ -103,14 +105,27 @@ appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Sunotory_Feb2023\\Kurita
 #appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Indigo_Feb2023\\Indigo_temp_precip_hazards_feb_22.csv'
 
 	# UBS Demo
-userName = 'UBS'	
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\UBS_Feb2023\\'
+#userName = 'UBS'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\UBS_Feb2023\\'
 
-customerTable = fread(paste0(customerFolder, 'UBS Demo - Exposure Locations - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#customerTable = fread(paste0(customerFolder, 'UBS Demo - Exposure Locations - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\UBS_Feb2023\\UBS_temp_precip_hazards_feb_26.csv'
+
+	# ICL Demo
+userName = 'ICL-Demo'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ICL-Demo_Mar2023\\'
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-ICL_Demo - Sheet1.csv'))
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
 appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\UBS_Feb2023\\UBS_temp_precip_hazards_feb_26.csv'
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ICL-Demo_Mar2023\\ICL_temp_precip_hazards_mar_21.csv'
+aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+aggScoreExceptionsValues = c(0, 38, 30)
+
 
 
 ############################################################################################
@@ -685,7 +700,7 @@ fwrite(dataOutput, paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv
 #### calculating aggregated score and relative hazard values
 mainHazardOutputs = fread(paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
 appendedOutputs = subset(fread(appendedHazardFileLoc), Scenario %in% c('RCP 2.6', 'RCP 4.5', 'RCP 8.5'))
-appendedOutputs$Location[which(appendedOutputs$Location == 5027017)] = '05027017'
+#appendedOutputs$Location[which(appendedOutputs$Location == 5027017)] = '05027017'
 appendedOutputs$Relative_Hazard_Score = NA	;	appendedOutputs$Relative_Hazard_Score_Number = NA	;	appendedOutputs$Trend_Aggregated_For_Looker = NA	
 #appendedOutputs$Location[appendedOutputs$Location == "Sarapaka Village Burgampahad Mandal District Bhadradri Kothagudem Telangana 507 128"] = "ITC Limited - Paperboards & Specialty Papers Division, PB. No.4 BHADRACHALAM, Sarapaka, Telangana 507128"
 specializedOutput_SLR = fread(paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv'))
@@ -707,10 +722,25 @@ for(thisDecade in unique(dataOutput$Decade))	{
 			avgOfAllHazards = NULL
 			for(thisHazard in allHazards)	{
 				newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard)
-					# catching exceptions for when we do not have 4.5 or 8.5
+					# catching exceptions for agg score calculation (where some are calculated using a subset of hazard measures)
+				if(thisHazard %in% aggScoreExceptions)	{
+					thisException = which(aggScoreExceptions == thisHazard)
+					newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard & Advanced_Data_Measures == aggScoreExceptionsValues[thisException])
+				}
+				
+				# catching exceptions for when we do not have 4.5 or 8.5
 				if(nrow(newHazard) == 0 | any(is.na(newHazard$Percentile_Score)))	{
 					newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen - 1] & Location == thisLoc & Hazard == thisHazard)
+					if(thisHazard %in% aggScoreExceptions)	{
+						thisException = which(aggScoreExceptions == thisHazard)
+						newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen - 1] & Location == thisLoc & Hazard == thisHazard & Advanced_Data_Measures == aggScoreExceptionsValues[thisException])
+					}
 				}
+				
+				
+
+
+				
 				dataOutput = rbind(dataOutput,
 					data.frame(
 						User = userName,
@@ -789,12 +819,37 @@ for(thisRow in 1:nrow(relHazScores))	{
 }		
 	
 	# initializing each scenario as 2010s middle of the road
-dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'Low Emissions'),  ]$Percentile_Score = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Percentile_Score
-dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'High Emissions'), ]$Percentile_Score = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Percentile_Score
-dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'Low Emissions'),  ]$Raw_Hazard_Value = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Raw_Hazard_Value
-dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'High Emissions'), ]$Raw_Hazard_Value = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Raw_Hazard_Value
-dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'Low Emissions'),  ]$Relative_Hazard_Score = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Relative_Hazard_Score
-dataOutput[which(dataOutput$Decade == 2010 & dataOutput$Scenario == 'High Emissions'), ]$Relative_Hazard_Score = subset(dataOutput, Decade == 2010 & Scenario == 'Middle of the Road')$Relative_Hazard_Score
+	# unfortunately, the data structure is all over the place, so only a for loop can work
+for(thisRow in 1:nrow(dataOutput))	{
+	if(dataOutput[thisRow,]$Decade == 2010 & dataOutput[thisRow, ]$Scenario %in% c("Low Emissions", 'High Emissions'))	{
+		if(!is.na(dataOutput[thisRow, ]$Advanced_Data_Measures))	{
+			dataOutput[thisRow, c('Percentile_Score', 'Raw_Hazard_Value', 'Raw_Hazard_Value_25th', 'Raw_Hazard_Value_75th')]	 =
+				subset(dataOutput, Location == dataOutput[thisRow, ]$Location & 
+					Hazard == dataOutput[thisRow, ]$Hazard &
+					Hazard_Measure == dataOutput[thisRow, ]$Hazard_Measure &
+					Advanced_Data_Measures == dataOutput[thisRow, ]$Advanced_Data_Measures &
+					Scenario == 'Middle of the Road' & 
+					Decade == 2010)[ , c('Percentile_Score', 'Raw_Hazard_Value', 'Raw_Hazard_Value_25th', 'Raw_Hazard_Value_75th')]
+		}	else	{
+			dataOutput[thisRow, c('Percentile_Score', 'Raw_Hazard_Value', 'Raw_Hazard_Value_25th', 'Raw_Hazard_Value_75th')]	 =
+			subset(dataOutput, Location == dataOutput[thisRow, ]$Location & 
+				Hazard == dataOutput[thisRow, ]$Hazard &
+				Hazard_Measure == dataOutput[thisRow, ]$Hazard_Measure &
+				Scenario == 'Middle of the Road' & 
+				Decade == 2010)[ , c('Percentile_Score', 'Raw_Hazard_Value', 'Raw_Hazard_Value_25th', 'Raw_Hazard_Value_75th')]
+		}
+	}
+}
+summary(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value - subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_25th)
+summary(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value - subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_75th)
+summary(subset(dataOutput, Hazard != 'Coastal Flood')$Raw_Hazard_Value - subset(dataOutput, Hazard != 'Coastal Flood')$Raw_Hazard_Value_25th)
+summary(subset(dataOutput, Hazard != 'Coastal Flood')$Raw_Hazard_Value - subset(dataOutput, Hazard != 'Coastal Flood')$Raw_Hazard_Value_75th)
+#dataOutput[which(dataOutput$Hazard == 'Coastal Flood'), ]$Raw_Hazard_Value_25th[which(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value > subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_25th)] = 
+#	subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value[which(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value > subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_25th)]
+#dataOutput[which(dataOutput$Hazard == 'Coastal Flood'), ]$Raw_Hazard_Value_75th[which(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value < subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_75th)] = 
+#	subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value[which(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value < subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_75th)]
+
+
 	
 	# aggregating trends for looker db
 dataOutput$Trend_Aggregated_For_Looker = 0
@@ -810,20 +865,151 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazar
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 18
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'River Flood (Regional)' & Location == customerTable$Location[thisLoc])$Percentile)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'River Flood (Local)' & Location == customerTable$Location[thisLoc])$Percentile)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Coastal Flood' & Location == customerTable$Location[thisLoc])$Percentile)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Water Availability' & Location == customerTable$Location[thisLoc])$Percentile)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Intense Precipitation' & Location == customerTable$Location[thisLoc])$Percentile)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Extreme Heat' & Location == customerTable$Location[thisLoc])$Percentile)	
-plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Extreme Cold' & Location == customerTable$Location[thisLoc])$Percentile)	
+thisLoc = 1
+thisScen = unique(dataOutput$Scenario)[2]
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'River Flood (Regional)' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'River Flood (Local)' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Coastal Flood' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Availability' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Intense Precipitation' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Extreme Heat' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Extreme Cold' & Location == customerTable$Location[thisLoc])$Percentile)	
 
 plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Coastal Flood' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
 	
 proc.time() - startTime
+
+
+
+
+# identifying the top n worst / best performing
+totalTrend = NULL
+scarcityTrend = NULL
+availabilityTrend = NULL
+dataTrends = data.frame(User = NA, Location = NA, Hazard = NA, Hazard_Measure = NA, Raw_Hazard_Current_Value = NA, Raw_Hazard_Trend_to_2050s = NA, Percentile_Current_Value = NA, Percentile_Trend_to_2050s = NA)
+for(thisLoc in unique(dataOutput$Location))	{
+	for(thisHazard in unique(dataOutput$Hazard))	{
+		dataSub = subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == thisHazard)
+	
+		for(thisHazardMeasure in unique(dataSub$Hazard_Measure))	{
+			dataTrends = rbind(dataTrends,
+						data.frame(
+							User = userName,
+							Location = thisLoc,
+							Hazard = thisHazard,
+							Hazard_Measure = thisHazardMeasure,
+							Raw_Hazard_Current_Value = mean(subset(dataSub, Decade %in% c('2010','2020') & Hazard_Measure == thisHazardMeasure)$Raw_Hazard_Value),
+							Raw_Hazard_Trend_to_2050s = mean(subset(dataSub, Decade %in% c('2040','2050','2060') & Hazard_Measure == thisHazardMeasure)$Raw_Hazard_Value) - 
+								mean(subset(dataSub, Decade %in% c('2010', '2020') & Hazard_Measure == thisHazardMeasure)$Raw_Hazard_Value), 
+							Percentile_Current_Value = mean(subset(dataSub, Decade %in% c('2010','2020') & Hazard_Measure == thisHazardMeasure)$Percentile), 
+							Percentile_Trend_to_2050s = mean(subset(dataSub, Decade %in% c('2040','2050','2060') & Hazard_Measure == thisHazardMeasure)$Percentile) - 
+								mean(subset(dataSub, Decade %in% c('2010', '2020') & Hazard_Measure == thisHazardMeasure)$Percentile)
+							)
+						)
+		}
+	}
+}
+fwrite(dataTrends)
+	
+	
+	totalTrend = c(totalTrend, mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Aggregate Climate Score" & Decade %in% c("2010", "2020"))$Percentile) - 
+		mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Aggregate Climate Score" & Decade %in% c("2040", "2050", "2060"))$Percentile))
+	scarcityTrend = c(scarcityTrend, mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Water Availability" & Hazard_Measure == "Aggregate Score" & Decade %in% c("2010", "2020"))$Percentile) - 
+		mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Water Availability" & Hazard_Measure == "Aggregate Score" & Decade %in% c("2040", "2050", "2060"))$Percentile))
+	availabilityTrend = c(availabilityTrend, mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Water Scarcity" & Hazard_Measure == "Aggregate Score" & Decade %in% c("2010", "2020"))$Percentile) - 
+		mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Water Scarcity" & Hazard_Measure == "Aggregate Score" & Decade %in% c("2040", "2050", "2060"))$Percentile))
+}	
+
+
+
+theScenarios = c('RCP 2.6', 'RCP 4.5', 'RCP 6.0', 'RCP 8.5')
+scenarioRename = c('Low Emissions', 'Middle of the Road', 'Middle of the Road', 'High Emissions')
+
+for(thisLoc in unique(dataOutput$Location))	{
+	locRow = which(customerTable$Location == thisLoc)
+	avgOfAllHazards = NULL
+	for(thisHazard in unique(dataOutput$Hazard))	{
+		newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard)
+					# catching exceptions for when we do not have 4.5 or 8.5
+				if(nrow(newHazard) == 0 | any(is.na(newHazard$Percentile_Score)))	{
+					newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen - 1] & Location == thisLoc & Hazard == thisHazard)
+				}
+				dataOutput = rbind(dataOutput,
+					data.frame(
+						User = userName,
+						Location = customerTable$Location[locRow],
+						Region = customerTable$Region[locRow],
+						Subregion = customerTable$Subregion[locRow],
+						Lat = customerTable$Lat[locRow],
+						Lon = customerTable$Lon[locRow],
+						Hazard = thisHazard,
+						Hazard_Measure = 'Aggregate Score',
+						Decade = thisDecade,
+						Scenario = scenarioRename[thisScen],
+						Raw_Hazard_Value = NA,
+						Percentile_Score = mean(newHazard$Percentile_Score, na.rm=TRUE),
+						Relative_Hazard_Score = NA,
+						Decadal_Trend_Strength = NA,
+						Decadal_Trend_Significance = NA,
+						Long_Term_Trend_Strength = NA,
+						Long_Term_Trend_Significance = NA,
+						Relative_Hazard_Score_Number = NA,
+						Trend_Aggregated_For_Looker = NA,
+						Advanced_Data_Measures = NA,
+						Advanced_Data_Measures_Units = NA,
+						Raw_Hazard_Value_25th = NA,
+						Raw_Hazard_Value_75th = NA)
+
+				)
+
+				avgOfAllHazards = c(avgOfAllHazards, mean(newHazard$Percentile_Score, na.rm=TRUE))
+			}
+
+			dataOutput = rbind(dataOutput,
+				data.frame(
+					User = userName,
+					Location = customerTable$Location[locRow],
+					Region = customerTable$Region[locRow],
+					Subregion = customerTable$Subregion[locRow],
+					Lat = customerTable$Lat[locRow],
+					Lon = customerTable$Lon[locRow],
+					Hazard = "Aggregate Climate Score",
+					Hazard_Measure = "Aggregate Score",
+					Decade = thisDecade,
+					Scenario = scenarioRename[thisScen],
+					Raw_Hazard_Value = NA,
+					Percentile_Score = mean(avgOfAllHazards, na.rm=TRUE),
+					Relative_Hazard_Score = NA,
+					Decadal_Trend_Strength = NA,
+					Decadal_Trend_Significance = NA,
+					Long_Term_Trend_Strength = NA,
+					Long_Term_Trend_Significance = NA,
+					Relative_Hazard_Score_Number = NA,
+					Trend_Aggregated_For_Looker = NA,
+					Advanced_Data_Measures = NA,
+					Advanced_Data_Measures_Units = NA,
+					Raw_Hazard_Value_25th = NA,
+					Raw_Hazard_Value_75th = NA)
+			)
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 unique(dataOutput$Region)
 dataOutput$Region[which(dataOutput$Region == 'US')] = 'USA'
