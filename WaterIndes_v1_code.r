@@ -9,6 +9,9 @@ library(easyNCDF)	# for ArrayToNc()
 #library(cmsafops)	# for cmsaf.div() and cmsaf.sub()
 
 
+#########################################
+#	Section 1: TCFD Based
+#########################################
 
 #########################################
 # naming in climate netcdf data
@@ -905,9 +908,12 @@ for(i in 1:length(nc_scen))	{
 		gridArea = halfDegInKM * cos(thisLat * pi / 180) * halfDegInKM 
 		
 		for(j in 1:length(nc_decade))	{
-			dataOutArray[ , k, j, i, 1] = ((1 - runoffRatio) * (ppt[ , k, j, i, 1] - ppt_inter_sd[ , k, j, i, 1]) + rech[ , k, j, i, 1] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
-			dataOutArray[ , k, j, i, 5] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5] - ppt_inter_sd[ , k, j, i, 5]) + rech[ , k, j, i, 5] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
-			dataOutArray[ , k, j, i, 6] = ((1 - runoffRatio) * (ppt[ , k, j, i, 6] - ppt_inter_sd[ , k, j, i, 6]) + rech[ , k, j, i, 6] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
+			dataOutArray[ , k, j, i, 1] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5]) + rech[ , k, j, i, 1] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
+			dataOutArray[ , k, j, i, 5] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5]) + rech[ , k, j, i, 5] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
+			dataOutArray[ , k, j, i, 6] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5]) + rech[ , k, j, i, 6] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
+#			dataOutArray[ , k, j, i, 1] = ((1 - runoffRatio) * (ppt[ , k, j, i, 1] - ppt_inter_sd[ , k, j, i, 1]) + rech[ , k, j, i, 1] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
+#			dataOutArray[ , k, j, i, 5] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5] - ppt_inter_sd[ , k, j, i, 5]) + rech[ , k, j, i, 5] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
+#			dataOutArray[ , k, j, i, 6] = ((1 - runoffRatio) * (ppt[ , k, j, i, 6] - ppt_inter_sd[ , k, j, i, 6]) + rech[ , k, j, i, 6] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
 		}
 	}
 }
@@ -1018,9 +1024,9 @@ for(i in 1:length(nc_scen))	{
 #			dataOutArray[ , k, j, i, 1] = ((1 - runoffRatio) * (ppt[ , k, j, i, 1] - ppt_inter_sd[ , k, j, i, 1]) + rech[ , k, j, i, 1] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
 #			dataOutArray[ , k, j, i, 5] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5] - ppt_inter_sd[ , k, j, i, 5]) + rech[ , k, j, i, 5] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
 #			dataOutArray[ , k, j, i, 6] = ((1 - runoffRatio) * (ppt[ , k, j, i, 6] - ppt_inter_sd[ , k, j, i, 6]) + rech[ , k, j, i, 6] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
-			dataOutArray[ , k, j, i, 1] = ((1 - runoffRatio) * ppt_seasn_q15[ , , j, i, 1] + rech[ , k, j, i, 1] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
-			dataOutArray[ , k, j, i, 5] = ((1 - runoffRatio) * ppt_seasn_q15[ , , j, i, 5] + rech[ , k, j, i, 5] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
-			dataOutArray[ , k, j, i, 6] = ((1 - runoffRatio) * ppt_seasn_q15[ , , j, i, 6] + rech[ , k, j, i, 6] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
+			dataOutArray[ , k, j, i, 1] = ((1 - runoffRatio) * ppt_seasn_q15[ , k, j, i, 1] + rech[ , k, j, i, 1] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
+			dataOutArray[ , k, j, i, 5] = ((1 - runoffRatio) * ppt_seasn_q15[ , k, j, i, 5] + rech[ , k, j, i, 5] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
+			dataOutArray[ , k, j, i, 6] = ((1 - runoffRatio) * ppt_seasn_q15[ , k, j, i, 6] + rech[ , k, j, i, 6] + (diverg * kmToMm * Q[ , k, j, i, 1] / gridArea)) /  wPlant
 			}
 	}
 }
@@ -1067,8 +1073,11 @@ nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1])
+nc_onesDat = nc_testDat	;	nc_onesDat[,,,,1][nc_onesDat[,,,,1] < 1] = 0	;	nc_onesDat[,,,,1][nc_onesDat[,,,,1] >= 1] = 1
+image(nc_lon, rev(nc_lat), nc_onesDat[,,1,1,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,1,2])
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,6] - nc_testDat[,,9,3,5])
+
 
 nc_close(nc_ppt)
 nc_close(nc_pet)
@@ -1133,9 +1142,12 @@ for(i in 1:length(nc_scen))	{
 		gridArea = halfDegInKM * cos(thisLat * pi / 180) * halfDegInKM 
 		
 		for(j in 1:length(nc_decade))	{
-			dataOutArray[ , k, j, i, 1] = ((ppt[ , k, j, i, 1] - ppt_inter_sd[ , k, j, i, 1] + rech[ , k, j, i, 1] + diverg * kmToMm * (Q[ , k, j, i, 1] - Q_inter_sd[ , k, j, i, 1]) / gridArea) / pet[ , k, j, i, 1]) / AI_humid
-			dataOutArray[ , k, j, i, 5] = ((ppt[ , k, j, i, 5] - ppt_inter_sd[ , k, j, i, 5] + rech[ , k, j, i, 5] + diverg * kmToMm * (Q[ , k, j, i, 5] - Q_inter_sd[ , k, j, i, 5]) / gridArea) / pet[ , k, j, i, 1]) / AI_humid
-			dataOutArray[ , k, j, i, 6] = ((ppt[ , k, j, i, 6] - ppt_inter_sd[ , k, j, i, 6] + rech[ , k, j, i, 6] + diverg * kmToMm * (Q[ , k, j, i, 6] - Q_inter_sd[ , k, j, i, 6]) / gridArea) / pet[ , k, j, i, 1]) / AI_humid
+			dataOutArray[ , k, j, i, 1] = ((ppt[ , k, j, i, 5] + rech[ , k, j, i, 1] + diverg * kmToMm * (Q[ , k, j, i, 1] - Q_inter_sd[ , k, j, i, 1]) / gridArea) / pet[ , k, j, i, 1]) / AI_humid
+			dataOutArray[ , k, j, i, 5] = ((ppt[ , k, j, i, 5] + rech[ , k, j, i, 5] + diverg * kmToMm * (Q[ , k, j, i, 5] - Q_inter_sd[ , k, j, i, 5]) / gridArea) / pet[ , k, j, i, 1]) / AI_humid
+			dataOutArray[ , k, j, i, 6] = ((ppt[ , k, j, i, 5] + rech[ , k, j, i, 6] + diverg * kmToMm * (Q[ , k, j, i, 6] - Q_inter_sd[ , k, j, i, 6]) / gridArea) / pet[ , k, j, i, 1]) / AI_humid
+#			dataOutArray[ , k, j, i, 1] = ((ppt[ , k, j, i, 1] - ppt_inter_sd[ , k, j, i, 1] + rech[ , k, j, i, 1] + diverg * kmToMm * (Q[ , k, j, i, 1] - Q_inter_sd[ , k, j, i, 1]) / gridArea) / pet[ , k, j, i, 1]) / AI_humid
+#			dataOutArray[ , k, j, i, 5] = ((ppt[ , k, j, i, 5] - ppt_inter_sd[ , k, j, i, 5] + rech[ , k, j, i, 5] + diverg * kmToMm * (Q[ , k, j, i, 5] - Q_inter_sd[ , k, j, i, 5]) / gridArea) / pet[ , k, j, i, 1]) / AI_humid
+#			dataOutArray[ , k, j, i, 6] = ((ppt[ , k, j, i, 6] - ppt_inter_sd[ , k, j, i, 6] + rech[ , k, j, i, 6] + diverg * kmToMm * (Q[ , k, j, i, 6] - Q_inter_sd[ , k, j, i, 6]) / gridArea) / pet[ , k, j, i, 1]) / AI_humid
 		}
 	}
 }
@@ -1369,9 +1381,12 @@ for(i in 1:length(nc_scen))	{
 		gridArea = halfDegInKM * cos(thisLat * pi / 180) * halfDegInKM 
 		
 		for(j in 1:length(nc_decade))	{
-			dataOutArray[ , k, j, i, 1] = ((1 - runoffRatio) * (ppt[ , k, j, i, 1] - ppt_inter_sd[ , k, j, i, 1]) + rech[ , k, j, i, 1] + (diverg * kmToMm * (Q[ , k, j, i, 1] - Q_inter_sd[ , k, j, i, 1]) / gridArea)) /  wPlant
-			dataOutArray[ , k, j, i, 5] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5] - ppt_inter_sd[ , k, j, i, 5]) + rech[ , k, j, i, 5] + (diverg * kmToMm * (Q[ , k, j, i, 5] - Q_inter_sd[ , k, j, i, 5]) / gridArea)) /  wPlant
-			dataOutArray[ , k, j, i, 6] = ((1 - runoffRatio) * (ppt[ , k, j, i, 6] - ppt_inter_sd[ , k, j, i, 6]) + rech[ , k, j, i, 6] + (diverg * kmToMm * (Q[ , k, j, i, 6] - Q_inter_sd[ , k, j, i, 6]) / gridArea)) /  wPlant
+			dataOutArray[ , k, j, i, 1] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5]) + rech[ , k, j, i, 1] + (diverg * kmToMm * (Q[ , k, j, i, 1] - Q_inter_sd[ , k, j, i, 1]) / gridArea)) /  wPlant
+			dataOutArray[ , k, j, i, 5] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5]) + rech[ , k, j, i, 5] + (diverg * kmToMm * (Q[ , k, j, i, 5] - Q_inter_sd[ , k, j, i, 5]) / gridArea)) /  wPlant
+			dataOutArray[ , k, j, i, 6] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5]) + rech[ , k, j, i, 6] + (diverg * kmToMm * (Q[ , k, j, i, 6] - Q_inter_sd[ , k, j, i, 6]) / gridArea)) /  wPlant
+#			dataOutArray[ , k, j, i, 1] = ((1 - runoffRatio) * (ppt[ , k, j, i, 1] - ppt_inter_sd[ , k, j, i, 1]) + rech[ , k, j, i, 1] + (diverg * kmToMm * (Q[ , k, j, i, 1] - Q_inter_sd[ , k, j, i, 1]) / gridArea)) /  wPlant
+#			dataOutArray[ , k, j, i, 5] = ((1 - runoffRatio) * (ppt[ , k, j, i, 5] - ppt_inter_sd[ , k, j, i, 5]) + rech[ , k, j, i, 5] + (diverg * kmToMm * (Q[ , k, j, i, 5] - Q_inter_sd[ , k, j, i, 5]) / gridArea)) /  wPlant
+#			dataOutArray[ , k, j, i, 6] = ((1 - runoffRatio) * (ppt[ , k, j, i, 6] - ppt_inter_sd[ , k, j, i, 6]) + rech[ , k, j, i, 6] + (diverg * kmToMm * (Q[ , k, j, i, 6] - Q_inter_sd[ , k, j, i, 6]) / gridArea)) /  wPlant
 		}
 	}
 }
@@ -1549,4 +1564,36 @@ nc_close(nc_ppt_seasn_q15)
 nc_close(nc_Q_inter_sd)
 nc_close(nc_Q_seasn_sd)
 nc_close(myNC)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#########################################
+#	Section 2: Flexible Monthly
+#########################################
+
+
+
+
+
+
+
+
 

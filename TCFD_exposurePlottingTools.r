@@ -34,6 +34,7 @@ provinces10 = st_as_sf(st_read('J:\\Cai_data\\ne_10m_admin_1_states_provinces\\n
 # region to maplatlonBox = c(25, 65, -10, 60) #(minlat, maxlat, minlon, maxlon)
 latlonBox = c(-55, 75, -180, 180) #(minlat, maxlat, minlon, maxlon)
 latlonBox_local = c(-60,-15,-80,-50)#c(35,53,-12,46)
+latlonBox_local = c(-58, 18,-85,-32)#c(35,53,-12,46)
 locOfInt = st_point(c(customerTable$Lat[1], customerTable$Lon[1]))
 
 
@@ -44,8 +45,13 @@ locOfInt = st_point(c(customerTable$Lat[1], customerTable$Lon[1]))
 ##########################################################################################################################################################################################
 # variable options:
 	# WRI_based_WaterDepletion_v2_processed; qrv2_processed; WRI_based_WaterDepletion_v2_processed; cwood-evgndltrv2_processed; disv2_processed; WRI_basedStreamflowInterannualVariability_v2_processed
+	# aridityIndex_transientInterannualRegionalTransientInterannualSupplement_ssp_v2_processed, aridityIndex_transientInterannual_ssp_v2_processed, aridityIndex_ssp_v2_processed, aridityIndex_transientInterannualRegionalAvgSupplement_ssp_v2_processed
+	# pwpExceedance_ssp_v2_processed, pwpExceedance_transientInterannual_ssp_v2_processed, plantWaterDemand_transientInterannualRegionalAvgSupplement_ssp_v2_processed, plantWaterDemand_transientInterannualRegionalTransientInterannualSupplement_ssp_v2_processed
+		# aridityIndex_transientSeasonal_ssp_v2_processed		# pwpExceedance_transientSeasonal_ssp_v2_processed		# aridityIndex_transientSeasonalRegionalAvgSupplement_ssp_v2_processed
+		# plantWaterDemand_transientSeasonalRegionalAvgSupplement_ssp_v2_processed		# aridityIndex_transientSeasonalRegionalTransientSeasonalSupplement_ssp_v2_processed		# plantWaterDemand_transientSeasonalRegionalTransientSeasonalSupplement_ssp_v2_processed
 
-varName = 'yield-soy-noirrv2_processed'
+
+varName = 'plantWaterDemand_transientInterannualRegionalTransientInterannualSupplement_ssp_v2_processed'
 nc_close(myNC)
 myNC = nc_open(paste0(ncOutputPath, varName, '.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
@@ -57,7 +63,7 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 ###############
 # P1: maps
 # 1a: gridded
-myTitle = 'Soy Yield - 2020s'
+myTitle = 'Regional Dry-Period Water Supply'
 mySubtitle = 'nonirrigated'
 thisCRS = 4087#4326
 
@@ -73,7 +79,7 @@ df_proj = st_transform(df_proj, crs = thisCRS)
 ggplot(data = geomData) +
 	with_blur(geom_raster(aes(y = lat, x = lon, fill = plotData), interpolate = FALSE), sigma = 2.5) +
 #	geom_sf(aes(colour = plotData)	+
-	scale_fill_viridis(option = 'rocket', trans = scales::pseudo_log_trans(sigma = 0.5))	+
+	scale_fill_viridis(option = 'rocket', trans = scales::pseudo_log_trans(sigma = .5))	+
 #	geom_raster(interpolate = TRUE)	+
 #	geom_sf(data = df_sub, aes(fill = plotData, color = plotData)) +
 	theme_light()	+
@@ -89,19 +95,20 @@ ggplot(data = geomData) +
 #	coord_sf(default_crs = sf::st_crs(thisCRS), xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2])) + 
 #	coord_fixed(expand = FALSE)	+
 	coord_sf(xlim=c(latlonBox[3], latlonBox[4]), ylim=c(latlonBox[1], latlonBox[2]), expand = FALSE) + 
-	labs(x = NULL, y = NULL, title=myTitle,
+#	coord_sf(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2]), expand = FALSE) + 
+	labs(x = NULL, y = NULL, title=paste0(myTitle, ' - 2020s'),
 		subtitle=mySubtitle, 
          x="Longitude", y="Latitude", 
          fill='')
-ggsave(paste0(customerFolder, varName, "_gridded.png"), width = 20, height = 8)
+ggsave(paste0(customerFolder, varName, "_gridded.png"), width = 16, height = 12)
 
 
 	# trends
-myTitle = 'Soy Yield - Trends to 2050s - High Emissions'
-geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 3, 3]))
+geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 2, 1] - nc_testDat[ , , 1, 2, 1]))
 df_sub = subset(geomData, lat >= latlonBox_local[1] & lat <= latlonBox_local[2] & lon >= latlonBox_local[3] & lon <= latlonBox_local[4])
 #lmt <- ceiling(10*max(abs(range(df_sub$plotData, na.rm=TRUE))))/10000
 lmt <- max(abs(range(df_sub$plotData, na.rm=TRUE)))
+#lmt <- 1
 ggplot(data = geomData) +
 	with_blur(geom_raster(data = geomData, aes(fill = plotData, y = lat, x = lon), interpolate = FALSE), sigma = 1.75) +
 #	geom_raster(interploate = TRUE)	+
@@ -109,7 +116,7 @@ ggplot(data = geomData) +
 	theme_minimal()	+
 	theme(panel.ontop=FALSE, panel.background=element_blank()) +
 #	scale_fill_viridis(option = 'turbo', trans = scales::pseudo_log_trans(sigma = 0.000001), limits =  c(-lmt, lmt))	+
-	scale_fill_gradient2(low = 'darkred', high = 'darkgreen', mid = 'grey90', trans = scales::pseudo_log_trans(sigma = .00001), limits = c(-lmt, lmt))	+
+	scale_fill_gradient2(low = 'darkred', high = 'darkblue', mid = 'grey90', trans = scales::pseudo_log_trans(sigma = .01), limits = c(-lmt, lmt))	+
 #	scale_fill_stepsn(colors=c('#b2182b','#ef8a62','#fddbc7',
 #                            '#f7f7f7','#d1e5f0','#67a9cf','#2166ac'),
 #            n.breaks=10, limits=c(-lmt,lmt), show.limits=T)  +
@@ -119,12 +126,13 @@ ggplot(data = geomData) +
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon), fill='green4', col='green4', size=5, shape='+', stroke=1)	+
 #	coord_quickmap(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2])) +
 	coord_sf(xlim=c(latlonBox[3], latlonBox[4]), ylim=c(latlonBox[1], latlonBox[2]), expand = FALSE) + 
-	labs(x = NULL, y = NULL, title=paste0('Trends in ', myTitle), 
+#	coord_sf(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2]), expand = FALSE) + 
+	labs(x = NULL, y = NULL, title=paste0('Trends in ', myTitle, ' to 2050s'), 
 		#subtitle=mySubtitle, 
         x="Longitude", y="Latitude", 
         #fill=expression( ))
 		fill = "")
-ggsave(paste0(customerFolder, varName, "_trends_gridded.png"), width = 20, height = 8)
+ggsave(paste0(customerFolder, varName, "_trends_gridded.png"), width = 16, height = 12)
 	
 
 
@@ -151,12 +159,12 @@ geomNN = st_join(provinces10[missingLocs,], geomData_sf, join = st_nearest_featu
 geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
 
 	# countries
-geomJoin = st_join(world, geomData_sf, join = st_intersects)
-geomAvg = aggregate(plotData ~ sovereignt, mean, data = geomJoin)#, na.action = na.pass)
-geomAvgMrg = merge(geomAvg, world, by = 'sovereignt')
-missingLocs = which(!(world$sovereignt %in% geomAvgMrg$sovereignt))
-geomNN = st_join(world[missingLocs,], geomData_sf, join = st_nearest_feature)
-geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
+#geomJoin = st_join(world, geomData_sf, join = st_intersects)
+#geomAvg = aggregate(plotData ~ sovereignt, mean, data = geomJoin)#, na.action = na.pass)
+#geomAvgMrg = merge(geomAvg, world, by = 'sovereignt')
+#missingLocs = which(!(world$sovereignt %in% geomAvgMrg$sovereignt))
+#geomNN = st_join(world[missingLocs,], geomData_sf, join = st_nearest_feature)
+#geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
 
 
 geomAvgMrg_sf = st_as_sf(geomAvgMrg)
@@ -165,18 +173,17 @@ geomAvgMrg_sf = st_as_sf(geomAvgMrg)
 lmt <- ceiling(10*max(abs(range(geomAvgMrg_sf$plotData, na.rm=TRUE))))/2000
 #lmt = 0.2
 
-myTitle = 'Soy Yield - 2020s'
 mySubtitle = 'nonirrigated'
 ggplot(data = geomAvgMrg_sf) +
 	geom_sf(data = geomAvgMrg_sf, size=6.4, shape=15, aes(fill=plotData), color ='grey25', linewidth = 0.0001) +
 #	scale_fill_stepsn(colors=c('#b2182b','#ef8a62','#fddbc7',
  #                            '#f7f7f7','#d1e5f0','#67a9cf','#2166ac'),
   #           n.breaks=7, limits=c(-lmt,lmt), show.limits=T)  +
-	scale_fill_viridis(option = 'rocket', trans = scales::pseudo_log_trans(sigma = 0.5))	+
+	scale_fill_viridis(option = 'rocket', trans = scales::pseudo_log_trans(sigma = 5))	+
 #	scale_fill_gradient2(low = 'skyblue', high = 'darkred', mid = 'white', trans = scales::pseudo_log_trans(sigma = .00005))	+
 #	scale_fill_gradient(low = 'skyblue', high = 'darkred', trans = scales::pseudo_log_trans(sigma = .00005))	+
 #	geom_sf(data = provinces10, fill = NA, color = 'grey75')
-	geom_sf(data = world, color = 'grey40', fill = NA, linewidth =1) +
+	geom_sf(data = world, color = 'grey40', fill = NA, linewidth =0.1) +
 #	geom_sf(data = states, fill = NA, color = '#1A232F', size=1.4) +
 #	geom_sf(data = cityLocs_sf, size=4.4, stroke = 1.1, shape=21, col='white', fill='grey20')+ #c(rep('#039CE2',8), rep('#FDB600',7), '#23AF41')) +
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='skyblue', size=5, shape='+', stroke=1)	+
@@ -186,10 +193,11 @@ ggplot(data = geomAvgMrg_sf) +
 		legend.background = element_rect(fill='white', colour='grey20')) +
 	guides(guide_legend(title=myTitle)) +
 	coord_sf(xlim = latlonBox[c(3,4)], ylim = latlonBox[c(1,2)] + c(-1, -1), expand = FALSE) +
-	labs(title=paste0(myTitle), #subtitle=mySubtitle, 
+#	coord_sf(xlim = latlonBox_local[c(3,4)], ylim = latlonBox_local[c(1,2)] + c(-1, -1), expand = FALSE) +
+	labs(title=paste0(myTitle, ' - 2020s'), #subtitle=mySubtitle, 
         x="Longitude", y="Latitude", 
         fill='')
-ggsave(paste0(customerFolder, varName, "_polit_c.png"), width = 20, height = 8)
+ggsave(paste0(customerFolder, varName, "_polit_c.png"), width = 16, height = 12)
 
 
 
@@ -197,7 +205,7 @@ ggsave(paste0(customerFolder, varName, "_polit_c.png"), width = 20, height = 8)
 
 
 	# trends
-geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 3, 3]))
+geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 2, 1] - nc_testDat[ , , 2, 2, 1]))
 df_sub = subset(geomData, lat >= latlonBox[1] & lat <= latlonBox[2] & lon >= latlonBox[3] & lon <= latlonBox[4])
 #df_sub = subset(geomData, lat >= latlonBox_local[1] & lat <= latlonBox_local[2] & lon >= latlonBox_local[3] & lon <= latlonBox_local[4])
 geomData_sf = st_as_sf(df_sub, coords=c('lon','lat'), remove=FALSE, crs=4326, agr='constant')
@@ -211,12 +219,12 @@ geomNN = st_join(provinces10[missingLocs,], geomData_sf, join = st_nearest_featu
 geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
 
 	# countries
-geomJoin = st_join(world, geomData_sf, join = st_intersects)
-geomAvg = aggregate(plotData ~ sovereignt, mean, data = geomJoin)#, na.action = na.pass)
-geomAvgMrg = merge(geomAvg, world, by = 'sovereignt')
-missingLocs = which(!(world$sovereignt %in% geomAvgMrg$sovereignt))
-geomNN = st_join(world[missingLocs,], geomData_sf, join = st_nearest_feature)
-geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
+#geomJoin = st_join(world, geomData_sf, join = st_intersects)
+#geomAvg = aggregate(plotData ~ sovereignt, mean, data = geomJoin)#, na.action = na.pass)
+#geomAvgMrg = merge(geomAvg, world, by = 'sovereignt')
+#missingLocs = which(!(world$sovereignt %in% geomAvgMrg$sovereignt))
+#geomNN = st_join(world[missingLocs,], geomData_sf, join = st_nearest_feature)
+#geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
 
 
 geomAvgMrg_sf = st_as_sf(geomAvgMrg)
@@ -232,9 +240,9 @@ ggplot(data = geomAvgMrg_sf) +
   #           n.breaks=7, limits=c(-lmt,lmt), show.limits=T)  +
 #	scale_fill_viridis(option = 'turbo', trans = scales::pseudo_log_trans(sigma = 0.00001), limits =  c(-lmt, lmt))	+
 #	scale_fill_gradient2(low = 'skyblue', high = 'darkred', mid = 'white', trans = scales::pseudo_log_trans(sigma = .00005))	+
-	scale_fill_gradient2(low = 'darkred', high = 'darkgreen', mid = 'grey90', trans = scales::pseudo_log_trans(sigma = .01), limits = c(-lmt, lmt))	+
+	scale_fill_gradient2(low = 'darkred', high = 'darkblue', mid = 'grey90', trans = scales::pseudo_log_trans(sigma = .01), limits = c(-lmt, lmt))	+
 #	geom_sf(data = provinces10, fill = NA, color = 'grey75')
-	geom_sf(data = world, color = 'grey40', fill = NA, linewidth =1) +
+	geom_sf(data = world, color = 'grey40', fill = NA, linewidth =0.1) +
 #	geom_sf(data = states, fill = NA, color = '#1A232F', size=1.4) +
 #	geom_sf(data = cityLocs_sf, size=4.4, stroke = 1.1, shape=21, col='white', fill='grey20')+ #c(rep('#039CE2',8), rep('#FDB600',7), '#23AF41')) +
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='green4', size=5, shape='+', stroke=1)	+
@@ -248,7 +256,7 @@ ggplot(data = geomAvgMrg_sf) +
 	labs(title=paste0('Trends in ', myTitle), #subtitle=mySubtitle, 
         x="Longitude", y="Latitude", 
         fill='')
-ggsave(paste0(customerFolder, varName, "_trends_polit_c.png"), width = 20, height = 8)
+ggsave(paste0(customerFolder, varName, "_trends_polit_c.png"), width = 16, height = 12)
 
 
 
