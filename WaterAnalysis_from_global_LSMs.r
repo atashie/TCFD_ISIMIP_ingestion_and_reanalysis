@@ -772,25 +772,27 @@ library(dataRetrieval)	# is pulling from this webservice; need to revisit and ha
 # defining array for holding climate data
 USGSDataTable = data.table(Location = NA, Lat = NA, Lon = NA, LWE_Depth_Median = NA, LWE_Depth_SD = NA, Date = as.Date(NA)) 
 
+startDate = "1970-01-01"
+endDate = "2023-04-01"
+thisParameterCd = '72019' # gw;  '00060',# discharge; c("00010", "00060") # Temperature and discharge
+statCd <- c("00001")#, "00003") # Mean and maximum
+
 for(thisLoc in 1:nrow(customerTable))	{
 	sites = whatNWISsites(
-		bbox = c(round(customerTable$Lon[thisLoc] - 1, 3), round(customerTable$Lat[thisLoc] - 1, 3), round(customerTable$Lon[thisLoc] + 1, 3), round(customerTable$Lat[thisLoc] + 1, 3)),
-		parameterCd = '00060',# discharge https://help.waterdata.usgs.gov/parameter_cd?group_cd=PHY for all'30210', #
+		bBox = c(round(customerTable$Lon[thisLoc] - 1, 3), round(customerTable$Lat[thisLoc] - 1, 3), round(customerTable$Lon[thisLoc] + 1, 3), round(customerTable$Lat[thisLoc] + 1, 3)),
+		parameterCd = thisParameterCd, # gw level '00060',# discharge https://help.waterdata.usgs.gov/parameter_cd?group_cd=PHY for all'30210', #
 		hasDataTypeCd = 'dv')
 
+	for(thisSite in 1:nrow(sites))	{
+		thisSiteNumber = sites$site_no[thisSite]
+		parameterCd <- c("00010", "00060") # Temperature and discharge
 
-
-https://waterdata.usgs.gov/nwis/dv?cb_00060=on&format=rdb&site_no=11255575&legacy=&referred_module=sw&period=&begin_date=1997-12-01&end_date=2023-04-04
-https://waterdata.usgs.gov/nwis/dv?cb_00060=on&format=rdb&site_no=11274500&legacy=&referred_module=sw&period=&begin_date=1932-04-01&end_date=2023-04-04
-99019
-
-
-30210
-
-
-
-
-
+		siteData = readNWISdv(siteNumber = thisSiteNumber, thisParameterCd,
+			startDate, endDate , statCd = statCd
+		)
+		plot(siteData$Date, siteData[,4])
+	}
+}
 
 
 

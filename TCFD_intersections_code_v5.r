@@ -115,7 +115,7 @@ hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 #appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\UBS_Feb2023\\UBS_temp_precip_hazards_feb_26.csv'
 
 	# ICL Demo
-userName = 'ICL-Demo'	
+userName = 'ICL'	
 customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ICL-Demo_Mar2023\\'
 
 customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-ICL_Demo - Sheet1.csv'))
@@ -136,7 +136,7 @@ dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, L
 	Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA)
 
 iter = 0
-for(thisHazard in 6:ncol(customerTable))	{
+for(thisHazard in 6:ncol(customerTable))	{ ####!!!! temp fix, resolve hard coding  !!!!!!##########
 	if(any(customerTable[, ..thisHazard]))	{
 		if(names(customerTable)[thisHazard] %in% appendedHazardNames)	{	
 			print(c('this hazard must be run independently and appended later:     ', names(customerTable)[thisHazard]))
@@ -154,7 +154,10 @@ for(thisHazard in 6:ncol(customerTable))	{
 						closeLon = which.min(abs(nc_lons - customerTable$Lon[thisLocation]))
 						closeLat = which.min(abs(nc_lats - customerTable$Lat[thisLocation]))
 
-							# ensuring we aren't drawing from a coastal water cell
+							# temp fix: ensuring we aren't drawing from a coastal water cell
+							#### !!!!!!!!!!!!! #######
+							# to be replaced with the updated version developed for the water index
+							#### !!!!!!!!!!!!! #######
 						if(is.na(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, 1, 1, 2]))	{
 							closeLat = closeLat + 1
 							if(is.na(ncvar_get(hazardMeasureNC, 'tcfdVariable')[closeLon, closeLat, 1, 1, 2]))	{
@@ -700,9 +703,7 @@ fwrite(dataOutput, paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv
 #### calculating aggregated score and relative hazard values
 mainHazardOutputs = fread(paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
 appendedOutputs = subset(fread(appendedHazardFileLoc), Scenario %in% c('RCP 2.6', 'RCP 4.5', 'RCP 8.5'))
-#appendedOutputs$Location[which(appendedOutputs$Location == 5027017)] = '05027017'
 appendedOutputs$Relative_Hazard_Score = NA	;	appendedOutputs$Relative_Hazard_Score_Number = NA	;	appendedOutputs$Trend_Aggregated_For_Looker = NA	
-#appendedOutputs$Location[appendedOutputs$Location == "Sarapaka Village Burgampahad Mandal District Bhadradri Kothagudem Telangana 507 128"] = "ITC Limited - Paperboards & Specialty Papers Division, PB. No.4 BHADRACHALAM, Sarapaka, Telangana 507128"
 specializedOutput_SLR = fread(paste0(customerFolder, fileName_seaLevelRise, thisDate, '.csv'))
 specializedOutput_LRF = fread(paste0(customerFolder, fileName_localFlood, thisDate, '.csv'))
 specializedOutputs = merge(specializedOutput_LRF, specializedOutput_SLR, all = TRUE)
@@ -722,7 +723,9 @@ for(thisDecade in unique(dataOutput$Decade))	{
 			avgOfAllHazards = NULL
 			for(thisHazard in allHazards)	{
 				newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard)
-					# catching exceptions for agg score calculation (where some are calculated using a subset of hazard measures)
+	
+	# catching exceptions for agg score calculation (where some are calculated using a subset of hazard measures)
+					## !! temp fix, need to automate aggregate score exceptions  !!!!#####
 				if(thisHazard %in% aggScoreExceptions)	{
 					thisException = which(aggScoreExceptions == thisHazard)
 					newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard & Advanced_Data_Measures == aggScoreExceptionsValues[thisException])
@@ -736,7 +739,8 @@ for(thisDecade in unique(dataOutput$Decade))	{
 						newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen - 1] & Location == thisLoc & Hazard == thisHazard & Advanced_Data_Measures == aggScoreExceptionsValues[thisException])
 					}
 				}
-				
+					## !! end temp fix, need to automate aggregate score exceptions  !!!!#####
+			
 				
 
 
@@ -865,7 +869,7 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazar
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 1
+thisLoc = 2
 thisScen = unique(dataOutput$Scenario)[2]
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
