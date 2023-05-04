@@ -34,7 +34,7 @@ provinces10 = st_as_sf(st_read('J:\\Cai_data\\ne_10m_admin_1_states_provinces\\n
 # region to maplatlonBox = c(25, 65, -10, 60) #(minlat, maxlat, minlon, maxlon)
 latlonBox = c(-55, 75, -180, 180) #(minlat, maxlat, minlon, maxlon)
 latlonBox_local = c(-60,-15,-80,-50)#c(35,53,-12,46)
-latlonBox_local = c(-58, 18,-85,-32)#c(35,53,-12,46)
+latlonBox_local = c(-58, 80,-170,-32)#c(35,53,-12,46)
 locOfInt = st_point(c(customerTable$Lat[1], customerTable$Lon[1]))
 
 
@@ -51,7 +51,7 @@ locOfInt = st_point(c(customerTable$Lat[1], customerTable$Lon[1]))
 		# plantWaterDemand_transientSeasonalRegionalAvgSupplement_ssp_v2_processed		# aridityIndex_transientSeasonalRegionalTransientSeasonalSupplement_ssp_v2_processed		# plantWaterDemand_transientSeasonalRegionalTransientSeasonalSupplement_ssp_v2_processed
 
 
-varName = 'plantWaterDemand_transientInterannualRegionalTransientInterannualSupplement_ssp_v2_processed'
+varName = 'cwood-evgndltrv2_processed' #'plantWaterDemand_transientInterannualRegionalTransientInterannualSupplement_ssp_v2_processed'
 nc_close(myNC)
 myNC = nc_open(paste0(ncOutputPath, varName, '.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
@@ -63,7 +63,7 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 ###############
 # P1: maps
 # 1a: gridded
-myTitle = 'Regional Dry-Period Water Supply'
+myTitle = 'Softwood (evergreen) growth'
 mySubtitle = 'nonirrigated'
 thisCRS = 4087#4326
 
@@ -77,25 +77,25 @@ df_proj = st_transform(df_proj, crs = thisCRS)
 
 
 ggplot(data = geomData) +
-	with_blur(geom_raster(aes(y = lat, x = lon, fill = plotData), interpolate = FALSE), sigma = 2.5) +
+	with_blur(geom_raster(aes(y = lat, x = lon, fill = plotData), interpolate = FALSE), sigma = 5.5) +
 #	geom_sf(aes(colour = plotData)	+
-	scale_fill_viridis(option = 'rocket', trans = scales::pseudo_log_trans(sigma = .5))	+
+	scale_fill_viridis(option = 'viridis', trans = scales::pseudo_log_trans(sigma = .5))	+
 #	geom_raster(interpolate = TRUE)	+
 #	geom_sf(data = df_sub, aes(fill = plotData, color = plotData)) +
-	theme_light()	+
+	theme_light(base_size = 22)	+
 	theme(panel.ontop=FALSE, panel.background=element_blank()) +
 #	scale_colour_distiller(palette='Spectral', 
 #                         limits=c(quantile(df_sub, .7, na.rm=T), 
 #                                  quantile(df_sub, .999, na.rm=T))) +
-	geom_sf(data=ocean50, fill="grey20", colour='grey20')+
+	geom_sf(data=ocean50, fill="white", colour='white')+
 	borders('world', xlim=range(geomData$lon), ylim=range(geomData$lat), 
             colour='gray90', size=.2)	+
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='skyblue', size=5, shape='+', stroke=1)	+
 #	coord_quickmap(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2])) +
 #	coord_sf(default_crs = sf::st_crs(thisCRS), xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2])) + 
 #	coord_fixed(expand = FALSE)	+
-	coord_sf(xlim=c(latlonBox[3], latlonBox[4]), ylim=c(latlonBox[1], latlonBox[2]), expand = FALSE) + 
-#	coord_sf(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2]), expand = FALSE) + 
+#	coord_sf(xlim=c(latlonBox[3], latlonBox[4]), ylim=c(latlonBox[1], latlonBox[2]), expand = FALSE) + 
+	coord_sf(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2]), expand = FALSE) + 
 	labs(x = NULL, y = NULL, title=paste0(myTitle, ' - 2020s'),
 		subtitle=mySubtitle, 
          x="Longitude", y="Latitude", 
@@ -110,23 +110,23 @@ df_sub = subset(geomData, lat >= latlonBox_local[1] & lat <= latlonBox_local[2] 
 lmt <- max(abs(range(df_sub$plotData, na.rm=TRUE)))
 #lmt <- 1
 ggplot(data = geomData) +
-	with_blur(geom_raster(data = geomData, aes(fill = plotData, y = lat, x = lon), interpolate = FALSE), sigma = 1.75) +
+	with_blur(geom_raster(data = geomData, aes(fill = plotData, y = lat, x = lon), interpolate = FALSE), sigma = 5.5) +
 #	geom_raster(interploate = TRUE)	+
 #	geom_sf(data = df_sub, aes(fill = plotData, color = plotData)) +
-	theme_minimal()	+
+	theme_minimal(base_size = 22)	+
 	theme(panel.ontop=FALSE, panel.background=element_blank()) +
 #	scale_fill_viridis(option = 'turbo', trans = scales::pseudo_log_trans(sigma = 0.000001), limits =  c(-lmt, lmt))	+
-	scale_fill_gradient2(low = 'darkred', high = 'darkblue', mid = 'grey90', trans = scales::pseudo_log_trans(sigma = .01), limits = c(-lmt, lmt))	+
+	scale_fill_gradient2(low = 'darkred', high = 'darkblue', mid = 'grey90', trans = scales::pseudo_log_trans(sigma = 10), limits = c(-lmt, lmt))	+
 #	scale_fill_stepsn(colors=c('#b2182b','#ef8a62','#fddbc7',
 #                            '#f7f7f7','#d1e5f0','#67a9cf','#2166ac'),
 #            n.breaks=10, limits=c(-lmt,lmt), show.limits=T)  +
-	geom_sf(data=ocean50, fill="grey20", colour='grey20')+
+	geom_sf(data=ocean50, fill="white", colour='white')+
 	borders('world', xlim=range(geomData$lon), ylim=range(geomData$lat), 
             colour='gray10', size=.2)	+
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon), fill='green4', col='green4', size=5, shape='+', stroke=1)	+
 #	coord_quickmap(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2])) +
-	coord_sf(xlim=c(latlonBox[3], latlonBox[4]), ylim=c(latlonBox[1], latlonBox[2]), expand = FALSE) + 
-#	coord_sf(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2]), expand = FALSE) + 
+#	coord_sf(xlim=c(latlonBox[3], latlonBox[4]), ylim=c(latlonBox[1], latlonBox[2]), expand = FALSE) + 
+	coord_sf(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2]), expand = FALSE) + 
 	labs(x = NULL, y = NULL, title=paste0('Trends in ', myTitle, ' to 2050s'), 
 		#subtitle=mySubtitle, 
         x="Longitude", y="Latitude", 
@@ -145,7 +145,7 @@ st_as_sf(provinces10)
 
 
 	# abs values
-geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 2, 3, 1]))
+geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 1, 3, 1]))
 df_sub = subset(geomData, lat >= latlonBox[1] & lat <= latlonBox[2] & lon >= latlonBox[3] & lon <= latlonBox[4])
 #df_sub = subset(geomData, lat >= latlonBox_local[1] & lat <= latlonBox_local[2] & lon >= latlonBox_local[3] & lon <= latlonBox_local[4])
 geomData_sf = st_as_sf(df_sub, coords=c('lon','lat'), remove=FALSE, crs=4326, agr='constant')
@@ -179,7 +179,7 @@ ggplot(data = geomAvgMrg_sf) +
 #	scale_fill_stepsn(colors=c('#b2182b','#ef8a62','#fddbc7',
  #                            '#f7f7f7','#d1e5f0','#67a9cf','#2166ac'),
   #           n.breaks=7, limits=c(-lmt,lmt), show.limits=T)  +
-	scale_fill_viridis(option = 'rocket', trans = scales::pseudo_log_trans(sigma = 5))	+
+	scale_fill_viridis(option = 'viridis', trans = scales::pseudo_log_trans(sigma = 5))	+
 #	scale_fill_gradient2(low = 'skyblue', high = 'darkred', mid = 'white', trans = scales::pseudo_log_trans(sigma = .00005))	+
 #	scale_fill_gradient(low = 'skyblue', high = 'darkred', trans = scales::pseudo_log_trans(sigma = .00005))	+
 #	geom_sf(data = provinces10, fill = NA, color = 'grey75')
@@ -187,14 +187,19 @@ ggplot(data = geomAvgMrg_sf) +
 #	geom_sf(data = states, fill = NA, color = '#1A232F', size=1.4) +
 #	geom_sf(data = cityLocs_sf, size=4.4, stroke = 1.1, shape=21, col='white', fill='grey20')+ #c(rep('#039CE2',8), rep('#FDB600',7), '#23AF41')) +
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='skyblue', size=5, shape='+', stroke=1)	+
-	theme(panel.grid = element_line(colour='grey20')) +
-	theme(panel.background = element_rect(fill = 'grey20', colour='grey20')) +
-	theme(legend.position = 'right',
-		legend.background = element_rect(fill='white', colour='grey20')) +
+	theme_minimal(base_size = 22)	+
+	theme(panel.ontop=FALSE, panel.background=element_blank()) +
+#	theme_minimal(base_size = 22)	+
+#	theme(panel.ontop=FALSE, panel.background=element_blank()) +
+#	theme(base_size = 22) +
+#	theme(panel.grid = element_line(colour='grey20')) +
+#	theme(panel.background = element_rect(fill = 'grey20', colour='grey20')) +
+#	theme(legend.position = 'right',
+#		legend.background = element_rect(fill='white', colour='grey20')) +
 	guides(guide_legend(title=myTitle)) +
-	coord_sf(xlim = latlonBox[c(3,4)], ylim = latlonBox[c(1,2)] + c(-1, -1), expand = FALSE) +
-#	coord_sf(xlim = latlonBox_local[c(3,4)], ylim = latlonBox_local[c(1,2)] + c(-1, -1), expand = FALSE) +
-	labs(title=paste0(myTitle, ' - 2020s'), #subtitle=mySubtitle, 
+#	coord_sf(xlim = latlonBox[c(3,4)], ylim = latlonBox[c(1,2)] + c(-1, -1), expand = FALSE) +
+	coord_sf(xlim = latlonBox_local[c(3,4)], ylim = latlonBox_local[c(1,2)] + c(-1, -1), expand = FALSE) +
+	labs(title=paste0(myTitle, ' - 2010s'), #subtitle=mySubtitle, 
         x="Longitude", y="Latitude", 
         fill='')
 ggsave(paste0(customerFolder, varName, "_polit_c.png"), width = 16, height = 12)
@@ -206,6 +211,7 @@ ggsave(paste0(customerFolder, varName, "_polit_c.png"), width = 16, height = 12)
 
 	# trends
 geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 2, 1] - nc_testDat[ , , 2, 2, 1]))
+geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 2, 3]))
 df_sub = subset(geomData, lat >= latlonBox[1] & lat <= latlonBox[2] & lon >= latlonBox[3] & lon <= latlonBox[4])
 #df_sub = subset(geomData, lat >= latlonBox_local[1] & lat <= latlonBox_local[2] & lon >= latlonBox_local[3] & lon <= latlonBox_local[4])
 geomData_sf = st_as_sf(df_sub, coords=c('lon','lat'), remove=FALSE, crs=4326, agr='constant')
@@ -246,13 +252,15 @@ ggplot(data = geomAvgMrg_sf) +
 #	geom_sf(data = states, fill = NA, color = '#1A232F', size=1.4) +
 #	geom_sf(data = cityLocs_sf, size=4.4, stroke = 1.1, shape=21, col='white', fill='grey20')+ #c(rep('#039CE2',8), rep('#FDB600',7), '#23AF41')) +
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='green4', size=5, shape='+', stroke=1)	+
-	theme(panel.grid = element_line(colour='grey20')) +
-	theme(panel.background = element_rect(fill = 'grey20', colour='grey20')) +
-	theme(legend.position = 'right',
-		legend.background = element_rect(fill='white', colour='grey20')) +
+	theme_minimal(base_size = 22)	+
+	theme(panel.ontop=FALSE, panel.background=element_blank()) +
+#	theme(panel.grid = element_line(colour='grey20')) +
+#	theme(panel.background = element_rect(fill = 'grey20', colour='grey20')) +
+#	theme(legend.position = 'right',
+#		legend.background = element_rect(fill='white', colour='grey20')) +
 	guides(guide_legend(title=myTitle)) +
-	coord_sf(xlim = latlonBox[c(3,4)], ylim = latlonBox[c(1,2)] + c(-1, -1), expand = FALSE) +
-#	coord_sf(xlim = latlonBox_local[c(3,4)], ylim = latlonBox_local[c(1,2)] + c(-1, -1), expand = FALSE) +
+#	coord_sf(xlim = latlonBox[c(3,4)], ylim = latlonBox[c(1,2)] + c(-1, -1), expand = FALSE) +
+	coord_sf(xlim = latlonBox_local[c(3,4)], ylim = latlonBox_local[c(1,2)] + c(-1, -1), expand = FALSE) +
 	labs(title=paste0('Trends in ', myTitle), #subtitle=mySubtitle, 
         x="Longitude", y="Latitude", 
         fill='')
@@ -276,7 +284,7 @@ ggsave(paste0(customerFolder, varName, "_trends_polit_c.png"), width = 16, heigh
 #thisTestDat = nc_testDat[thisLon, thisLat, , , ]
 
 # abs values
-whichGeoUnit = 'Argentina'
+whichGeoUnit = 'Mexico'
 geoUnitVals = matrix(nrow=9, ncol=4)
 thisScen = 1
 for(i in 1:9)	{
@@ -311,42 +319,43 @@ for(i in 1:9)	{
 theDecades = seq(2010, 2090,10)
 theScenarios = c("Low Emissions", "Middle of the Road", "High Emissions")
 units = 'kg/ha/yr'
-
-png(paste0(customerFolder, varName, theScenarios[thisScen], "_avgYield.png"), width=800, height=400)
-windowsFonts(A = windowsFont("Roboto"))
-#par(mar=2*c(5,5,2,2), mgp=2*c(3,1.3,0), font.lab=2, bty='l', cex.lab=2*1.8, cex.axis=2*1.4, cex.main=2*1.8, col='#1A232F')
-plot(theDecades, geoUnitVals[ , 1], ylim = c(0, max(geoUnitVals[ , 4])*1.025),
-		type='l', lwd=1, col='white', xaxt = 'n', #log='y',
-		main='', ylab='Yield (kg/ha/yr)', xlab='',
-		col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-		family='A')
-	axis(1, at = theDecades,col.lab='#1A232F', col.axis='#666D74', 
-		labels = theDecades)
-#	abline(v=fstOfMnths, lwd=1, col=adjustcolor('#666D74', alpha.f=0.1))
-	polygon(x=c(theDecades, rev(theDecades)), y=c(geoUnitVals[ , 3], rev(geoUnitVals[ , 4])),
-		col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-	lines(theDecades, geoUnitVals[ , 1], 
-		col='#0098B2', lwd=5)
-	text(x=theDecades[1], y=max(geoUnitVals[ , 4])*1.00,
-		paste0(theScenarios[thisScen], ' Scenario'),
-		adj = c(0,0), font=2, col='#F06000', family='A', cex=1*1.0)
-#	if((thisTestDat[9, thisScen, 4] < 0.05 | thisTestDat[5, thisScen, 4] < 0.05) & thisTestDat[9, thisScen, 3] < 0)	{
-#		text(x=theDecades[1], y=max(thisTestDat[ , 1:3, c(1,5,6)])*0.87,
-#			paste0('Trend: ', 'Decreasing by ', signif((median(thisTestDat[6:9, thisScen, 1]) - median(thisTestDat[1:4, thisScen, 1])) / 50, 2), units),
-#			adj = c(0,0), font=2, col='#F06000', family='A', cex=1*1.0)
-#	} 	else {
-#		if((thisTestDat[9, thisScen, 4] < 0.05 | thisTestDat[5, thisScen, 4] < 0.05) & thisTestDat[9, thisScen, 3] > 0)	{
-#			text(x=theDecades[1], y=max(thisTestDat[ , 1:3, c(1,5,6)])*0.87,
-#				paste0('Trend: ', 'Increasing by ', signif((median(thisTestDat[6:9, thisScen, 1]) - median(thisTestDat[1:4, thisScen, 1])) / 50, 2), units),
-#				adj = c(0,0), font=2, col='#F06000', family='A', cex=1*1.0)
-#		}	else	{
-#			text(x=theDecades[1], y=max(thisTestDat[ , 1:3, c(1,5,6)])*0.87,
-#				paste0('Trend: No Significant Trend'),
-#				adj = c(0,0), font=2, col='#F06000', family='A', cex=1*1.0)
-#			}
-#	}
+for(thisScen in 1:length(theScenarios))	{
+	png(paste0(customerFolder, varName, theScenarios[thisScen], "_avgYield.png"), width=600, height=400)
+	windowsFonts(A = windowsFont("Roboto"))
+	#par(mar=2*c(3,2,1.5,.5), mgp=2*c(1,1.3,0), font.lab=2, bty='l', cex.lab=2*1.8, cex.axis=2*1.4, cex.main=2*1.8, col='#1A232F')
+	plot(theDecades, geoUnitVals[ , 1], ylim = c(0, max(geoUnitVals[ , 4])*1.025),
+			type='l', lwd=1, col='white', xaxt = 'n', #log='y',
+			main='', ylab='', # (kg/ha/yr)',
+			xlab='',
+			col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+			family='A')
+		axis(1, at = theDecades,col.lab='#1A232F', col.axis='#666D74', 
+			labels = theDecades, cex.lab = 1.5, cex.axis =1.2)
+	#	abline(v=fstOfMnths, lwd=1, col=adjustcolor('#666D74', alpha.f=0.1))
+		polygon(x=c(theDecades, rev(theDecades)), y=c(geoUnitVals[ , 3], rev(geoUnitVals[ , 4])),
+			col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+		lines(theDecades, geoUnitVals[ , 1], 
+			col='#0098B2', lwd=5)
+		text(x=theDecades[1], y=max(geoUnitVals[ , 4])*1.00,
+			paste0(theScenarios[thisScen], ' Scenario'),
+			adj = c(0,0), font=2, col='#F06000', family='A', cex=1.5)
+	#	if((thisTestDat[9, thisScen, 4] < 0.05 | thisTestDat[5, thisScen, 4] < 0.05) & thisTestDat[9, thisScen, 3] < 0)	{
+	#		text(x=theDecades[1], y=max(thisTestDat[ , 1:3, c(1,5,6)])*0.87,
+	#			paste0('Trend: ', 'Decreasing by ', signif((median(thisTestDat[6:9, thisScen, 1]) - median(thisTestDat[1:4, thisScen, 1])) / 50, 2), units),
+	#			adj = c(0,0), font=2, col='#F06000', family='A', cex=1*1.0)
+	#	} 	else {
+	#		if((thisTestDat[9, thisScen, 4] < 0.05 | thisTestDat[5, thisScen, 4] < 0.05) & thisTestDat[9, thisScen, 3] > 0)	{
+	#			text(x=theDecades[1], y=max(thisTestDat[ , 1:3, c(1,5,6)])*0.87,
+	#				paste0('Trend: ', 'Increasing by ', signif((median(thisTestDat[6:9, thisScen, 1]) - median(thisTestDat[1:4, thisScen, 1])) / 50, 2), units),
+	#				adj = c(0,0), font=2, col='#F06000', family='A', cex=1*1.0)
+	#		}	else	{
+	#			text(x=theDecades[1], y=max(thisTestDat[ , 1:3, c(1,5,6)])*0.87,
+	#				paste0('Trend: No Significant Trend'),
+	#				adj = c(0,0), font=2, col='#F06000', family='A', cex=1*1.0)
+	#			}
+	#	}
 	dev.off()
-
+}
 
 
 

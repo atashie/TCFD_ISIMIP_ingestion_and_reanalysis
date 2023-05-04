@@ -84,10 +84,10 @@ for(thisScen in 1:length(rcpScenarios))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				gfdl_all = (c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) + nonZeroGenerator) * scalar
-				hadgem_all = (c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) + nonZeroGenerator) * scalar
-				ipsl_all = (c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) + nonZeroGenerator) * scalar
-				miroc_all = (c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) + nonZeroGenerator) * scalar
+				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * scalar + nonZeroGenerator 
+				hadgem_all = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * scalar + nonZeroGenerator
+				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) * scalar + nonZeroGenerator
+				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * scalar + nonZeroGenerator
 
 				gfdl_yrly = NULL
 				hadgem_yrly = NULL

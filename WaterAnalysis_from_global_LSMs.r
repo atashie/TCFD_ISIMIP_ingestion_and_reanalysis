@@ -291,7 +291,7 @@ customerFolder = 'J:\\Cai_data\\Rabo\\Locations\\'
 clientName = 'BeefNW'
 thisDate = Sys.Date()
 
-customerTable = fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_BNW.csv'), 
+customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_BNW.csv'), 
 	skip = 1) #'Customer_Hazards_and_Locations-Rabobank_grid - Sheet1.csv'
 locationHeader = 'Location (name)'
 

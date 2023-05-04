@@ -80,10 +80,10 @@ for(thisScen in 1:length(rcpScenarios))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				gfdl_all = (c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) + nonZeroGenerator) * scalar
-				hadgem_all = (c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) + nonZeroGenerator) * scalar
-				ipsl_all = (c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) + nonZeroGenerator) * scalar
-				miroc_all = (c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) + nonZeroGenerator) * scalar
+				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * scalar + nonZeroGenerator 
+				hadgem_all = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * scalar + nonZeroGenerator
+				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) * scalar + nonZeroGenerator
+				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * scalar + nonZeroGenerator
 
 				gfdl_yrly = NULL
 				hadgem_yrly = NULL
@@ -91,10 +91,10 @@ for(thisScen in 1:length(rcpScenarios))	{
 				miroc_yrly = NULL
 				for(thisYear in nc_years)	{
 					theseDates = which(year(nc_date) == thisYear)
-					gfdl_yrly =   c(gfdl_yrly,   quantile(gfdl_all[theseDates], 0.15))
-					hadgem_yrly = c(hadgem_yrly, quantile(hadgem_all[theseDates], 0.15))
-					ipsl_yrly =   c(ipsl_yrly,   quantile(ipsl_all[theseDates], 0.15))
-					miroc_yrly =  c(miroc_yrly,  quantile(miroc_all[theseDates], 0.15))
+					gfdl_yrly =   c(gfdl_yrly,   quantile(gfdl_all[theseDates], 0.15) * 12)
+					hadgem_yrly = c(hadgem_yrly, quantile(hadgem_all[theseDates], 0.15) * 12)
+					ipsl_yrly =   c(ipsl_yrly,   quantile(ipsl_all[theseDates], 0.15) * 12)
+					miroc_yrly =  c(miroc_yrly,  quantile(miroc_all[theseDates], 0.15) * 12)
 				}
 				
 				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 10, n.points = numYears)$y
@@ -132,16 +132,16 @@ for(thisScen in 1:length(rcpScenarios))	{
 
 						# calculating long-term significance (spearmans)
 		#			dataOutArray[j, i, , thisScen, 6] = dataOutArray[j, i, 9, thisScen, 4]				
-				}
 			}
 		}
-	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
 	}
+	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
 	nc_close(ncin_gfdl)
 	nc_close(ncin_hadgem)
 	nc_close(ncin_ipsl)
 	nc_close(ncin_miroc)
 }
+
 
 dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
 
@@ -152,22 +152,21 @@ maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
 histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
-histQuants = quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01))
+histQuants = rev(quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, 0.01)))
 histQuants
 
 for(i in 1:length(whichDecades))	{
-	dataOutArray[ , , i, 1, 2] = 1
-	dataOutArray[ , , i, 2, 2] = 1
-	dataOutArray[ , , i, 3, 2] = 1
+	dataOutArray[ , , i, , 2] = 1
 	for(j in 1:(length(histQuants)))	{
-		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j
-		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j
-		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] > histQuants[j]] = j
+		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] <= histQuants[j]] = j
+		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] <= histQuants[j]] = j
+		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] <= histQuants[j]] = j
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
 	dataOutArray[ , , i, 3, 2][maskedLocs85] = NA
 }
+
 
 
 tcfdVariable = dataOutArray

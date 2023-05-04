@@ -115,14 +115,38 @@ hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
 #appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\UBS_Feb2023\\UBS_temp_precip_hazards_feb_26.csv'
 
 	# ICL Demo
-userName = 'ICL'	
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ICL-Demo_Mar2023\\'
+#userName = 'ICL'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ICL-Demo_Mar2023\\'
 
-customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-ICL_Demo - Sheet1.csv'))
+#customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-ICL_Demo - Sheet1.csv'))
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ICL-Demo_Mar2023\\ICL_temp_precip_hazards_mar_21.csv'
+#aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#aggScoreExceptionsValues = c(0, 38, 30)
+
+	# Nuveen - Georgia
+#userName = 'Nuveen - Georgia'	
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Nubeen_Apr2023\\'
+
+#customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_Apr2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+#appendedHazardNames = NA
+#appendedHazardFileLoc = NA
+#aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+#aggScoreExceptionsValues = c(0, 38, 30)
+
+	# Nuveen - Romania
+userName = 'Nuveen - Romania'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Nuveen_Apr2023b\\'
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_Apr2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
-appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ICL-Demo_Mar2023\\ICL_temp_precip_hazards_mar_21.csv'
+appendedHazardNames = NA
+appendedHazardFileLoc = NA
 aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 aggScoreExceptionsValues = c(0, 38, 30)
 
@@ -881,7 +905,10 @@ plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Intense Precipitation'
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Extreme Heat' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Extreme Cold' & Location == customerTable$Location[thisLoc])$Percentile)	
 
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Raw_Hazard_Value)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Availability' & Location == customerTable$Location[thisLoc])$Raw_Hazard_Value)	
 plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Coastal Flood' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Aggregate Climate Score' & Location %in% customerTable$Location)$Percentile)	
 	
 proc.time() - startTime
 
