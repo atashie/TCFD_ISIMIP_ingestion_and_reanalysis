@@ -6,16 +6,16 @@ library(data.table)
 # variable options
 climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',
 	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals')
-ncFileLoc = 'J:\\Cai_data\\WaterIndex\\'
+ncFileLoc = 'J:\\Cai_data\\WaterIndex\\'		#C:\\Users\\18033\\Documents\\CaiData\\ncFiles\\
 rawDataColumnNames = c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Mean', 'Q05', 'Q15', 'Q25', 'Q50', 'Q75', 'Q85', 'Q95')
 
 # reading in customer data
 userName = 'Rabo'	
-customerFolder = 'J:\\Cai_data\\Rabo\\Locations\\'
-clientName = 'AgricolaPachacama' #'AgricolaSanOsvaldo'#	'AgricolaSanOsvaldo'#	AgricolaSanTelmo	BeefNW
+customerFolder = 'J:\\Cai_data\\Rabo\\Locations\\' # 'C:\\Users\\18033\\Documents\\CaiData\\temp_locationsForRabo\\Locations\\'
+clientName = 'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	BeefNW
 thisDate = Sys.Date()
 
-customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_agricolaPachacama.csv'),#'Customer Onboarding Information_BNW.csv'), 
+customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_agricolaSanOsvaldo.csv'),#'Customer Onboarding Information_BNW.csv'), 
 	skip = 1) #'Customer_Hazards_and_Locations-Rabobank_grid - Sheet1.csv'
 locationHeader = 'Location (name)'
 
@@ -195,7 +195,13 @@ indexValuesArray = array(rep(myMissingData, nrow(customerTable) * length(climate
 
 
 for(thisRow in 1:nrow(customerTable))	{
+		# initializing static values
 	petGlobAvgForGrowSeason = petGlobAvg * (length(growSeason) / 12)
+	thisFrcAreaUnderCult = ifelse(is.na(customerTable$Area_Irrigated[thisRow]), frcAreaUnderCult, customerTable$Area_Irrigated[thisRow])	# defining water needs by location
+	thisWplant = ifelse(is.na(customerTable$Annual_Water_Needs[thisRow]), wPlant, customerTable$Annual_Water_Needs[thisRow])	# defining water needs by location
+	thisDivertibleStrmfl = ifelse(is.na(customerTable$Divertible_Streamflow[thisRow]), divertibleStrmfl, customerTable$Divertible_Streamflow[thisRow]) # defining extractible water by location
+	thisStrmflCaptureRatio = ifelse(is.na(customerTable$Streamflow_Capture[thisRow]), strmflCaptureRatio, customerTable$Streamflow_Capture[thisRow]) # defining extractible water by location
+
 		# quantiles are combined in some eqs (and e.g. Q05*Q05 --> Q0025), so quantiles for each coincident var must be able to be handled separately
 	#ppt = precipitation
 	pptQntsNrml = 1 - ((climateData[thisRow, , rep(17,7), , 1] - climateData[thisRow, , 14:20, , 1]) /  climateData[thisRow, , rep(17,7), , 1])
@@ -223,9 +229,9 @@ for(thisRow in 1:nrow(customerTable))	{
 	strmflQntsAvg = sqrt(strmflQntsNrml) * climateData[thisRow, , rep(17,7), , 4]
 	strmflQntsDrght = sqrt(strmflQntsNrml) * climateData[thisRow, , rep(15,7), , 4]
 	strmflQntsDrghtShft = sqrt(strmflQntsNrml) * (1 - ((climateData[thisRow, , rep(17,7), , 4] - climateData[thisRow, , rep(15,7), , 4]) / climateData[thisRow, , rep(17,7), , 4]))
-	streamflowScalar = ifelse(customerTable$Surface_Water[thisRow], divertibleStrmfl, strmflCaptureRatio)
-	effectiveStrmfl = (streamflowScalar / frcAreaUnderCult) * (strmflQntsAvg / gridArea) * kmToMm 
-	effectiveStrmflDrght = (streamflowScalar / frcAreaUnderCult) * (strmflQntsDrght / gridArea) * kmToMm 
+	streamflowScalar = ifelse(customerTable$Surface_Water[thisRow], thisDivertibleStrmfl, thisStrmflCaptureRatio)
+	effectiveStrmfl = (streamflowScalar / thisFrcAreaUnderCult) * (strmflQntsAvg / gridArea) * kmToMm 
+	effectiveStrmflDrght = (streamflowScalar / thisFrcAreaUnderCult) * (strmflQntsDrght / gridArea) * kmToMm 
 	
 	
 		# Aridity Index - Avg
@@ -244,11 +250,10 @@ for(thisRow in 1:nrow(customerTable))	{
 		growSeasonPETqntsAvgRatio = growSeasonPETqntsAvgRatio + sqrt(petQntsNrml) * climateData[thisRow, , rep(thisMonth, 7), , 2] / petGlobAvgForGrowSeason
 	}
 	effectivePPT = (1 - runoffRatio) * growSeasonPPTqntsAvg
-	thisWplant = ifelse(is.na(customerTable$Annual_Water_Needs[thisRow]), wPlant, customerTable$Annual_Water_Needs[thisRow])	# defining water needs by location
 	effectiveWPlant = sqrt(growSeasonPETqntsAvgRatio) * mean(thisWplant)
 	indexValuesArray[thisRow, , , , 3, 1] = effectivePPT / effectiveWPlant
 	indexValuesArray[thisRow, , , , 3, 2] = effectivePPT - effectiveWPlant
-		
+
 	# Aridity Index - Drought
 	indexValuesArray[thisRow, , , , 4, 1] = (pptQntsDrght / petQntsAvg) / humidAI
 	indexValuesArray[thisRow, , , , 4, 2] = pptQntsDrght - petQntsAvg * humidAI
@@ -368,7 +373,7 @@ for(thisLoc in 1:nrow(customerTable))	{
 	}
 }
 	
-
+accenture, rayonier, enel, guidehouse
 
 ###################################################################
 # 3C- incorporating 3rd party data for historicals
@@ -384,6 +389,7 @@ for(thisLoc in 1:nrow(customerTable))	{
 
 #test = nc_open('J:\\Cai_data\\Rabo\\GRACE\\GRCTellus.JPL.200204_202211.GLO.RL06.1M.MSCNv03.nc')
 test = nc_open('J:\\Cai_data\\Rabo\\GRACE\\GRCTellus.JPL.200204_202211.GLO.RL06.1M.MSCNv03CRI.nc')
+
 
 nc_lat = ncvar_get(test, 'lat')	# lat is given from high to low
 nc_lon = ncvar_get(test, 'lon')	# given from 0.25 to 359.75, so need to convert to neg / pos
