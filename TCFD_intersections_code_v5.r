@@ -3,16 +3,18 @@
 library(data.table)
 library(ncdf4)
 source('C:\\Users\\arik\\Documents\\GitHub\\TCFD_ISIMIP_ingestion_and_reanalysis\\TCFD_intersections_code_functions_v5.r')
+source('~\\TCFD_ISIMIP_ingestion_and_reanalysis\\TCFD_intersections_code_functions_v5.r')
+thisWD = 'J:\\Cai_data\\TCFD\\'	# '~//'
 
 ########################################################################################################################
 # paths and values that are unlikely to change between runs
 thisDate = Sys.Date()
-hazardFolder = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-ncpathRiverFloods = "J:\\Cai_data\\TCFD\\Flash Floods\\"
-floodMapTiffLoc = 'J:\\Cai_data\\TCFD\\CurrentFloodHazard'
-waterMaskLoc = 'J:\\Cai_data\\TCFD\\CurrentFloodHazard\\LandMaskArray.rds'
-ncpathDEM = 'J:\\Cai_data\\TCFD\\SeaLevelRise\\globalDEM\\srtm30plus_v11_land.nc'
-ncpathSeaLevelRise = 'J:\\Cai_data\\TCFD\\SeaLevelRise\\sea_level_change'
+hazardFolder = paste0(thisWD, 'ProcessedNCs\\'
+ncpathRiverFloods = paste0(thisWD, 'Flash Floods\\'
+floodMapTiffLoc = paste0(thisWD, 'CurrentFloodHazard'
+waterMaskLoc = paste0(thisWD, 'CurrentFloodHazard\\LandMaskArray.rds'
+ncpathDEM = paste0(thisWD, 'SeaLevelRise\\globalDEM\\srtm30plus_v11_land.nc'
+ncpathSeaLevelRise = paste0(thisWD, 'SeaLevelRise\\sea_level_change'
 locationFootprint = 3		# how big is the footprint of the location of interest? in number of 'boxes' to search to the left and right (so 0 is equal to 1 km^2, 1 is 3x3=9 km^2, 2 is 5x5=25 km^2, 3 is 7x7=49, 4 is 9x9=81, etc.
 appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
@@ -21,7 +23,11 @@ aggScoreExceptionsValues = c(0, 38, 30)
 
 ########################################################################################################################
 # new customer data
-	# ASR
+# !!!!!!!!!!!!!!!!!!!!!!!!
+# this is the only section that needs to be updated between runs
+# !!!!!!!!!!!!!!!!!!!!!!!!
+
+# 	# ASR
 userName = 'ASR'	
 customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\'
 
