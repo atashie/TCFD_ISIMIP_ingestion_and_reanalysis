@@ -13,8 +13,8 @@ library(zoo)		# for na.fill()
 # reading in climai netcdf data
 ncpath = "J:\\Cai_data\\TCFD\\Trees\\carbonMassInWood\\"
 ncOutputPath = 'J:\\Cai_data\\TCFD\\ProcessedNCs\\'
-ncVarFileName = 'cwood-dcddrybdltr'
-saveDate = '17MAY2023'
+ncVarFileName = 'cwood-dcdcldbdltr'
+saveDate = '15FEB2023'
 rcpScenarios = c(126, 370, 585)
 whichDecades = seq(10,90,10)
 valueType = 1:6
@@ -150,7 +150,7 @@ for(i in 1:length(whichDecades))	{
 
 
 tcfdVariable = dataOutArray
-metadata = list(tcfdVariable = list(units = 'Carbon Mass in Wood (dcddrybdltr) - kg / m^2'))
+metadata = list(tcfdVariable = list(units = 'Carbon Mass in Wood (dcdcldbdltr) - kg / m^2'))
 attr(tcfdVariable, 'variables') = metadata
 names(dim(tcfdVariable)) = c('lon', 'lat', 'decade','rcpScen', 'valueClass')
 
