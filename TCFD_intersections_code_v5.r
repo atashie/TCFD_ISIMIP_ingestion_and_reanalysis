@@ -312,8 +312,7 @@ for(thisLoc in unique(dataOutput$Location))	{
 						)
 		}
 	}
-}
-fwrite(dataTrends)
+
 	
 	
 	totalTrend = c(totalTrend, mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Aggregate Climate Score" & Decade %in% c("2010", "2020"))$Percentile) - 
@@ -323,6 +322,61 @@ fwrite(dataTrends)
 	availabilityTrend = c(availabilityTrend, mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Water Scarcity" & Hazard_Measure == "Aggregate Score" & Decade %in% c("2010", "2020"))$Percentile) - 
 		mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Water Scarcity" & Hazard_Measure == "Aggregate Score" & Decade %in% c("2040", "2050", "2060"))$Percentile))
 }	
+fwrite(dataTrends, 'C:\\Users\\18033\\Downloads\\georgiaHighlights.csv')
+
+
+
+## reformatting for a table view
+dataOutputReformatted = data.table(Location = NA, Scenario = NA, Variable = NA, 
+	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend = NA)
+for(thisLoc in unique(dataOutput$Location))	{
+	for(thisScen in unique(dataOutput$Scenario))	{
+		for(thisVariable in unique(dataOutput$Hazard_Measure))	{
+			if(thisVariable != 'Aggregate Score')	{
+				theseOutputs = subset(dataOutput, Location == thisLoc & Scenario == thisScen & Hazard_Measure == thisVariable)
+				dataOutputReformatted = rbind(dataOutputReformatted, 
+					data.table(
+						Location = thisLoc,
+						Scenario = thisScen,
+						Variable = thisVariable,
+						D2010s= subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value, 
+						D2020s= subset(theseOutputs, Decade == 2020)$Raw_Hazard_Value, 
+						D2030s= subset(theseOutputs, Decade == 2030)$Raw_Hazard_Value, 
+						D2040s= subset(theseOutputs, Decade == 2040)$Raw_Hazard_Value, 
+						D2050s= subset(theseOutputs, Decade == 2050)$Raw_Hazard_Value, 
+						D2060s= subset(theseOutputs, Decade == 2060)$Raw_Hazard_Value, 
+						D2070s= subset(theseOutputs, Decade == 2070)$Raw_Hazard_Value, 
+						D2080s= subset(theseOutputs, Decade == 2080)$Raw_Hazard_Value, 
+						D2090s= subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value,
+						Trend = subset(theseOutputs, Decade == 2090)$Decadal_Trend_Strength)
+					)
+			}
+		}
+	}
+}
+fwrite(dataOutputReformatted, 'C:\\Users\\18033\\Downloads\\georgiaDataSimplified.csv')
+				
+dataOutputSuperSimple = data.table(Variable = NA, 
+	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend = NA)
+thisScen = 'Middle of the Road'
+for(thisVariable in unique(dataOutputReformatted$Variable))	{
+	theseOutputs = subset(dataOutputReformatted, Scenario == thisScen & Variable == thisVariable)
+	dataOutputSuperSimple = rbind(dataOutputSuperSimple, 
+		data.table(
+			Variable = thisVariable,
+			D2010s= mean(theseOutputs$D2010), 
+			D2020s= mean(theseOutputs$D2020), 
+			D2030s= mean(theseOutputs$D2030), 
+			D2040s= mean(theseOutputs$D2040), 
+			D2050s= mean(theseOutputs$D2050), 
+			D2060s= mean(theseOutputs$D2060), 
+			D2070s= mean(theseOutputs$D2070), 
+			D2080s= mean(theseOutputs$D2080), 
+			D2090s= mean(theseOutputs$D2090),
+			Trend = mean(theseOutputs$Trend))
+	)
+}
+fwrite(dataOutputSuperSimple, 'C:\\Users\\18033\\Downloads\\georgiaDataSuperSimplified.csv')
 
 
 
