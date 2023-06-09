@@ -81,15 +81,107 @@ for(thisScen in 1:length(rcpScenarios))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i, j))
-				gfdl_yrly = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * scalar
-				hadgem_yrly = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * scalar
-				ipsl_yrly = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates])  * scalar
-				miroc_yrly = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * scalar
-			
-				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
-				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
-				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
-				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 45, n.points = numYears)$y
+
+				if(j <= 2 | j >= length(nc_lon) - 1 | i <= 2 | i >= length(nc_lat) -1)	{
+					gfdl_yrly = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) * scalar
+					hadgem_yrly = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) * scalar
+					ipsl_yrly = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates])  * scalar
+					miroc_yrly = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) * scalar
+				}	else	{
+					gfdl_yrly = apply(cbind(c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]),
+						c(nc_gfdl_init[j-1,i, initDates], nc_gfdl[j-1,i, -initDates]),
+						c(nc_gfdl_init[j+1,i, initDates], nc_gfdl[j+1,i, -initDates]),
+						c(nc_gfdl_init[j,i-1, initDates], nc_gfdl[j,i-1, -initDates]), 
+						c(nc_gfdl_init[j,i+1, initDates], nc_gfdl[j,i+1, -initDates]),
+						c(nc_gfdl_init[j-1,i-1, initDates], nc_gfdl[j-1,i-1, -initDates]),
+						c(nc_gfdl_init[j+1,i+1, initDates], nc_gfdl[j+1,i+1, -initDates]),
+						c(nc_gfdl_init[j+1,i-1, initDates], nc_gfdl[j+1,i-1, -initDates]), 
+						c(nc_gfdl_init[j-1,i+1, initDates], nc_gfdl[j-1,i+1, -initDates]),
+						c(nc_gfdl_init[j-2,i, initDates], nc_gfdl[j-2,i, -initDates]),
+						c(nc_gfdl_init[j+2,i, initDates], nc_gfdl[j+2,i, -initDates]),
+						c(nc_gfdl_init[j,i-2, initDates], nc_gfdl[j,i-2, -initDates]), 
+						c(nc_gfdl_init[j,i+2, initDates], nc_gfdl[j,i+2, -initDates]),
+						c(nc_gfdl_init[j-2,i-1, initDates], nc_gfdl[j-2,i-1, -initDates]),
+						c(nc_gfdl_init[j+2,i-1, initDates], nc_gfdl[j+2,i-1, -initDates]),
+						c(nc_gfdl_init[j-1,i-2, initDates], nc_gfdl[j-1,i-2, -initDates]), 
+						c(nc_gfdl_init[j-1,i+2, initDates], nc_gfdl[j-1,i+2, -initDates]),
+						c(nc_gfdl_init[j-2,i+1, initDates], nc_gfdl[j-2,i+1, -initDates]),
+						c(nc_gfdl_init[j+2,i+1, initDates], nc_gfdl[j+2,i+1, -initDates]),
+						c(nc_gfdl_init[j+1,i-2, initDates], nc_gfdl[j+1,i-2, -initDates]), 
+						c(nc_gfdl_init[j+1,i+2, initDates], nc_gfdl[j+1,i+2, -initDates])) * scalar,
+						1, mean, na.rm = TRUE)
+					hadgem_yrly = apply(cbind(c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]),
+						c(nc_hadgem_init[j-1,i, initDates], nc_hadgem[j-1,i, -initDates]),
+						c(nc_hadgem_init[j+1,i, initDates], nc_hadgem[j+1,i, -initDates]),
+						c(nc_hadgem_init[j,i-1, initDates], nc_hadgem[j,i-1, -initDates]), 
+						c(nc_hadgem_init[j,i+1, initDates], nc_hadgem[j,i+1, -initDates]),
+						c(nc_hadgem_init[j-1,i-1, initDates], nc_hadgem[j-1,i-1, -initDates]),
+						c(nc_hadgem_init[j+1,i+1, initDates], nc_hadgem[j+1,i+1, -initDates]),
+						c(nc_hadgem_init[j+1,i-1, initDates], nc_hadgem[j+1,i-1, -initDates]), 
+						c(nc_hadgem_init[j-1,i+1, initDates], nc_hadgem[j-1,i+1, -initDates]),
+						c(nc_hadgem_init[j-2,i, initDates], nc_hadgem[j-2,i, -initDates]),
+						c(nc_hadgem_init[j+2,i, initDates], nc_hadgem[j+2,i, -initDates]),
+						c(nc_hadgem_init[j,i-2, initDates], nc_hadgem[j,i-2, -initDates]), 
+						c(nc_hadgem_init[j,i+2, initDates], nc_hadgem[j,i+2, -initDates]),
+						c(nc_hadgem_init[j-2,i-1, initDates], nc_hadgem[j-2,i-1, -initDates]),
+						c(nc_hadgem_init[j+2,i-1, initDates], nc_hadgem[j+2,i-1, -initDates]),
+						c(nc_hadgem_init[j-1,i-2, initDates], nc_hadgem[j-1,i-2, -initDates]), 
+						c(nc_hadgem_init[j-1,i+2, initDates], nc_hadgem[j-1,i+2, -initDates]),
+						c(nc_hadgem_init[j-2,i+1, initDates], nc_hadgem[j-2,i+1, -initDates]),
+						c(nc_hadgem_init[j+2,i+1, initDates], nc_hadgem[j+2,i+1, -initDates]),
+						c(nc_hadgem_init[j+1,i-2, initDates], nc_hadgem[j+1,i-2, -initDates]), 
+						c(nc_hadgem_init[j+1,i+2, initDates], nc_hadgem[j+1,i+2, -initDates])) * scalar,
+						1, mean, na.rm = TRUE)
+					ipsl_yrly = apply(cbind(c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]),
+						c(nc_ipsl_init[j-1,i, initDates], nc_ipsl[j-1,i, -initDates]),
+						c(nc_ipsl_init[j+1,i, initDates], nc_ipsl[j+1,i, -initDates]),
+						c(nc_ipsl_init[j,i-1, initDates], nc_ipsl[j,i-1, -initDates]), 
+						c(nc_ipsl_init[j,i+1, initDates], nc_ipsl[j,i+1, -initDates]),
+						c(nc_ipsl_init[j-1,i-1, initDates], nc_ipsl[j-1,i-1, -initDates]),
+						c(nc_ipsl_init[j+1,i+1, initDates], nc_ipsl[j+1,i+1, -initDates]),
+						c(nc_ipsl_init[j+1,i-1, initDates], nc_ipsl[j+1,i-1, -initDates]), 
+						c(nc_ipsl_init[j-1,i+1, initDates], nc_ipsl[j-1,i+1, -initDates]),
+						c(nc_ipsl_init[j-2,i, initDates], nc_ipsl[j-2,i, -initDates]),
+						c(nc_ipsl_init[j+2,i, initDates], nc_ipsl[j+2,i, -initDates]),
+						c(nc_ipsl_init[j,i-2, initDates], nc_ipsl[j,i-2, -initDates]), 
+						c(nc_ipsl_init[j,i+2, initDates], nc_ipsl[j,i+2, -initDates]),
+						c(nc_ipsl_init[j-2,i-1, initDates], nc_ipsl[j-2,i-1, -initDates]),
+						c(nc_ipsl_init[j+2,i-1, initDates], nc_ipsl[j+2,i-1, -initDates]),
+						c(nc_ipsl_init[j-1,i-2, initDates], nc_ipsl[j-1,i-2, -initDates]), 
+						c(nc_ipsl_init[j-1,i+2, initDates], nc_ipsl[j-1,i+2, -initDates]),
+						c(nc_ipsl_init[j-2,i+1, initDates], nc_ipsl[j-2,i+1, -initDates]),
+						c(nc_ipsl_init[j+2,i+1, initDates], nc_ipsl[j+2,i+1, -initDates]),
+						c(nc_ipsl_init[j+1,i-2, initDates], nc_ipsl[j+1,i-2, -initDates]), 
+						c(nc_ipsl_init[j+1,i+2, initDates], nc_ipsl[j+1,i+2, -initDates])) * scalar,
+						1, mean, na.rm = TRUE)
+					miroc_yrly = apply(cbind(c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]),
+						c(nc_miroc_init[j-1,i, initDates], nc_miroc[j-1,i, -initDates]),
+						c(nc_miroc_init[j+1,i, initDates], nc_miroc[j+1,i, -initDates]),
+						c(nc_miroc_init[j,i-1, initDates], nc_miroc[j,i-1, -initDates]), 
+						c(nc_miroc_init[j,i+1, initDates], nc_miroc[j,i+1, -initDates]),
+						c(nc_miroc_init[j-1,i-1, initDates], nc_miroc[j-1,i-1, -initDates]),
+						c(nc_miroc_init[j+1,i+1, initDates], nc_miroc[j+1,i+1, -initDates]),
+						c(nc_miroc_init[j+1,i-1, initDates], nc_miroc[j+1,i-1, -initDates]), 
+						c(nc_miroc_init[j-1,i+1, initDates], nc_miroc[j-1,i+1, -initDates]),
+						c(nc_miroc_init[j-2,i, initDates], nc_miroc[j-2,i, -initDates]),
+						c(nc_miroc_init[j+2,i, initDates], nc_miroc[j+2,i, -initDates]),
+						c(nc_miroc_init[j,i-2, initDates], nc_miroc[j,i-2, -initDates]), 
+						c(nc_miroc_init[j,i+2, initDates], nc_miroc[j,i+2, -initDates]),
+						c(nc_miroc_init[j-2,i-1, initDates], nc_miroc[j-2,i-1, -initDates]),
+						c(nc_miroc_init[j+2,i-1, initDates], nc_miroc[j+2,i-1, -initDates]),
+						c(nc_miroc_init[j-1,i-2, initDates], nc_miroc[j-1,i-2, -initDates]), 
+						c(nc_miroc_init[j-1,i+2, initDates], nc_miroc[j-1,i+2, -initDates]),
+						c(nc_miroc_init[j-2,i+1, initDates], nc_miroc[j-2,i+1, -initDates]),
+						c(nc_miroc_init[j+2,i+1, initDates], nc_miroc[j+2,i+1, -initDates]),
+						c(nc_miroc_init[j+1,i-2, initDates], nc_miroc[j+1,i-2, -initDates]), 
+						c(nc_miroc_init[j+1,i+2, initDates], nc_miroc[j+1,i+2, -initDates])) * scalar,
+						1, mean, na.rm = TRUE)
+				}
+
+				gfdl_smth = ksmooth(nc_years, gfdl_yrly, kernel = 'normal', bandwidth = 100, n.points = numYears)$y
+				hadgem_smth = ksmooth(nc_years, hadgem_yrly, kernel = 'normal', bandwidth = 100, n.points = numYears)$y
+				ipsl_smth = ksmooth(nc_years, ipsl_yrly, kernel = 'normal', bandwidth = 100, n.points = numYears)$y
+				miroc_smth = ksmooth(nc_years, miroc_yrly, kernel = 'normal', bandwidth = 100, n.points = numYears)$y
 
 #				dataQuantDiffs = diff(quantile(c(gfdl_yrly, hadgem_yrly, ipsl_yrly, miroc_yrly), c(0.25, 0.5, 0.75)))
 				dataSdDiffs = sd(c(gfdl_yrly, hadgem_yrly, ipsl_yrly, miroc_yrly))
@@ -129,7 +221,10 @@ for(thisScen in 1:length(rcpScenarios))	{
 
 			}
 		}
-	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
+#	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out.rds'))
+#	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out_bigSmoothAndSpatial.rds'))
+#	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out_bigSmoothAndSpatialMore.rds'))
+	saveRDS(dataOutArray, file=paste0(ncpath, 'data_out_bigSmoothAndSpatialMorer.rds'))
 	}
 	nc_close(ncin_gfdl)
 	nc_close(ncin_hadgem)
@@ -137,11 +232,14 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_close(ncin_miroc)
 }
 
-dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+#dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+#dataOutArray = readRDS(file=paste0(ncpath, 'data_out_bigSmoothAndSpatial.rds'))
+#dataOutArray = readRDS(file=paste0(ncpath, 'data_out_bigSmoothAndSpatialMore.rds'))
+dataOutArray = readRDS(file=paste0(ncpath, 'data_out_bigSmoothAndSpatialMorer.rds'))
 ##### temp fix for not having rcp 8.5
 dataOutArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * length(whichDecades) * length(rcpScenarios) * length(valueType)), 
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), 3, length(valueType)))
-old_dataOutArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
+old_dataOutArray = readRDS(file=paste0(ncpath, 'data_out_bigSmoothAndSpatialMorer.rds'))
 dataOutArray[ , , , 1:2, ] = old_dataOutArray[ , , , 1:2, ]
 ##### end temp fix
 
@@ -155,7 +253,7 @@ histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 histQuants = quantile(c(histDatSubset26, histDatSubset60), seq(0.01, 1, length.out=80))
 histQuants
 
-minSignif = 0.7
+minSignif = 0.1
 	# removing low values from non-impacted regions
 maskedLocs26_zeroes = which(is.na(dataOutArray[ , , 1, 1, 1]) | dataOutArray[ , , 1, 1, 1] < minSignif)
 histDatSubset26_zeroes =  dataOutArray[ , , 1, 1, 1][-maskedLocs26_zeroes]
@@ -226,6 +324,7 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,2,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,3,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])

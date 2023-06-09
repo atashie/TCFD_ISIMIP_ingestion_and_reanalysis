@@ -12,10 +12,10 @@ rawDataColumnNames = c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', '
 # reading in customer data
 userName = 'Rabo'	
 customerFolder = 'J:\\Cai_data\\Rabo\\Locations\\' # 'C:\\Users\\18033\\Documents\\CaiData\\temp_locationsForRabo\\Locations\\'
-clientName = 'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	BeefNW
+clientName = 'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 thisDate = Sys.Date()
 
-customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_agricolaSanOsvaldo.csv'),#'Customer Onboarding Information_BNW.csv'), 
+customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_BNW.csv'),#'Customer Onboarding Information_WestHillsFarms.csv'),#'Customer Onboarding Information_agricolaSanOsvaldo.csv'),#'Customer Onboarding Information_BNW.csv'), 
 	skip = 1) #'Customer_Hazards_and_Locations-Rabobank_grid - Sheet1.csv'
 locationHeader = 'Location (name)'
 
@@ -31,11 +31,11 @@ runoffRatio = 0.2
 humidAI = 0.65
 pwpSoil = 22 # 
 wPlant = 900 # for alfalfa #1010  pistachio in ther san J; c(900, 1200) # citrus
-growSeason = 2:9
+growSeason = 1:12
 petGlobAvg = 2000 #1500 #
 divertibleStrmfl = 0.25
 strmflCaptureRatio = 0.1
-frcAreaUnderCult = 0.15
+frcAreaUnderCult = 0.10
 hectToSqKm = 100
 halfDegInKM = 111.1 / 2
 kmToMm = 1000^2
@@ -108,6 +108,7 @@ for(thisClimVar in 1:length(climVars))	{
 	nc_close(nc_file)
 }
 saveRDS(climateData, paste0(customerFolder, clientName, '\\',  clientName, '_rawValues.rds'))
+#climateData = readRDS(paste0(customerFolder, clientName, '\\',  clientName, '_rawValues.rds'))
 
 
 	# standardized plots of data
@@ -287,7 +288,7 @@ for(thisRow in 1:nrow(customerTable))	{
 	indexValuesArray[thisRow, , , , 10, 2] = (effectivePPTdrought + rechAvg_local + effectiveStrmflDrght) - effectiveWPlant
 }
 saveRDS(indexValuesArray, paste0(customerFolder, clientName, '\\',  clientName, "_waterIndex.rds"))
-
+#indexValuesArray = readRDS(paste0(customerFolder, clientName, '\\',  clientName, "_waterIndex.rds"))
 
 
 
@@ -295,14 +296,17 @@ saveRDS(indexValuesArray, paste0(customerFolder, clientName, '\\',  clientName, 
 waterIndexDataPlot = indexValuesArray
 #if(any(waterIndexDataPlot < 0))	{waterIndexDataPlot[waterIndexDataPlot < 0] = 0}
 	# identifying which indexValues to actually plot
-indexValuesToPlot = c(1,3,4,6,7,8,9,10)
+#indexValuesToPlot = c(1,3,4,6,7,8,9,10)
+indexValuesToPlot = c(3,6,8,10)
 
 for(thisLoc in 1:nrow(customerTable))	{
 	for(thisScen in 1:length(scenarioNames))	{
-
+		
 			# water index ratios
-		png(paste0(customerFolder, clientName, '\\',  customerTable[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexRatio.png"), width=1100, height=1200)
-		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(4,2), font.lab=1.6, bty='l', cex.lab=2.0*1.8, cex.axis=2.0*1.4, cex.main=2.0*1.8, col='#1A232F')
+#		png(paste0(customerFolder, clientName, '\\',  customerTable[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexRatio.png"), width=1100, height=1200)
+#		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(4,2), font.lab=1.6, bty='l', cex.lab=2.0*1.8, cex.axis=2.0*1.4, cex.main=2.0*1.8, col='#1A232F')
+		png(paste0(customerFolder, clientName, '\\',  customerTable[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexRatio.png"), width=1100, height=800)
+		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(2,2), font.lab=1.6, bty='l', cex.lab=1.5*1.8, cex.axis=2.0*1.4, cex.main=1.5*1.8, col='#1A232F')
 		windowsFonts(A = windowsFont("Roboto"))
 		for(thisIndexVal in indexValuesToPlot)	{
 				# waterIndexDataPlot is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
@@ -329,15 +333,17 @@ for(thisLoc in 1:nrow(customerTable))	{
 #				col='#54575a', lwd=5)	#4cbfad
 			lines(nc_decade, predict(loessSmooth),
 				col='#EE6222', lwd=3)
-			text(nc_decade[1], plotRange[1],  paste0(indexValues[thisIndexVal], ' (-)'), adj = c(0,0), cex=2.65)
+			text(nc_decade[1], plotRange[1],  paste0(indexValues[thisIndexVal], ' (-)'), adj = c(0,0), cex=2.05)
 #			lines(nc_decade, nc_testDat[thisLon, thisLat, , 1, 1], 
 #				col='#4cbfad', lwd=3) #015f6f
 		}
 		dev.off()
 
 			# water index deficits
-		png(paste0(customerFolder, clientName, '\\', customerTable[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexDeficit.png"), width=1100, height=1200)
-		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(4,2), font.lab=1.6, bty='l', cex.lab=2.0*1.8, cex.axis=2.0*1.4, cex.main=2.0*1.8, col='#1A232F')
+#		png(paste0(customerFolder, clientName, '\\', customerTable[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexDeficit.png"), width=1100, height=1200)
+#		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(4,2), font.lab=1.6, bty='l', cex.lab=2.0*1.8, cex.axis=2.0*1.4, cex.main=2.0*1.8, col='#1A232F')
+		png(paste0(customerFolder, clientName, '\\',  customerTable[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexDeficit.png"), width=1100, height=800)
+		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(2,2), font.lab=1.6, bty='l', cex.lab=1.5*1.8, cex.axis=2.0*1.4, cex.main=1.5*1.8, col='#1A232F')
 		windowsFonts(A = windowsFont("Roboto"))
 		for(thisIndexVal in indexValuesToPlot)	{
 				# waterIndexDataPlot is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
@@ -363,7 +369,7 @@ for(thisLoc in 1:nrow(customerTable))	{
 #				col='#54575a', lwd=5)	#4cbfad
 			lines(nc_decade, predict(loessSmooth),
 				col='#EE6222', lwd=3)
-			text(nc_decade[1], min(plotRange), paste0(indexValues[thisIndexVal], ' (mm)'), adj = c(0,0), cex=2.65)
+			text(nc_decade[1], min(plotRange), paste0(indexValues[thisIndexVal], ' (mm)'), adj = c(0,0), cex=2.05)
 #			lines(nc_decade, nc_testDat[thisLon, thisLat, , 1, 1], 
 #				col='#4cbfad', lwd=3) #015f6f
 		}
@@ -371,9 +377,14 @@ for(thisLoc in 1:nrow(customerTable))	{
 
 
 	}
+	summaryRatioOutput = waterIndexDataPlot[thisLoc, , 4, , 8, 1]
+	for(thisScen in 1:3)	{
+		summaryRatioOutput[,thisScen] = ksmooth(1:nrow(summaryRatioOutput), summaryRatioOutput[, thisScen], kernel = 'normal', bandwidth = 5, n.points = nrow(summaryRatioOutput))$y
+	}
+	fwrite(summaryRatioOutput, paste0(customerFolder, clientName, '\\',  customerTable[thisLoc, ..locationHeader], '_', "_waterIndRatioSummary.csv"))
 }
-	
-accenture, rayonier, enel, guidehouse
+
+
 
 ###################################################################
 # 3C- incorporating 3rd party data for historicals

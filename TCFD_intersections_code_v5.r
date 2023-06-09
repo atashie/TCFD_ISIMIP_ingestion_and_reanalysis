@@ -3,18 +3,18 @@
 library(data.table)
 library(ncdf4)
 source('C:\\Users\\arik\\Documents\\GitHub\\TCFD_ISIMIP_ingestion_and_reanalysis\\TCFD_intersections_code_functions_v5.r')
-source('~\\TCFD_ISIMIP_ingestion_and_reanalysis\\TCFD_intersections_code_functions_v5.r')
+#source('~\\TCFD_ISIMIP_ingestion_and_reanalysis\\TCFD_intersections_code_functions_v5.r')
 thisWD = 'J:\\Cai_data\\TCFD\\'	# '~//'
 
 ########################################################################################################################
 # paths and values that are unlikely to change between runs
 thisDate = Sys.Date()
-hazardFolder = paste0(thisWD, 'ProcessedNCs\\'
-ncpathRiverFloods = paste0(thisWD, 'Flash Floods\\'
-floodMapTiffLoc = paste0(thisWD, 'CurrentFloodHazard'
-waterMaskLoc = paste0(thisWD, 'CurrentFloodHazard\\LandMaskArray.rds'
-ncpathDEM = paste0(thisWD, 'SeaLevelRise\\globalDEM\\srtm30plus_v11_land.nc'
-ncpathSeaLevelRise = paste0(thisWD, 'SeaLevelRise\\sea_level_change'
+hazardFolder = paste0(thisWD, 'ProcessedNCs\\')
+ncpathRiverFloods = paste0(thisWD, 'Flash Floods\\')
+floodMapTiffLoc = paste0(thisWD, 'CurrentFloodHazard')
+waterMaskLoc = paste0(thisWD, 'CurrentFloodHazard\\LandMaskArray.rds')
+ncpathDEM = paste0(thisWD, 'SeaLevelRise\\globalDEM\\srtm30plus_v11_land.nc')
+ncpathSeaLevelRise = paste0(thisWD, 'SeaLevelRise\\sea_level_change')
 locationFootprint = 3		# how big is the footprint of the location of interest? in number of 'boxes' to search to the left and right (so 0 is equal to 1 km^2, 1 is 3x3=9 km^2, 2 is 5x5=25 km^2, 3 is 7x7=49, 4 is 9x9=81, etc.
 appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
 aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
@@ -34,8 +34,21 @@ customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\'
 customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-ASR-May2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
 appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
 waterOnly = FALSE
+
+
+# 	# Nuveen FL
+userName = 'Nuveen'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Nuveen_May2023\\'
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_May2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
+waterOnly = TRUE
 
 
 ########################################################################################################################
@@ -76,7 +89,8 @@ f_hazardAggregation(
 	userName = userName,
 	waterOnly = waterOnly,
 	appendedHazardFileLoc = appendedHazardFileLoc,
-	locationFootprint = locationFootprint)
+	locationFootprint = locationFootprint,
+	hazardWeighting = hazardWeighting)
 
 
 
@@ -216,16 +230,17 @@ f_hazardAggregation(
 #aggScoreExceptionsValues = c(0, 38, 30)
 
 	# Nuveen - Georgia
-#userName = 'Nuveen - Georgia'	
-#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Nubeen_Apr2023\\'
+userName = 'Nuveen - Georgia'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Nubeen_Apr2023\\'
 
-#customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_Apr2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
-#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
-#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
-#appendedHazardNames = NA
-#appendedHazardFileLoc = NA
-#aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-#aggScoreExceptionsValues = c(0, 38, 30)
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_Apr2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+appendedHazardNames = NA
+appendedHazardFileLoc = NA
+aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+aggScoreExceptionsValues = c(0, 38, 30)
+waterOnly = TRUE
 
 	# Nuveen - Romania
 #userName = 'Nuveen - Romania'	
@@ -260,11 +275,12 @@ summary(subset(dataOutput, Hazard != 'Coastal Flood')$Raw_Hazard_Value - subset(
 
 
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Water Scarcity'))
-summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazard == 'Aggregate Climate Score'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Weighted Aggregate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 12
+thisLoc = 5
 thisScen = unique(dataOutput$Scenario)[2]
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	

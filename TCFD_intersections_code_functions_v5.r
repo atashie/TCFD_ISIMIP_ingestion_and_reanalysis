@@ -570,7 +570,8 @@ f_seaLevelRise = function(
 	# in Key West, buildings must be 7 ft above sea level (or on piers of that height): https://www.cityofkeywest-fl.gov/671/Construction-in-Flood-Zones
 		# 7 ft ~ 2.1336
 	basSeqSeaLevElev = seq(0, 1, length.out=80)
-	relSeaLevElevHaz = -(basSeqSeaLevElev^2 / max(basSeqSeaLevElev^2)) * (10 + 2.1336 * 2) + 2.1336 * 2
+#	relSeaLevElevHaz = -(basSeqSeaLevElev^2 / max(basSeqSeaLevElev^2)) * (2 + 2.1336 * 4) + 2.1336 * 4
+	relSeaLevElevHaz = -(basSeqSeaLevElev) * (2 + 2.1336 * 4) + 2.1336 * 4
 
 	dataOutput$Percentile_Score = 1
 	for(ll in 1:length(relSeaLevElevHaz))	{
@@ -607,7 +608,8 @@ f_hazardAggregation = function(
 	userName = userName,
 	waterOnly = waterOnly,
 	appendedHazardFileLoc = appendedHazardFileLoc,
-	locationFootprint = locationFootprint)
+	locationFootprint = locationFootprint,
+	hazardWeighting = hazardWeighting)
 	{
 	
 	if(waterOnly)	{
@@ -635,7 +637,6 @@ f_hazardAggregation = function(
 				avgOfAllHazards = NULL
 				for(thisHazard in allHazards)	{
 					newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard)
-		
 		# catching exceptions for agg score calculation (where some are calculated using a subset of hazard measures)
 						## !! temp fix, need to automate aggregate score exceptions  !!!!#####
 					if(thisHazard %in% aggScoreExceptions)	{
@@ -652,11 +653,7 @@ f_hazardAggregation = function(
 						}
 					}
 						## !! end temp fix, need to automate aggregate score exceptions  !!!!#####
-				
-					
-
-
-					
+						
 					dataOutput = rbind(dataOutput,
 						data.frame(
 							User = userName,
@@ -682,10 +679,21 @@ f_hazardAggregation = function(
 							Advanced_Data_Measures_Units = NA,
 							Raw_Hazard_Value_25th = NA,
 							Raw_Hazard_Value_75th = NA)
-
 					)
 
 					avgOfAllHazards = c(avgOfAllHazards, mean(newHazard$Percentile_Score, na.rm=TRUE))
+				}
+				
+				hazardWeights = rep(1, length(allHazards))
+				for(thisHazWeight in 1:length(allHazards))	{
+					newWeightLoc = which(hazardWeighting$Hazard == allHazards[thisHazWeight] & hazardWeighting$Asset_type == customerTable$Subregion[locRow])
+					if(identical(newWeightLoc, integer(0)))	{
+						print(c('asset not found', allHazards[thisHazWeight]))
+						newWeight = 1
+					}	else	{
+						newWeight = hazardWeighting$Hazard_weight[newWeightLoc]
+					}
+					hazardWeights[thisHazWeight] = newWeight
 				}
 
 				dataOutput = rbind(dataOutput,
@@ -697,11 +705,11 @@ f_hazardAggregation = function(
 						Lat = customerTable$Lat[locRow],
 						Lon = customerTable$Lon[locRow],
 						Hazard = "Aggregate Climate Score",
-						Hazard_Measure = "Aggregate Score",
+						Hazard_Measure = c("Aggregate Score", "Weighted Aggregate Score"),
 						Decade = thisDecade,
 						Scenario = scenarioRename[thisScen],
 						Raw_Hazard_Value = NA,
-						Percentile_Score = mean(avgOfAllHazards, na.rm=TRUE),
+						Percentile_Score = c(mean(avgOfAllHazards, na.rm=TRUE), weighted.mean(avgOfAllHazards, hazardWeights, na.rm=TRUE)),
 						Relative_Hazard_Score = NA,
 						Decadal_Trend_Strength = NA,
 						Decadal_Trend_Significance = NA,

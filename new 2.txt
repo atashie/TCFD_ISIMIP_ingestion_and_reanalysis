@@ -85,3 +85,49 @@ end_time - start_time
 
 
 
+
+
+Di Dato et al. 
+A new approach for predicting baseflow conditions using spectral analysis
+line 18-20: this statement is a bit too strong and broadly applied, as decreases in groundwater resources are primarily driven by overextraction (not climate change), gw resources are not expected to decline in many regions, and gw resource depletion does not necessarily lead to allocation conflict. I'd suggest you soften the language here.
+line 26: remove 'could'
+line 28: 'leads to groundwater response times...' --> 'leads to estimates / calculations of groundwater response times that are...'
+line 47: cedes --> do you mean 'ceases' or 'recedes'?
+line 67: one of the key reasons recession analysis has remained so popular (despite its documented shortcomings) is that if the simplifying assumptions are reasonable, then recession analysis can be uesed to solve for the hydraulic properties of the subsurface. 
+	To my knowledge, spectral analysis cannot be applied to that end. In this final introductory paragraph, please explicitly describe to what purpose(s) spectral analysis might be (or not be) applied in relation to the recession analysis techniques 
+line 79 / 99-103: please note that this is an 'older' formulation of recession analysis ('lumped' recession, or 'point cloud' recession) that is more commonly being replaced by or enhanced by 'event-based' recession	
+	see xyz
+fig 3: I see an r2 value and a 1-1 line... but it looks as though a linear model would fit with a slope significantly different than that of the 1-1 line
+	Please add a line illustrating the linear model actually used to generate the reported r2, and please also report the slope and intercept of the linear model, so the reader may assess the relative bias of the relationships
+line 140: is this a reasonable assumption? 
+	see xyz
+line 149-169: I cannot speak to the accuracy of the spectral transformation
+line 175: these criteria are quite strict, and should be described as a limitation of the approach in the intro or discussion
+lines 186-192: I'm having a hard time following the rationale here. Is his an established method? I am not familiar with it. In any case, is the underlying assumption that a linear reservoir accurately represents low flows? I do not think that this assumption is well substantiated.
+	see xyz
+fig 5: I'd like to see a figure illustrating the relationship between the tc values derived using the different baseflow filters: the consistency of this relationship would be useful in assessing the potential physical reality of these values
+	[edit: nevermind, this is done in fig 6]
+fig 6: I'd like to see the linear model that generated the reported r2 value, along with the slope. Or, if the r2 value is derived from the 1-1 line, then please state so
+line 223: do you or Houben et al. 2022 have an explanation for the regional disparity?
+line 231: I think "best" is rather ill defined here. I believe something along the lines of "spectral analysis with the Eckardt filter most closely and consistently approximates low flow ratios under the assumption of a linear reservoir"
+line 251: these results conform well with the hypothesis that the form of recession curves tends to evolve in response to changes in the relative distribution of groundwater among heterogenous components of the subsurface.
+	see xyz
+lines 270-278: this section is awkwardly worded. "Could" implies a hypothetical that one has not undertaken, so I'm not sure if your intent is to indicate that future analyses could illustrate xyz (although such analysis was not undertaken in this manuscript, or if you are attempting to indicate that you believe that your research lends credence to the hypothesis that xyz. I believe you mean the latter, but I am not sure.
+line 270: please note that alternative approaches indicate the same. I believe that contextualizing your results would help to support the hypotheses in this section.
+figure 10: this figure is very helpful to understanding your methods. I would recommend you insert this into the methods section
+
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
