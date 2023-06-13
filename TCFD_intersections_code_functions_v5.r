@@ -722,6 +722,37 @@ f_hazardAggregation = function(
 						Raw_Hazard_Value_25th = NA,
 						Raw_Hazard_Value_75th = NA)
 				)
+					
+					# ugh these *!@#$$$% ad hoc requests are driving me crazy..... ugh....
+					# to be rewritten: here, we are calculating a reweighted score (1-150) for each hazard
+				dataOutput = rbind(dataOutput,
+					data.frame(
+						User = userName,
+						Location = customerTable$Location[locRow],
+						Region = customerTable$Region[locRow],
+						Subregion = customerTable$Subregion[locRow],
+						Lat = customerTable$Lat[locRow],
+						Lon = customerTable$Lon[locRow],
+						Hazard = allHazards,
+						Hazard_Measure = "Weighted Aggregate Score",
+						Decade = thisDecade,
+						Scenario = scenarioRename[thisScen],
+						Raw_Hazard_Value = NA,
+						Percentile_Score = avgOfAllHazards * hazardWeights,
+						Relative_Hazard_Score = NA,
+						Decadal_Trend_Strength = NA,
+						Decadal_Trend_Significance = NA,
+						Long_Term_Trend_Strength = NA,
+						Long_Term_Trend_Significance = NA,
+						Relative_Hazard_Score_Number = NA,
+						Trend_Aggregated_For_Looker = NA,
+						Advanced_Data_Measures = NA,
+						Advanced_Data_Measures_Units = NA,
+						Raw_Hazard_Value_25th = NA,
+						Raw_Hazard_Value_75th = NA)
+				)
+	
+
 			}
 		}
 	}
