@@ -53,7 +53,7 @@ waterOnly = TRUE
 
 
 # 	# ITC for June 2023
-userName = 'ITC_FruitAndVeg'	#ITC_Buffalo, ITC_VegOil, ITC_Wood, ITC_Spice, ITC_FruitAndVeg, ITC_Shrimp, ITC_Potato, ITC_Rice
+userName = 'ITC_Rice'	#ITC_Buffalo, ITC_VegOil, ITC_Wood, ITC_Spice, ITC_FruitAndVeg, ITC_Shrimp, ITC_Potato, ITC_Rice
 customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '_Jun2023\\')
 customerTable_redundant = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-', userName, '_June2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 customerTable = customerTable_redundant[!duplicated(customerTable_redundant$Location),]

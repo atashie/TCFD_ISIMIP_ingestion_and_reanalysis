@@ -101,7 +101,7 @@ fldRecurArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * lengt
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(recurIntrvls), length(valueType), length(rcpScenarios)))
 
 
-for(thisScen in c(3))	{
+for(thisScen in c(1,2,3))	{
 	rcpScenNum = rcpScenarios[thisScen]
 	rcpScen = paste0('rcp', rcpScenNum)
 	
@@ -128,7 +128,8 @@ for(thisScen in c(3))	{
 
 		# for samlmu()
 	nonZeroGenerator = sample(seq(0.0001,0.001,length.out=100), length(nc_years))
-				
+	yearsByDecade = data.frame(tens = c(1,24), tws = c(5,34), thrs = c(15,44), frs = c(25,54), fvs = c(35,64), sxs = c(45,74), svns = c(55,84), ets = c(65,94), nns = c(75,94))
+			
 	for(i in 1:length(which(nc_lat > -55)))	{
 		for(j in 1:length(nc_lon))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
@@ -157,7 +158,7 @@ for(thisScen in c(3))	{
 					ipsl_floodProbs = NULL
 					miroc_floodProbs = NULL
 					for(thisDecade in 1:9)	{
-						theseYears = (thisDecade - 1) * 10 + 5:14
+						theseYears = seq(yearsByDecade[1,thisDecade], yearsByDecade[2,thisDecade])	#(thisDecade - 1) * 10 + 5:14
 						gfdl_floodProbs =   c(gfdl_floodProbs,   newFldFrqFunc(oldQ = gfdl_yrly[1:24],   newQ = gfdl_yrly[theseYears],   probFld = recurIntrvls[intrvl]))
 						hadgem_floodProbs = c(hadgem_floodProbs, newFldFrqFunc(oldQ = hadgem_yrly[1:24], newQ = hadgem_yrly[theseYears], probFld = recurIntrvls[intrvl]))
 						ipsl_floodProbs =   c(ipsl_floodProbs,   newFldFrqFunc(oldQ = ipsl_yrly[1:24],   newQ = ipsl_yrly[theseYears],   probFld = recurIntrvls[intrvl]))
@@ -205,7 +206,8 @@ for(thisScen in c(3))	{
 	nc_close(ncin_hadgem)
 	nc_close(ncin_ipsl)
 	nc_close(ncin_miroc)
-	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out6.rds')) # rcp 8.5
+	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out7.rds')) # all
+#	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out6.rds')) # rcp 8.5
 #	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out5.rds')) # rcp 2.6
 #	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out4.rds')) # rcp 6.0
 }
@@ -270,6 +272,7 @@ nc_lon = ncvar_get(myNC, 'lon')
 nc_testDat = ncvar_get(myNC, 'fldRecurIntrvl')
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1,1])
+summary(as.vector(nc_testDat[,,1,6,1,1]))
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,3,1])
 
