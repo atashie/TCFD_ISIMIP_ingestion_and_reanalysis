@@ -628,7 +628,7 @@ f_hazardAggregation = function(
 	allHazards = unique(dataOutput$Hazard)
 
 	theScenarios = c('RCP 2.6', 'RCP 4.5', 'RCP 6.0', 'RCP 8.5')
-	scenarioRename = c('Low Emissions', 'Middle of the Road', 'Middle of the Road', 'High Emissions')
+	scenarioRename = c('1. Low Emissions', '2. Middle of the Road', '2. Middle of the Road', '3. High Emissions')
 
 	for(thisDecade in unique(dataOutput$Decade))	{
 		for(thisScen in c(1,3,4))	{
@@ -759,7 +759,7 @@ f_hazardAggregation = function(
 
 
 		# quick fix to rename scenarios
-	scenariosRename = c('Low Emissions', 'Middle of the Road', 'Middle of the Road', 'High Emissions')
+	scenariosRename = c('1. Low Emissions', '2. Middle of the Road', '2. Middle of the Road', '3. High Emissions')
 	for(i in 1:length(scenariosRename))	{
 		dataOutput$Scenario[dataOutput$Scenario == theScenarios[i]] = scenariosRename[i]
 	}
