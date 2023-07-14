@@ -62,7 +62,7 @@ newFldFrqFunc = function(oldQ, newQ, probFld)	{
 # reading in climai netcdf data
 ncpath = "J:\\Cai_data\\TCFD\\Flash Floods\\"
 ncVarFileName = 'maxdis'
-saveDate = '04JAN2023'
+saveDate = '23JUN2023'
 rcpScenarios = c(26, 60, 85)
 recurIntrvls = c(10, 20, 50, 100, 200, 500)
 valueType = 1:3		# recurrence interval, significance
@@ -101,7 +101,7 @@ fldRecurArray = array(rep(myMissingData, length(nc_lon) * length(nc_lat) * lengt
 	dim = c(length(nc_lon), length(nc_lat), length(whichDecades), length(recurIntrvls), length(valueType), length(rcpScenarios)))
 
 
-for(thisScen in c(1,2,3))	{
+for(thisScen in c(1))	{
 	rcpScenNum = rcpScenarios[thisScen]
 	rcpScen = paste0('rcp', rcpScenNum)
 	
@@ -127,7 +127,7 @@ for(thisScen in c(1,2,3))	{
 	missing_data = 1.00000002004088e+20
 
 		# for samlmu()
-	nonZeroGenerator = sample(seq(0.0001,0.001,length.out=100), length(nc_years))
+#	nonZeroGenerator = sample(seq(10^(-14),10^(-13),length.out=100), length(nc_years))
 	yearsByDecade = data.frame(tens = c(1,24), tws = c(5,34), thrs = c(15,44), frs = c(25,54), fvs = c(35,64), sxs = c(45,74), svns = c(55,84), ets = c(65,94), nns = c(75,94))
 			
 	for(i in 1:length(which(nc_lat > -55)))	{
@@ -135,10 +135,10 @@ for(thisScen in c(1,2,3))	{
 			nc_dummy = nc_gfdl[j,i, ] # reading in one data set to test for nona
 			if(any(!is.na(nc_dummy) & any(nc_dummy != missing_data)))	{
 				print(c(i,j))
-				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates]) + nonZeroGenerator
-				hadgem_all = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates]) + nonZeroGenerator
-				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) + nonZeroGenerator
-				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates]) + nonZeroGenerator
+				gfdl_all = c(nc_gfdl_init[j,i, initDates], nc_gfdl[j,i, -initDates])
+				hadgem_all = c(nc_hadgem_init[j,i, initDates], nc_hadgem[j,i, -initDates])
+				ipsl_all = c(nc_ipsl_init[j,i, initDates], nc_ipsl[j,i, -initDates]) 
+				miroc_all = c(nc_miroc_init[j,i, initDates], nc_miroc[j,i, -initDates])
 
 				gfdl_yrly = NULL
 				hadgem_yrly = NULL
@@ -151,6 +151,25 @@ for(thisScen in c(1,2,3))	{
 					ipsl_yrly = c(ipsl_yrly, max(ipsl_all[theseDates]))
 					miroc_yrly = c(miroc_yrly, max(miroc_all[theseDates]))
 				}
+
+					# bc samlmu() can't handle 0s or large differences in max and average
+				if(median(gfdl_yrly) == 0) {
+					thisVal = max(gfdl_yrly, 10^(-10))
+					gfdl_yrly = gfdl_yrly + sample(seq(thisVal*.9, thisVal ,length.out=100), length(gfdl_yrly)) * 10^(-1)
+				}
+				if(median(hadgem_yrly) == 0) {
+					thisVal = max(hadgem_yrly, 10^(-10))
+					hadgem_yrly = hadgem_yrly + sample(seq(thisVal*.9, thisVal ,length.out=100), length(hadgem_yrly)) * 10^(-1)
+				}
+				if(median(ipsl_yrly) == 0) {
+					thisVal = max(ipsl_yrly, 10^(-10))
+					ipsl_yrly = ipsl_yrly + sample(seq(thisVal*.9, thisVal ,length.out=100), length(ipsl_yrly)) * 10^(-1)
+				}
+				if(median(miroc_yrly) == 0) {
+					thisVal = max(miroc_yrly, 10^(-10))
+					miroc_yrly = miroc_yrly + sample(seq(thisVal*.9, thisVal ,length.out=100), length(miroc_yrly)) * 10^(-1)
+				}
+
 	
 				for(intrvl in 1:length(recurIntrvls))	{
 					gfdl_floodProbs = NULL
@@ -206,20 +225,32 @@ for(thisScen in c(1,2,3))	{
 	nc_close(ncin_hadgem)
 	nc_close(ncin_ipsl)
 	nc_close(ncin_miroc)
-	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out7.rds')) # all
+#	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out9.rds')) # rcp 8.5 new
+#	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out8.rds')) # rcp 6.0 new
+	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out7.rds')) # rcp 2.6 new
 #	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out6.rds')) # rcp 8.5
 #	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out5.rds')) # rcp 2.6
 #	saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out4.rds')) # rcp 6.0
 }
-#saveRDS(fldRecurArray, file=paste0(ncpath, 'data_out6.rds'))
+#fldRecurArray = readRDS(file=paste0(ncpath, 'data_out7.rds'))
+#fldRecurArray[ , , , , , 2] = readRDS(file=paste0(ncpath, 'data_out8.rds'))[ , , , , , 2]
+#fldRecurArray[ , , , , , 3] = readRDS(file=paste0(ncpath, 'data_out9.rds'))[ , , , , , 3]
+#saveRDS(fldRecurArray, file=paste0(ncpath, 'data_outCombinedNew.rds'))
 
-fldRccurArray = readRDS(file=paste0(ncpath, 'data_outCombined.rds'))
+#fldRccurArray = readRDS(file=paste0(ncpath, 'data_outCombined.rds'))
+fldRccurArray = readRDS(file=paste0(ncpath, 'data_outCombinedNew.rds'))
 
-#names(dim(fldRecurArray)) = c('lon', 'lat', 'decade', 'recurInterval', 'rcpScen')
-#ArrayToNc(list(fldRecurArray = fldRecurArray, lon = nc_lon, lat = nc_lat, decade = seq(10,90,10), recurInterval = recurIntrvls), file_path = 'ex.nc')
+areNas = which(is.na(fldRccurArray[ , , 1, 1, 1, ]))
+for(i in 1:length(recurIntrvls))	{
+	fldRccurArray[ , , 1, i, 1, ] = recurIntrvls[i]
+	fldRccurArray[ , , 1, i, 1, ][areNas] = NA
+	fldRccurArray[ , , , i, 1, ][which(fldRccurArray[ , , , i, 1, ] > 10000)] = 10000
+	fldRccurArray[ , , , i, 1, ][which(fldRccurArray[ , , , i, 1, ] < 0)] = 0
+}
+summary(fldRccurArray[ , , , , 1, ])
 
 
-fldRecurIntrvl =fldRccurArray
+fldRecurIntrvl = fldRccurArray
 metadata = list(fldRecurIntrvl = list(units = 'recurrence interval ( / yr)'))
 attr(fldRecurIntrvl, 'variables') = metadata
 names(dim(fldRecurIntrvl)) = c('lon', 'lat', 'decade', 'recurInterval', 'valueTypes', 'rcpScen')

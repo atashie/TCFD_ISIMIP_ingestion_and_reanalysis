@@ -228,7 +228,7 @@ for(thisScen in 1:length(rcpScenarios))	{
 	nc_close(ncin_miroc_hist)
 }
 
-
+#fldRecurArray = readRDS(file=paste0(ncpath, 'data_out.rds'))
 #names(dim(fldRecurArray)) = c('lon', 'lat', 'decade', 'recurInterval', 'rcpScen')
 #ArrayToNc(list(fldRecurArray = fldRecurArray, lon = nc_lon, lat = nc_lat, decade = seq(10,90,10), recurInterval = recurIntrvls), file_path = 'ex.nc')
 
@@ -270,6 +270,16 @@ names(dim(rcpScen)) = 'rcpScen'
 
 
 ArrayToNc(list(fldRecurIntrvl, lon, lat, decade, recurInterval, rcpScen), file_path = paste0(ncpath, 'floodRecurIntervals.nc'))
+	# testing output, squinty eye test
+myNC = nc_open( paste0(ncpath, 'floodRecurIntervals.nc'))
+myNC =  nc_open(paste0(ncpath, 'floodRecurIntervals_v5.nc'))
+nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
+nc_lon = ncvar_get(myNC, 'lon')
+nc_testDat = ncvar_get(myNC, 'fldRecurIntrvl')
+
+
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1,1])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1])
 
 
 

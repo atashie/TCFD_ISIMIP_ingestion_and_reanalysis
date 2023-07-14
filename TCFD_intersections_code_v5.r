@@ -27,16 +27,27 @@ aggScoreExceptionsValues = c(0, 38, 30)
 # this is the only section that needs to be updated between runs
 # !!!!!!!!!!!!!!!!!!!!!!!!
 
+# 	# Nuveen_Pistachio
+userName = 'Nuveen - Pistachio'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\NuveenPistachio_Jun2023\\'
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_Pistachio_Jun2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
+waterOnly = TRUE
+
 
 # 	# ASR
 userName = 'ASR'	
 customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\'
 
-customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-ASR-May2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-ASR-Jun2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
 hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_june_29.csv'
 waterOnly = FALSE
 
 
@@ -65,6 +76,19 @@ appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_pr
 waterOnly = TRUE
 
 
+# 	# EQCap for July 2023
+userName = "EQ-Capital"
+customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '_Jul2023\\')
+customerTable_redundant = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-', userName, '_Jul2023.csv')) #'HMClause_locations_allCucurbit.csv'
+customerTable = customerTable_redundant[!duplicated(customerTable_redundant$Location),]
+
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
+appendedHazardFileLoc = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '_Jul2023\\EQ-Cap_temp_precip_hazards_july_12.csv')
+waterOnly = FALSE
+
+
 
 ########################################################################################################################
 # functions to run analysis
@@ -79,23 +103,25 @@ f_mainExposureData(
 	appendedHazardNames = appendedHazardNames,
 	thisDate = thisDate)
 
-#f_riverFloods(
-#	customerTable = customerTable,
-#	customerFolder = customerFolder,
-#	userName = userName,
-#	locationFootprint = locationFootprint,
-#	ncpath = ncpathRiverFloods,
-#	fileLoc = floodMapTiffLoc,
-#	waterMaskLoc = waterMaskLoc,
-#	thisDate = thisDate)
+if(!waterOnly)	{
+	f_riverFloods(
+		customerTable = customerTable,
+		customerFolder = customerFolder,
+		userName = userName,
+		locationFootprint = locationFootprint,
+		ncpath = ncpathRiverFloods,
+		fileLoc = floodMapTiffLoc,
+		waterMaskLoc = waterMaskLoc,
+		thisDate = thisDate)
 
-#f_seaLevelRise(
-#	customerTable = customerTable,
-#	customerFolder = customerFolder,
-#	userName = userName,
-#	ncpathDEM = ncpathDEM,
-#	ncpathSeaLevelRise = ncpathSeaLevelRise,
-#	thisDate = thisDate)
+	f_seaLevelRise(
+		customerTable = customerTable,
+		customerFolder = customerFolder,
+		userName = userName,
+		ncpathDEM = ncpathDEM,
+		ncpathSeaLevelRise = ncpathSeaLevelRise,
+		thisDate = thisDate)
+}
 
 f_hazardAggregation(
 	customerTable = customerTable,
@@ -127,6 +153,12 @@ f_hazardAggregation(
 ################################ 
 #### just checkin data
 dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_', userName, '_', thisDate, '.csv'))
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_Nuveen_2023-05-30.csv'))
+#customerFolder = "J:\\Cai_data\\TCFD\\locations\\ITC_Buffalo_Jun2023\\"
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Buffalo_2023-06-13.csv')
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_Nuveen - Romania_2023-04-30.csv'))
+
+
 
 summary(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value - subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_25th)
 summary(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value - subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_75th)
@@ -138,13 +170,13 @@ summary(subset(dataOutput, Hazard != 'Coastal Flood')$Raw_Hazard_Value - subset(
 #	subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value[which(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value < subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_75th)]
 
 
-summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Water Scarcity'))
-summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score'))
-summary(subset(dataOutput, Decade == 2090 & Scenario == "High Emissions" & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Weighted Aggregate Score'))
-summary(subset(dataOutput, Decade == 2090 & Scenario == "Middle of the Road" & Hazard == 'Aggregate Climate Score'))
-summary(subset(dataOutput, Decade == 2090 & Scenario == "Low Emissions" & Hazard == 'Aggregate Climate Score'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Water Scarcity'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "3. High Emissions" & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "3. High Emissions" & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Weighted Aggregate Score'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Aggregate Climate Score'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "1. Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 30
+thisLoc = 20
 thisScen = unique(dataOutput$Scenario)[2]
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
@@ -176,25 +208,24 @@ for(thisLoc in unique(dataOutput$Location))	{
 		dataSub = subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == thisHazard)
 	
 		for(thisHazardMeasure in unique(dataSub$Hazard_Measure))	{
-			dataTrends = rbind(dataTrends,
-						data.frame(
-							User = userName,
-							Location = thisLoc,
-							Hazard = thisHazard,
-							Hazard_Measure = thisHazardMeasure,
-							Raw_Hazard_Current_Value = mean(subset(dataSub, Decade %in% c('2010','2020') & Hazard_Measure == thisHazardMeasure)$Raw_Hazard_Value),
-							Raw_Hazard_Trend_to_2050s = mean(subset(dataSub, Decade %in% c('2040','2050','2060') & Hazard_Measure == thisHazardMeasure)$Raw_Hazard_Value) - 
-								mean(subset(dataSub, Decade %in% c('2010', '2020') & Hazard_Measure == thisHazardMeasure)$Raw_Hazard_Value), 
-							Percentile_Current_Value = mean(subset(dataSub, Decade %in% c('2010','2020') & Hazard_Measure == thisHazardMeasure)$Percentile), 
-							Percentile_Trend_to_2050s = mean(subset(dataSub, Decade %in% c('2040','2050','2060') & Hazard_Measure == thisHazardMeasure)$Percentile) - 
-								mean(subset(dataSub, Decade %in% c('2010', '2020') & Hazard_Measure == thisHazardMeasure)$Percentile)
+			if(!(thisHazardMeasure %in% c("Aggregate Score", "Weighted Aggregate Score"))){
+				dataTrends = rbind(dataTrends,
+							data.frame(
+								User = userName,
+								Location = thisLoc,
+								Hazard = thisHazard,
+								Hazard_Measure = thisHazardMeasure,
+								Raw_Hazard_Current_Value = mean(subset(dataSub, Decade %in% c('2010','2020') & Hazard_Measure == thisHazardMeasure)$Raw_Hazard_Value),
+								Raw_Hazard_Trend_to_2050s = mean(subset(dataSub, Decade %in% c('2040','2050','2060') & Hazard_Measure == thisHazardMeasure)$Raw_Hazard_Value) - 
+									mean(subset(dataSub, Decade %in% c('2010', '2020') & Hazard_Measure == thisHazardMeasure)$Raw_Hazard_Value), 
+								Percentile_Current_Value = mean(subset(dataSub, Decade %in% c('2010','2020') & Hazard_Measure == thisHazardMeasure)$Percentile), 
+								Percentile_Trend_to_2050s = mean(subset(dataSub, Decade %in% c('2040','2050','2060') & Hazard_Measure == thisHazardMeasure)$Percentile) - 
+									mean(subset(dataSub, Decade %in% c('2010', '2020') & Hazard_Measure == thisHazardMeasure)$Percentile)
+								)
 							)
-						)
+			}
 		}
 	}
-
-	
-	
 	totalTrend = c(totalTrend, mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Aggregate Climate Score" & Decade %in% c("2010", "2020"))$Percentile) - 
 		mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Aggregate Climate Score" & Decade %in% c("2040", "2050", "2060"))$Percentile))
 	scarcityTrend = c(scarcityTrend, mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Water Availability" & Hazard_Measure == "Aggregate Score" & Decade %in% c("2010", "2020"))$Percentile) - 
@@ -202,21 +233,22 @@ for(thisLoc in unique(dataOutput$Location))	{
 	availabilityTrend = c(availabilityTrend, mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Water Scarcity" & Hazard_Measure == "Aggregate Score" & Decade %in% c("2010", "2020"))$Percentile) - 
 		mean(subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == "Water Scarcity" & Hazard_Measure == "Aggregate Score" & Decade %in% c("2040", "2050", "2060"))$Percentile))
 }	
-fwrite(dataTrends, 'J:\\Downloads\\georgiaHighlights.csv')
+fwrite(dataTrends, paste0(customerFolder, 'currentAnd2050sAllLocs.csv'))
 
 
 
 ## reformatting for a table view
-dataOutputReformatted = data.table(Location = NA, Scenario = NA, Variable = NA, 
+dataOutputReformatted = data.table(Location = NA, Region = NA, Scenario = NA, Variable = NA, 
 	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend = NA)
 for(thisLoc in unique(dataOutput$Location))	{
 	for(thisScen in unique(dataOutput$Scenario))	{
 		for(thisVariable in unique(dataOutput$Hazard_Measure))	{
-			if(thisVariable != 'Aggregate Score')	{
+			if(!(thisVariable %in% c('Aggregate Score', 'Weighted Aggregate Score')))	{
 				theseOutputs = subset(dataOutput, Location == thisLoc & Scenario == thisScen & Hazard_Measure == thisVariable)
 				dataOutputReformatted = rbind(dataOutputReformatted, 
 					data.table(
 						Location = thisLoc,
+						Region = theseOutputs$Region[1],
 						Scenario = thisScen,
 						Variable = thisVariable,
 						D2010s= subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value, 
@@ -234,7 +266,8 @@ for(thisLoc in unique(dataOutput$Location))	{
 		}
 	}
 }
-fwrite(dataOutputReformatted, 'J:\\Downloads\\georgiaDataSimplified.csv')
+fwrite(dataOutputReformatted, paste0(customerFolder, 'allLocsRawValues.csv'))
+				
 				
 dataOutputSuperSimple = data.table(Variable = NA, 
 	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend = NA)
@@ -256,36 +289,79 @@ for(thisVariable in unique(dataOutputReformatted$Variable))	{
 			Trend = mean(theseOutputs$Trend))
 	)
 }
-fwrite(dataOutputSuperSimple, 'J:\\Downloads\\georgiaDataSuperSimplified.csv')
+fwrite(dataOutputSuperSimple, paste0(customerFolder, 'portfolioAvgValues.csv'))
 
 
 
 
+dataSummaryRegion =    data.frame(Region = NA, Subregion = NA, Measure = NA, values_2010s = NA, changeBy_2020s = NA, changeBy_2030s = NA, changeBy_2040s = NA, changeBy_2050s = NA, changeBy_2060s = NA, changeBy_2070s = NA, changeBy_2080s = NA, changeBy_2090s = NA)
+dataSummarySubregion = data.frame(Region = NA, Subregion = NA, Measure = NA, values_2010s = NA, changeBy_2020s = NA, changeBy_2030s = NA, changeBy_2040s = NA, changeBy_2050s = NA, changeBy_2060s = NA, changeBy_2070s = NA, changeBy_2080s = NA, changeBy_2090s = NA)
+for(thisMeasure in unique(dataOutput$Hazard_Measure)){
+	if(!(thisMeasure %in% c('Weighted Aggregate Score', 'Aggregate Score')))	{
+		measureOutput = subset(dataOutput, Scenario == "Middle of the Road" & Hazard_Measure == thisMeasure & Long_Term_Trend_Significance < 0.05)
+		for(cc in unique(measureOutput$Region)){
+			countryOutput = subset(measureOutput, Region == cc)
+			dataSummaryRegion = rbind(dataSummaryRegion,
+				data.frame(
+					Region = cc,
+					Subregion = "All",
+					Measure = thisMeasure,
+					values_2010s = mean(subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2020s = mean(subset(countryOutput, Decade == 2020)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2030s = mean(subset(countryOutput, Decade == 2030)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2040s = mean(subset(countryOutput, Decade == 2040)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2050s = mean(subset(countryOutput, Decade == 2050)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2060s = mean(subset(countryOutput, Decade == 2060)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2070s = mean(subset(countryOutput, Decade == 2070)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2080s = mean(subset(countryOutput, Decade == 2080)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2090s = mean(subset(countryOutput, Decade == 2090)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE)
+			))
 
-
-unique(dataOutput$Region)
-dataOutput$Region[which(dataOutput$Region == 'US')] = 'USA'
-	
-# sample analysis
-	
-	gg = data.frame(country = unique(dataOutput$Region))
-for(j in unique(dataOutput$Decade))	{
-	hh = NULL
-	for(i in unique(dataOutput$Region)){
-#		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Aggregate Climate Score' & Decade == j)$Percentile))
-#		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Drought' & Decade == j)$Percentile))
-#		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Water Availability' & Decade == j)$Percentile))
-#		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Water Demand' & Decade == j)$Percentile))
-		hh = c(hh, median(subset(dataOutput, Region == i & Hazard == 'Snow Pack' & Decade == j)$Percentile))
-		print(i)
+			for(ss in unique(countryOutput$Subregion))	{
+				subregOutput = subset(countryOutput, Subregion == ss)	
+				dataSummarySubregion = rbind(dataSummarySubregion,
+					data.frame(
+						Region = cc,
+						Subregion = ss,
+						Measure = thisMeasure,
+					values_2010s = mean(subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2020s = mean(subset(subregOutput, Decade == 2020)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2030s = mean(subset(subregOutput, Decade == 2030)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2040s = mean(subset(subregOutput, Decade == 2040)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2050s = mean(subset(subregOutput, Decade == 2050)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2060s = mean(subset(subregOutput, Decade == 2060)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2070s = mean(subset(subregOutput, Decade == 2070)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2080s = mean(subset(subregOutput, Decade == 2080)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
+					changeBy_2090s = mean(subset(subregOutput, Decade == 2090)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE)
+					))
+			}
+		}
 	}
-	print(j)
-	gg = cbind(gg, hh)
 }
+fwrite(dataSummaryRegion,  paste0(customerFolder, 'regionSignifDifferences.csv'))
+fwrite(dataSummarySubregion,  paste0(customerFolder, 'subregionSignifDifferences.csv'))
+#fwrite(dataSummary[which(abs(dataSummary[,-c(1:3)] , 'Differences.csv')
 
 
-names(gg) = c('Country', 2010,2020,2030,2040,2050,2060,2070,2080,2090)
-fwrite(gg, 'J://Downloads//medianSWEScore.csv')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 dataSub = subset(dataOutput, Scenario == "Middle of the Road" & Hazard_Measure =='Groundwater Recharge (mm per yr)' & Region =="China")
@@ -366,53 +442,6 @@ for(thisMeasure in c("Groundwater Recharge (mm per yr)", "Root Zone Soil Moistur
 	}
 }
 fwrite(dataSummary, 'Trends.csv')
-
-
-
-dataSummary = data.frame(Country = NA, Region = NA, Measure = NA, the_2010s = NA, the_2020s = NA, the_2030s = NA, the_2040s = NA, the_2050s = NA, the_2060s = NA, the_2070s = NA, the_2080s = NA, the_2090s = NA)
-for(thisMeasure in c("Groundwater Recharge (mm per yr)", "Root Zone Soil Moisture (mm per yr)", "Surface Water (annual total in cubic km)")){
-	measureOutput = subset(dataOutput, Hazard_Measure == thisMeasure & Long_Term_Trend_Significance < 0.05)
-	for(cc in unique(measureOutput$Region)){
-		countryOutput = subset(measureOutput, Region == cc)
-		dataSummary = rbind(dataSummary,
-			data.frame(
-				Country = cc,
-				Region = "All",
-				Measure = thisMeasure,
-				the_2010s = mean(subset(countryOutput, Decade == 2010)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2020s = mean(subset(countryOutput, Decade == 2020)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2030s = mean(subset(countryOutput, Decade == 2030)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2040s = mean(subset(countryOutput, Decade == 2040)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2050s = mean(subset(countryOutput, Decade == 2050)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2060s = mean(subset(countryOutput, Decade == 2060)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2070s = mean(subset(countryOutput, Decade == 2070)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2080s = mean(subset(countryOutput, Decade == 2080)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2090s = mean(subset(countryOutput, Decade == 2090)$Raw_Hazard_Value - subset(countryOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE)
-		))
-
-		for(ss in unique(countryOutput$Subregion))	{
-			subregOutput = subset(countryOutput, Subregion == ss)	
-			dataSummary = rbind(dataSummary,
-				data.frame(
-					Country = cc,
-					Region = ss,
-					Measure = thisMeasure,
-				the_2010s = mean(subset(subregOutput, Decade == 2010)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2020s = mean(subset(subregOutput, Decade == 2020)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2030s = mean(subset(subregOutput, Decade == 2030)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2040s = mean(subset(subregOutput, Decade == 2040)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2050s = mean(subset(subregOutput, Decade == 2050)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2060s = mean(subset(subregOutput, Decade == 2060)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2070s = mean(subset(subregOutput, Decade == 2070)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2080s = mean(subset(subregOutput, Decade == 2080)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE),
-				the_2090s = mean(subset(subregOutput, Decade == 2090)$Raw_Hazard_Value - subset(subregOutput, Decade == 2010)$Raw_Hazard_Value, na.rm=TRUE)
-				))
-		}
-	}
-}
-
-fwrite(dataSummary, 'Differences.csv')
-fwrite(dataSummary[which(abs(dataSummary[,-c(1:3)] , 'Differences.csv')
 
 
 
@@ -527,14 +556,14 @@ for(thisScen in unique(dataOutput$Scenario))	{
 
 
 	# HMClause
-#userName = 'HMClause'	
-#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\'
+userName = 'HMClause'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\'
 
-#customerTable = fread(paste0(customerFolder, 'HMClause_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
-#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Definitions.csv'))							# 
-#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Scores.csv'))				
-#appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\HMClause_temp_precip_hazards_dec_6 - HMClause_temp_precip_hazards_dec_6.csv'
+customerTable = fread(paste0(customerFolder, 'HMClause_Locations_Nov2022 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables_HMClause_Dec2022 - Hazard Scores.csv'))				
+appendedHazardNames = c("River Flood (Local)", 'Coastal Flood', 'Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\HMClause_Dec2022\\HMClause_temp_precip_hazards_dec_6 - HMClause_temp_precip_hazards_dec_6.csv'
 
 
 	# Nuveen - Spain
@@ -616,14 +645,14 @@ aggScoreExceptionsValues = c(0, 38, 30)
 waterOnly = TRUE
 
 	# Nuveen - Romania
-#userName = 'Nuveen - Romania'	
-#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Nuveen_Apr2023b\\'
+userName = 'Nuveen - Romania'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Nuveen_Apr2023b\\'
 
-#customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_Apr2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
-#hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
-#relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
-#appendedHazardNames = NA
-#appendedHazardFileLoc = NA
-#aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
-#aggScoreExceptionsValues = c(0, 38, 30)
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_Apr2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+appendedHazardNames = NA
+appendedHazardFileLoc = NA
+aggScoreExceptions = c('Extreme Cold', 'Extreme Heat', 'Intense Precipitation')
+aggScoreExceptionsValues = c(0, 38, 30)
 

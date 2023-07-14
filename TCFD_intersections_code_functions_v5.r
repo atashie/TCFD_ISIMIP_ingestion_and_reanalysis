@@ -216,7 +216,7 @@ f_riverFloods = function(
 	#					thisFldRcrDrctn = 		fldRcrVals[closeNCLon, closeNCLat, thisDecade, thisIntrvl, 3, thisScenario]
 						
 						if(thisFldRcrVal >= recurIntrvls[1])	{
-							closestFldRcrIntrvl = 	last(which(thisFldRcrVal > recurIntrvls))
+							closestFldRcrIntrvl = 	last(which(thisFldRcrVal >= recurIntrvls))
 							
 							theseFloodImpacts = fldDepthList[[closestFldRcrIntrvl]][theseLats, theseLons]
 							theseFloodImpacts[is.na(theseFloodImpacts)] = 0
