@@ -89,6 +89,17 @@ appendedHazardFileLoc = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '_Ju
 waterOnly = FALSE
 
 
+# 	# Nuveen FL
+userName = 'Nuveen'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Nuveen_Jul2023\\'
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen-HendryCoFlorida.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
+waterOnly = TRUE
+
 
 ########################################################################################################################
 # functions to run analysis
@@ -155,8 +166,27 @@ f_hazardAggregation(
 dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_', userName, '_', thisDate, '.csv'))
 #dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_Nuveen_2023-05-30.csv'))
 #customerFolder = "J:\\Cai_data\\TCFD\\locations\\ITC_Buffalo_Jun2023\\"
-#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Buffalo_2023-06-13.csv')
-dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_Nuveen - Romania_2023-04-30.csv'))
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_Nuveen - Romania_2023-04-30.csv'))
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Rice_2023-06-13.csv'))
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Potato_Jun2023\\'
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Potato_2023-06-13.csv'))
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Spice_Jun2023\\'
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Spice_2023-06-13.csv'))
+
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_FruitAndVeg_Jun2023\\'
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_FruitAndVeg_2023-06-13.csv'))
+
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Wood_Jun2023\\'
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Wood_2023-06-13.csv'))
+
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_VegOil_Jun2023\\'
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_VegOil_2023-06-13.csv'))
+
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Shrimp_Jun2023\\'
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Shrimp_2023-06-13.csv'))
+
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Buffalo_Jun2023\\'
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Buffalo_2023-06-13.csv'))
 
 
 
@@ -176,7 +206,7 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "3. High Emissions" & Ha
 summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "1. Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 20
+thisLoc = 1
 thisScen = unique(dataOutput$Scenario)[2]
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
@@ -271,7 +301,7 @@ fwrite(dataOutputReformatted, paste0(customerFolder, 'allLocsRawValues.csv'))
 				
 dataOutputSuperSimple = data.table(Variable = NA, 
 	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend = NA)
-thisScen = 'Middle of the Road'
+thisScen = '2. Middle of the Road'
 for(thisVariable in unique(dataOutputReformatted$Variable))	{
 	theseOutputs = subset(dataOutputReformatted, Scenario == thisScen & Variable == thisVariable)
 	dataOutputSuperSimple = rbind(dataOutputSuperSimple, 
@@ -298,7 +328,7 @@ dataSummaryRegion =    data.frame(Region = NA, Subregion = NA, Measure = NA, val
 dataSummarySubregion = data.frame(Region = NA, Subregion = NA, Measure = NA, values_2010s = NA, changeBy_2020s = NA, changeBy_2030s = NA, changeBy_2040s = NA, changeBy_2050s = NA, changeBy_2060s = NA, changeBy_2070s = NA, changeBy_2080s = NA, changeBy_2090s = NA)
 for(thisMeasure in unique(dataOutput$Hazard_Measure)){
 	if(!(thisMeasure %in% c('Weighted Aggregate Score', 'Aggregate Score')))	{
-		measureOutput = subset(dataOutput, Scenario == "Middle of the Road" & Hazard_Measure == thisMeasure & Long_Term_Trend_Significance < 0.05)
+		measureOutput = subset(dataOutput, Scenario == "Middle of the Road" & Hazard_Measure == thisMeasure & Long_Term_Trend_Significance < 100)
 		for(cc in unique(measureOutput$Region)){
 			countryOutput = subset(measureOutput, Region == cc)
 			dataSummaryRegion = rbind(dataSummaryRegion,
@@ -338,9 +368,292 @@ for(thisMeasure in unique(dataOutput$Hazard_Measure)){
 		}
 	}
 }
+fwrite(dataSummaryRegion,  paste0(customerFolder, 'regionAllDifferences.csv'))
+fwrite(dataSummarySubregion,  paste0(customerFolder, 'subregionAllDifferences.csv'))
+
 fwrite(dataSummaryRegion,  paste0(customerFolder, 'regionSignifDifferences.csv'))
 fwrite(dataSummarySubregion,  paste0(customerFolder, 'subregionSignifDifferences.csv'))
 #fwrite(dataSummary[which(abs(dataSummary[,-c(1:3)] , 'Differences.csv')
+
+
+
+
+
+
+
+# bullshit fucking people not able to communicate what they want then waiting weeks to respond then giving thoughtless responses for fucks sake such a goddam waste of time
+
+# fucking splitting on countries and regions bc they were too dumb to know how to when they passed the fucking bs db over
+
+fixedData = data.frame(do.call("rbind", strsplit(as.character(dataOutput$Region), ", ", fixed = TRUE, useBytes = TRUE)))
+colnames(fixedData) = c("Region_fixed", "Country_fixed")
+fixedOutput = cbind(dataOutput, fixedData)
+fixedOutput = subset(fixedOutput, Hazard == 'Water Availability')
+
+impactfulDiffs = c(20, 0.5, 0.3, 1000, 1000, 1000, 1000, 1000, 1000, 1000)
+#impactfulDiffs = c(1, 0.1, (1.5191648 * 10^-6) / 20, 1000, 1000, 1000, 1000, 1000, 1000, 1000)
+
+## reformatting for a table view but with all regional changes
+dataOutputReformatted = data.table(Location = NA, Country = NA, Region = NA, Scenario = NA, Variable = NA, 
+	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend_Strength = NA, Trend_Significance = NA)
+for(thisLoc in unique(fixedOutput$Location))	{
+	for(thisScen in unique(fixedOutput$Scenario))	{
+		for(varNum in 1:length(unique(fixedOutput$Hazard_Measure)))	{
+			thisVariable = unique(fixedOutput$Hazard_Measure)[varNum]
+			if(!(thisVariable %in% c('Aggregate Score', 'Weighted Aggregate Score')))	{
+				theseOutputs = subset(fixedOutput, Location == thisLoc & Scenario == thisScen & Hazard_Measure == thisVariable)
+				if(thisScen == "Middle of the Road") {# &
+#					theseOutputs$Long_Term_Trend_Significance[1] < 0.1 &
+#					abs(theseOutputs$Long_Term_Trend_Strength[1]) < impactfulDiffs[varNum])
+#					abs(subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value - subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value) > impactfulDiffs[varNum])	{
+				
+					dataOutputReformatted = rbind(dataOutputReformatted, 
+						data.table(
+							Location = thisLoc,
+							Country = theseOutputs$Country_fixed[1],
+							Region = theseOutputs$Region_fixed[1],
+							Scenario = thisScen,
+							Variable = thisVariable,
+							D2010s= subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value, 
+							D2020s= subset(theseOutputs, Decade == 2020)$Raw_Hazard_Value, 
+							D2030s= subset(theseOutputs, Decade == 2030)$Raw_Hazard_Value, 
+							D2040s= subset(theseOutputs, Decade == 2040)$Raw_Hazard_Value, 
+							D2050s= subset(theseOutputs, Decade == 2050)$Raw_Hazard_Value, 
+							D2060s= subset(theseOutputs, Decade == 2060)$Raw_Hazard_Value, 
+							D2070s= subset(theseOutputs, Decade == 2070)$Raw_Hazard_Value, 
+							D2080s= subset(theseOutputs, Decade == 2080)$Raw_Hazard_Value, 
+							D2090s= subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value,
+							Trend_Strength = subset(theseOutputs, Decade == 2090)$Decadal_Trend_Strength,
+							Trend_Significance = subset(theseOutputs, Decade == 2090)$Decadal_Trend_Significance)
+						)
+				}
+			}
+		}
+	}
+}
+fwrite(dataOutputReformatted, paste0(customerFolder, 'allLocsRawValues.csv'))
+#fwrite(dataOutputReformatted, paste0(customerFolder, 'signifLocsRawValues.csv'))
+
+
+
+
+## reformatting for a table view but with only statistically significant changes
+dataOutputReformatted = data.table(Country = NA, Region = NA, Scenario = NA, Variable = NA, 
+	avg2010s= NA, avg2020s= NA, avg2030s= NA, avg2040s= NA, avg2050s= NA, avg2060s= NA, avg2070s= NA, avg2080s= NA, avg2090s= NA, 
+	diff2020s= NA, diff2030s= NA, diff2040s= NA, diff2050s= NA, diff2060s= NA, diff2070s= NA, diff2080s= NA, diff2090s= NA, 
+	Trend_Strength = NA, Trend_Significance = NA)
+for(thisCountry in unique(fixedOutput$Country_fixed))	{
+		for(thisScen in "Middle of the Road")	{ #unique(fixedOutput$Scenario))	{
+			for(varNum in 1:length(unique(fixedOutput$Hazard_Measure)))	{
+				thisVariable = unique(fixedOutput$Hazard_Measure)[varNum]
+				if(!(thisVariable %in% c('Aggregate Score', 'Weighted Aggregate Score')))	{
+					theseOutputs = subset(fixedOutput, Country_fixed == thisCountry & Scenario == thisScen & Hazard_Measure == thisVariable)
+			
+					dataOutputReformatted = rbind(dataOutputReformatted, 
+						data.table(
+							Country = thisCountry,
+							Region = "Avg of All Locations in Country",
+							Scenario = thisScen,
+							Variable = thisVariable,
+							avg2010s= mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							avg2020s= mean(subset(theseOutputs, Decade == 2020)$Raw_Hazard_Value), 
+							avg2030s= mean(subset(theseOutputs, Decade == 2030)$Raw_Hazard_Value), 
+							avg2040s= mean(subset(theseOutputs, Decade == 2040)$Raw_Hazard_Value), 
+							avg2050s= mean(subset(theseOutputs, Decade == 2050)$Raw_Hazard_Value), 
+							avg2060s= mean(subset(theseOutputs, Decade == 2060)$Raw_Hazard_Value), 
+							avg2070s= mean(subset(theseOutputs, Decade == 2070)$Raw_Hazard_Value), 
+							avg2080s= mean(subset(theseOutputs, Decade == 2080)$Raw_Hazard_Value), 
+							avg2090s= mean(subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value),
+							diff2020s= mean(subset(theseOutputs, Decade == 2020)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							diff2030s= mean(subset(theseOutputs, Decade == 2030)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value),  
+							diff2040s= mean(subset(theseOutputs, Decade == 2040)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							diff2050s= mean(subset(theseOutputs, Decade == 2050)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value),  
+							diff2060s= mean(subset(theseOutputs, Decade == 2060)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value),  
+							diff2070s= mean(subset(theseOutputs, Decade == 2070)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							diff2080s= mean(subset(theseOutputs, Decade == 2080)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							diff2090s= mean(subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							Trend_Strength = mean(subset(theseOutputs, Decade == 2090)$Decadal_Trend_Strength),
+							Trend_Significance = mean(subset(theseOutputs, Decade == 2090)$Decadal_Trend_Significance))
+						)
+
+					if(TRUE)	# &
+#						any(theseOutputs$Long_Term_Trend_Significance < 0.1) &
+#						abs(theseOutputs$Long_Term_Trend_Strength[1]) < impactfulDiffs[varNum])
+#						any(abs(subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value - subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value) > impactfulDiffs[varNum]))
+					{
+						
+					theseOutputsSignif = subset(theseOutputs, Country_fixed == thisCountry & Scenario == thisScen & Hazard_Measure == thisVariable)# & Long_Term_Trend_Significance < 0.1)
+
+
+						for(thisRegion in unique(theseOutputsSignif$Region_fixed))	{
+							theseOutputsSignif = subset(fixedOutput, Country_fixed == thisCountry & Scenario == thisScen & Hazard_Measure == thisVariable & Region_fixed == thisRegion)
+							dataOutputReformatted = rbind(dataOutputReformatted, 
+								data.table(
+									Country = theseOutputsSignif$Country_fixed[1],
+									Region = theseOutputsSignif$Region_fixed[1],
+									Scenario = thisScen,
+									Variable = thisVariable,
+									avg2010s= mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									avg2020s= mean(subset(theseOutputsSignif, Decade == 2020)$Raw_Hazard_Value), 
+									avg2030s= mean(subset(theseOutputsSignif, Decade == 2030)$Raw_Hazard_Value), 
+									avg2040s= mean(subset(theseOutputsSignif, Decade == 2040)$Raw_Hazard_Value), 
+									avg2050s= mean(subset(theseOutputsSignif, Decade == 2050)$Raw_Hazard_Value), 
+									avg2060s= mean(subset(theseOutputsSignif, Decade == 2060)$Raw_Hazard_Value), 
+									avg2070s= mean(subset(theseOutputsSignif, Decade == 2070)$Raw_Hazard_Value), 
+									avg2080s= mean(subset(theseOutputsSignif, Decade == 2080)$Raw_Hazard_Value), 
+									avg2090s= mean(subset(theseOutputsSignif, Decade == 2090)$Raw_Hazard_Value),
+									diff2020s= mean(subset(theseOutputsSignif, Decade == 2020)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									diff2030s= mean(subset(theseOutputsSignif, Decade == 2030)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value),  
+									diff2040s= mean(subset(theseOutputsSignif, Decade == 2040)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									diff2050s= mean(subset(theseOutputsSignif, Decade == 2050)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value),  
+									diff2060s= mean(subset(theseOutputsSignif, Decade == 2060)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value),  
+									diff2070s= mean(subset(theseOutputsSignif, Decade == 2070)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									diff2080s= mean(subset(theseOutputsSignif, Decade == 2080)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									diff2090s= mean(subset(theseOutputsSignif, Decade == 2090)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									Trend_Strength = median(subset(theseOutputsSignif, Decade == 2090)$Decadal_Trend_Strength),
+									Trend_Significance = median(subset(theseOutputsSignif, Decade == 2090)$Decadal_Trend_Significance))
+								)
+						}
+					}
+				}
+			}
+		}
+}
+fwrite(dataOutputReformatted, paste0(customerFolder, 'allRegsRawValues.csv'))
+#fwrite(dataOutputReformatted, paste0(customerFolder, 'signifRegsRawValues.csv'))
+
+
+
+
+	# p2
+## reformatting for a table view but with only statistically significant changes
+dataOutputReformatted = data.table(Location = NA, Country = NA, Region = NA, Scenario = NA, Variable = NA, 
+	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend_Strength = NA, Trend_Significance = NA)
+for(thisLoc in unique(fixedOutput$Location))	{
+	for(thisScen in unique(fixedOutput$Scenario))	{
+		for(varNum in 1:length(unique(fixedOutput$Hazard_Measure)))	{
+			thisVariable = unique(fixedOutput$Hazard_Measure)[varNum]
+			if(!(thisVariable %in% c('Aggregate Score', 'Weighted Aggregate Score')))	{
+				theseOutputs = subset(fixedOutput, Location == thisLoc & Scenario == thisScen & Hazard_Measure == thisVariable)
+				if(thisScen == "Middle of the Road" &
+					theseOutputs$Long_Term_Trend_Significance[1] < 0.1 &
+#					abs(theseOutputs$Long_Term_Trend_Strength[1]) < impactfulDiffs[varNum])
+					abs(subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value - subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value) > impactfulDiffs[varNum])	{
+				
+					dataOutputReformatted = rbind(dataOutputReformatted, 
+						data.table(
+							Location = thisLoc,
+							Country = theseOutputs$Country_fixed[1],
+							Region = theseOutputs$Region_fixed[1],
+							Scenario = thisScen,
+							Variable = thisVariable,
+							D2010s= subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value, 
+							D2020s= subset(theseOutputs, Decade == 2020)$Raw_Hazard_Value, 
+							D2030s= subset(theseOutputs, Decade == 2030)$Raw_Hazard_Value, 
+							D2040s= subset(theseOutputs, Decade == 2040)$Raw_Hazard_Value, 
+							D2050s= subset(theseOutputs, Decade == 2050)$Raw_Hazard_Value, 
+							D2060s= subset(theseOutputs, Decade == 2060)$Raw_Hazard_Value, 
+							D2070s= subset(theseOutputs, Decade == 2070)$Raw_Hazard_Value, 
+							D2080s= subset(theseOutputs, Decade == 2080)$Raw_Hazard_Value, 
+							D2090s= subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value,
+							Trend_Strength = subset(theseOutputs, Decade == 2090)$Decadal_Trend_Strength,
+							Trend_Significance = subset(theseOutputs, Decade == 2090)$Decadal_Trend_Significance)
+						)
+				}
+			}
+		}
+	}
+}
+#fwrite(dataOutputReformatted, paste0(customerFolder, 'allLocsRawValues.csv'))
+fwrite(dataOutputReformatted, paste0(customerFolder, 'signifLocsRawValues.csv'))
+
+
+
+
+## reformatting for a table view but with only statistically significant changes
+dataOutputReformatted = data.table(Country = NA, Region = NA, Scenario = NA, Variable = NA, 
+	avg2010s= NA, avg2020s= NA, avg2030s= NA, avg2040s= NA, avg2050s= NA, avg2060s= NA, avg2070s= NA, avg2080s= NA, avg2090s= NA, 
+	diff2020s= NA, diff2030s= NA, diff2040s= NA, diff2050s= NA, diff2060s= NA, diff2070s= NA, diff2080s= NA, diff2090s= NA, 
+	Trend_Strength = NA, Trend_Significance = NA)
+for(thisCountry in unique(fixedOutput$Country_fixed))	{
+		for(thisScen in "Middle of the Road")	{ #unique(fixedOutput$Scenario))	{
+			for(varNum in 1:length(unique(fixedOutput$Hazard_Measure)))	{
+				thisVariable = unique(fixedOutput$Hazard_Measure)[varNum]
+				if(!(thisVariable %in% c('Aggregate Score', 'Weighted Aggregate Score')))	{
+					theseOutputs = subset(fixedOutput, Country_fixed == thisCountry & Scenario == thisScen & Hazard_Measure == thisVariable)
+			
+					dataOutputReformatted = rbind(dataOutputReformatted, 
+						data.table(
+							Country = thisCountry,
+							Region = "Avg of All Locations in Country",
+							Scenario = thisScen,
+							Variable = thisVariable,
+							avg2010s= mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							avg2020s= mean(subset(theseOutputs, Decade == 2020)$Raw_Hazard_Value), 
+							avg2030s= mean(subset(theseOutputs, Decade == 2030)$Raw_Hazard_Value), 
+							avg2040s= mean(subset(theseOutputs, Decade == 2040)$Raw_Hazard_Value), 
+							avg2050s= mean(subset(theseOutputs, Decade == 2050)$Raw_Hazard_Value), 
+							avg2060s= mean(subset(theseOutputs, Decade == 2060)$Raw_Hazard_Value), 
+							avg2070s= mean(subset(theseOutputs, Decade == 2070)$Raw_Hazard_Value), 
+							avg2080s= mean(subset(theseOutputs, Decade == 2080)$Raw_Hazard_Value), 
+							avg2090s= mean(subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value),
+							diff2020s= mean(subset(theseOutputs, Decade == 2020)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							diff2030s= mean(subset(theseOutputs, Decade == 2030)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value),  
+							diff2040s= mean(subset(theseOutputs, Decade == 2040)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							diff2050s= mean(subset(theseOutputs, Decade == 2050)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value),  
+							diff2060s= mean(subset(theseOutputs, Decade == 2060)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value),  
+							diff2070s= mean(subset(theseOutputs, Decade == 2070)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							diff2080s= mean(subset(theseOutputs, Decade == 2080)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							diff2090s= mean(subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value) - mean(subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value), 
+							Trend_Strength = mean(subset(theseOutputs, Decade == 2090)$Decadal_Trend_Strength),
+							Trend_Significance = mean(subset(theseOutputs, Decade == 2090)$Decadal_Trend_Significance))
+						)
+
+					if(TRUE &
+						any(theseOutputs$Long_Term_Trend_Significance < 0.1) &
+#						abs(theseOutputs$Long_Term_Trend_Strength[1]) < impactfulDiffs[varNum])
+						any(abs(subset(theseOutputs, Decade == 2090)$Raw_Hazard_Value - subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value) > impactfulDiffs[varNum]))
+					{
+						
+					theseOutputsSignif = subset(theseOutputs, Country_fixed == thisCountry & Scenario == thisScen & Hazard_Measure == thisVariable)# & Long_Term_Trend_Significance < 0.1)
+
+
+						for(thisRegion in unique(theseOutputsSignif$Region_fixed))	{
+							theseOutputsSignif = subset(fixedOutput, Country_fixed == thisCountry & Scenario == thisScen & Hazard_Measure == thisVariable & Region_fixed == thisRegion)
+							dataOutputReformatted = rbind(dataOutputReformatted, 
+								data.table(
+									Country = theseOutputsSignif$Country_fixed[1],
+									Region = theseOutputsSignif$Region_fixed[1],
+									Scenario = thisScen,
+									Variable = thisVariable,
+									avg2010s= mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									avg2020s= mean(subset(theseOutputsSignif, Decade == 2020)$Raw_Hazard_Value), 
+									avg2030s= mean(subset(theseOutputsSignif, Decade == 2030)$Raw_Hazard_Value), 
+									avg2040s= mean(subset(theseOutputsSignif, Decade == 2040)$Raw_Hazard_Value), 
+									avg2050s= mean(subset(theseOutputsSignif, Decade == 2050)$Raw_Hazard_Value), 
+									avg2060s= mean(subset(theseOutputsSignif, Decade == 2060)$Raw_Hazard_Value), 
+									avg2070s= mean(subset(theseOutputsSignif, Decade == 2070)$Raw_Hazard_Value), 
+									avg2080s= mean(subset(theseOutputsSignif, Decade == 2080)$Raw_Hazard_Value), 
+									avg2090s= mean(subset(theseOutputsSignif, Decade == 2090)$Raw_Hazard_Value),
+									diff2020s= mean(subset(theseOutputsSignif, Decade == 2020)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									diff2030s= mean(subset(theseOutputsSignif, Decade == 2030)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value),  
+									diff2040s= mean(subset(theseOutputsSignif, Decade == 2040)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									diff2050s= mean(subset(theseOutputsSignif, Decade == 2050)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value),  
+									diff2060s= mean(subset(theseOutputsSignif, Decade == 2060)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value),  
+									diff2070s= mean(subset(theseOutputsSignif, Decade == 2070)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									diff2080s= mean(subset(theseOutputsSignif, Decade == 2080)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									diff2090s= mean(subset(theseOutputsSignif, Decade == 2090)$Raw_Hazard_Value) - mean(subset(theseOutputsSignif, Decade == 2010)$Raw_Hazard_Value), 
+									Trend_Strength = median(subset(theseOutputsSignif, Decade == 2090)$Decadal_Trend_Strength),
+									Trend_Significance = median(subset(theseOutputsSignif, Decade == 2090)$Decadal_Trend_Significance))
+								)
+						}
+					}
+				}
+			}
+		}
+}
+#fwrite(dataOutputReformatted, paste0(customerFolder, 'allRegsRawValues.csv'))
+fwrite(dataOutputReformatted, paste0(customerFolder, 'signifRegsRawValues.csv'))
 
 
 

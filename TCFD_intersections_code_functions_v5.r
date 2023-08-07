@@ -15,10 +15,11 @@ f_mainExposureData = function(
 	dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 		Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 		Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA)
+		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA,
+		Asset_Type = NA, Business_Unit = NA, Country = NA, State = NA)
 
 	iter = 0
-	for(thisHazard in 6:ncol(customerTable))	{ ####!!!! temp fix, resolve hard coding  !!!!!!##########
+	for(thisHazard in 10:ncol(customerTable))	{ ####!!!! temp fix, resolve hard coding  !!!!!!##########
 		if(any(customerTable[, ..thisHazard]))	{
 			if(names(customerTable)[thisHazard] %in% appendedHazardNames)	{	
 				print(c('this hazard must be run independently and appended later:     ', names(customerTable)[thisHazard]))
@@ -81,7 +82,11 @@ f_mainExposureData = function(
 									Advanced_Data_Measures = NA,
 									Advanced_Data_Measures_Units = NA,
 									Raw_Hazard_Value_25th = c(theseData[ , 1, 5], theseData[ , 2, 5], theseData[ , 3, 5]),
-									Raw_Hazard_Value_75th = c(theseData[ , 1, 6], theseData[ , 2, 6], theseData[ , 3, 6]))
+									Raw_Hazard_Value_75th = c(theseData[ , 1, 6], theseData[ , 2, 6], theseData[ , 3, 6]),
+									Asset_Type = customerTable$AssetType[thisLocation],
+									Business_Unit = customerTable$BusinessUnit[thisLocation],
+									Country = customerTable$Country[thisLocation],
+									State = customerTable$State[thisLocation])
 							)
 						}
 						print(c(thisHazard, thisHazardMeasure, thisLocation))
@@ -92,7 +97,8 @@ f_mainExposureData = function(
 					dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 						Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 						Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-						Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA)
+						Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA,
+						Asset_Type = NA, Business_Unit = NA, Country = NA, State = NA)
 				}
 			}
 		}
@@ -103,7 +109,7 @@ f_mainExposureData = function(
 	}
 
 	fwrite(finalOutput, paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
-	}
+}
 
 
 
@@ -149,7 +155,8 @@ f_riverFloods = function(
 	dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 		Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 		Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th = NA)
+		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA,
+		Asset_Type = NA, Business_Unit = NA, Country = NA, State = NA)
 		
 		# read in historic floods data
 	fldDepthList = list()
@@ -260,7 +267,11 @@ f_riverFloods = function(
 										Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 										Advanced_Data_Measures_Units = "Yr Flood",
 										Raw_Hazard_Value_25th = NA,
-										Raw_Hazard_Value_75th = NA))
+										Raw_Hazard_Value_75th = NA,
+										Asset_Type = customerTable$AssetType[thisLocation],
+										Business_Unit = customerTable$BusinessUnit[thisLocation],
+										Country = customerTable$Country[thisLocation],
+										State = customerTable$State[thisLocation]))
 
 
 							} 	else	{ # if all theseFloodImpacts are NAs
@@ -288,7 +299,11 @@ f_riverFloods = function(
 										Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 										Advanced_Data_Measures_Units = "Yr Flood",
 										Raw_Hazard_Value_25th = NA,
-										Raw_Hazard_Value_75th = NA))
+										Raw_Hazard_Value_75th = NA,
+										Asset_Type = customerTable$AssetType[thisLocation],
+										Business_Unit = customerTable$BusinessUnit[thisLocation],
+										Country = customerTable$Country[thisLocation],
+										State = customerTable$State[thisLocation]))
 
 							}
 						}	else	{ # if thisFldRcrVal < 10 yr recurrence
@@ -316,7 +331,11 @@ f_riverFloods = function(
 									Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 									Advanced_Data_Measures_Units = "Yr Flood",
 									Raw_Hazard_Value_25th = NA,
-									Raw_Hazard_Value_75th = NA))
+									Raw_Hazard_Value_75th = NA,
+									Asset_Type = customerTable$AssetType[thisLocation],
+									Business_Unit = customerTable$BusinessUnit[thisLocation],
+									Country = customerTable$Country[thisLocation],
+									State = customerTable$State[thisLocation]))
 
 						}
 					} # for each decade
@@ -350,7 +369,11 @@ f_riverFloods = function(
 						Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 						Advanced_Data_Measures_Units = "Yr Flood",
 						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA)), 
+						Raw_Hazard_Value_75th = NA,
+						Asset_Type = customerTable$AssetType[thisLocation],
+						Business_Unit = customerTable$BusinessUnit[thisLocation],
+						Country = customerTable$Country[thisLocation],
+						State = customerTable$State[thisLocation])), 
 					data.table(
 						User = userName,
 						Location = customerTable$Location[thisLoc],
@@ -374,7 +397,11 @@ f_riverFloods = function(
 						Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 						Advanced_Data_Measures_Units = "Yr Flood",
 						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA)), 
+						Raw_Hazard_Value_75th = NA,
+						Asset_Type = customerTable$AssetType[thisLocation],
+						Business_Unit = customerTable$BusinessUnit[thisLocation],
+						Country = customerTable$Country[thisLocation],
+						State = customerTable$State[thisLocation])), 
 					data.table(
 						User = userName,
 						Location = customerTable$Location[thisLoc],
@@ -398,7 +425,11 @@ f_riverFloods = function(
 						Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 						Advanced_Data_Measures_Units = "Yr Flood",
 						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA))
+						Raw_Hazard_Value_75th = NA,
+						Asset_Type = customerTable$AssetType[thisLocation],
+						Business_Unit = customerTable$BusinessUnit[thisLocation],
+						Country = customerTable$Country[thisLocation],
+						State = customerTable$State[thisLocation]))
 
 			}
 			print(c(thisLoc, thisIntrvl))
@@ -468,7 +499,8 @@ f_seaLevelRise = function(
 	dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 		Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 		Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th = NA)
+		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA,
+		Asset_Type = NA, Business_Unit = NA, Country = NA, State = NA)
 
 	for(j in 1:nrow(customerTable))	{
 
@@ -530,7 +562,11 @@ f_seaLevelRise = function(
 									Advanced_Data_Measures =  NA,
 									Advanced_Data_Measures_Units = NA,
 									Raw_Hazard_Value_25th = as.numeric(seaLvl25th),
-									Raw_Hazard_Value_75th = as.numeric(seaLvl75th))
+									Raw_Hazard_Value_75th = as.numeric(seaLvl75th),
+									Asset_Type = customerTable$AssetType[thisLocation],
+									Business_Unit = customerTable$BusinessUnit[thisLocation],
+									Country = customerTable$Country[thisLocation],
+									State = customerTable$State[thisLocation])
 					)
 				}
 			}
@@ -559,7 +595,11 @@ f_seaLevelRise = function(
 							Advanced_Data_Measures = NA,
 							Advanced_Data_Measures_Units = NA,
 							Raw_Hazard_Value_25th = 1000,
-							Raw_Hazard_Value_75th = 1000))
+							Raw_Hazard_Value_75th = 1000,
+							Asset_Type = customerTable$AssetType[thisLocation],
+							Business_Unit = customerTable$BusinessUnit[thisLocation],
+							Country = customerTable$Country[thisLocation],
+							State = customerTable$State[thisLocation]))
 		}
 	}
 		
@@ -678,7 +718,11 @@ f_hazardAggregation = function(
 							Advanced_Data_Measures = NA,
 							Advanced_Data_Measures_Units = NA,
 							Raw_Hazard_Value_25th = NA,
-							Raw_Hazard_Value_75th = NA)
+							Raw_Hazard_Value_75th = NA,
+							Asset_Type = customerTable$AssetType[thisLocation],
+							Business_Unit = customerTable$BusinessUnit[thisLocation],
+							Country = customerTable$Country[thisLocation],
+							State = customerTable$State[thisLocation])
 					)
 
 					avgOfAllHazards = c(avgOfAllHazards, mean(newHazard$Percentile_Score, na.rm=TRUE))
@@ -720,7 +764,11 @@ f_hazardAggregation = function(
 						Advanced_Data_Measures = NA,
 						Advanced_Data_Measures_Units = NA,
 						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA)
+						Raw_Hazard_Value_75th = NA,
+						Asset_Type = customerTable$AssetType[thisLocation],
+						Business_Unit = customerTable$BusinessUnit[thisLocation],
+						Country = customerTable$Country[thisLocation],
+						State = customerTable$State[thisLocation])
 				)
 					
 					# ugh these *!@#$$$% ad hoc requests are driving me crazy..... ugh....
@@ -749,7 +797,11 @@ f_hazardAggregation = function(
 						Advanced_Data_Measures = NA,
 						Advanced_Data_Measures_Units = NA,
 						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA)
+						Raw_Hazard_Value_75th = NA,
+						Asset_Type = customerTable$AssetType[thisLocation],
+						Business_Unit = customerTable$BusinessUnit[thisLocation],
+						Country = customerTable$Country[thisLocation],
+						State = customerTable$State[thisLocation])
 				)
 	
 
