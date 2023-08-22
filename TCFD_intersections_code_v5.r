@@ -27,6 +27,18 @@ aggScoreExceptionsValues = c(0, 38, 30)
 # this is the only section that needs to be updated between runs
 # !!!!!!!!!!!!!!!!!!!!!!!!
 
+# 	# Nuveen_Almond
+userName = 'Nuveen - Almond'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\NuveenAlmonds_Aug2023\\'
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Nuveen_Almond_Aug2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
+waterOnly = TRUE
+
+
 # 	# Nuveen_Pistachio
 userName = 'Nuveen - Pistachio'	
 customerFolder = 'J:\\Cai_data\\TCFD\\locations\\NuveenPistachio_Jun2023\\'
@@ -170,23 +182,20 @@ dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_', userN
 #dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Rice_2023-06-13.csv'))
 #customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Potato_Jun2023\\'
 #dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Potato_2023-06-13.csv'))
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Spice_Jun2023\\'
-dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Spice_2023-06-13.csv'))
-
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_FruitAndVeg_Jun2023\\'
-dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_FruitAndVeg_2023-06-13.csv'))
-
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Wood_Jun2023\\'
-dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Wood_2023-06-13.csv'))
-
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_VegOil_Jun2023\\'
-dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_VegOil_2023-06-13.csv'))
-
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Shrimp_Jun2023\\'
-dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Shrimp_2023-06-13.csv'))
-
-customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Buffalo_Jun2023\\'
-dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Buffalo_2023-06-13.csv'))
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Spice_Jun2023\\'
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Spice_2023-06-13.csv'))
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_FruitAndVeg_Jun2023\\'
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_FruitAndVeg_2023-06-13.csv'))
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Wood_Jun2023\\'
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Wood_2023-06-13.csv'))
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_VegOil_Jun2023\\'
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_VegOil_2023-06-13.csv'))
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Shrimp_Jun2023\\'
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Shrimp_2023-06-13.csv'))
+#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Buffalo_Jun2023\\'
+#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Buffalo_2023-06-13.csv'))
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\NuveenPistachio_Jun2023\\'
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_Nuveen - Pistachio_2023-06-26.csv'))
 
 
 
@@ -206,7 +215,7 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "3. High Emissions" & Ha
 summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "1. Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 1
+thisLoc = 2
 thisScen = unique(dataOutput$Scenario)[2]
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
@@ -235,7 +244,7 @@ availabilityTrend = NULL
 dataTrends = data.frame(User = NA, Location = NA, Hazard = NA, Hazard_Measure = NA, Raw_Hazard_Current_Value = NA, Raw_Hazard_Trend_to_2050s = NA, Percentile_Current_Value = NA, Percentile_Trend_to_2050s = NA)
 for(thisLoc in unique(dataOutput$Location))	{
 	for(thisHazard in unique(dataOutput$Hazard))	{
-		dataSub = subset(dataOutput, Location == thisLoc & Scenario == "Middle of the Road" & Hazard == thisHazard)
+		dataSub = subset(dataOutput, Location == thisLoc & Scenario == "2. Middle of the Road" & Hazard == thisHazard)
 	
 		for(thisHazardMeasure in unique(dataSub$Hazard_Measure))	{
 			if(!(thisHazardMeasure %in% c("Aggregate Score", "Weighted Aggregate Score"))){
@@ -328,7 +337,7 @@ dataSummaryRegion =    data.frame(Region = NA, Subregion = NA, Measure = NA, val
 dataSummarySubregion = data.frame(Region = NA, Subregion = NA, Measure = NA, values_2010s = NA, changeBy_2020s = NA, changeBy_2030s = NA, changeBy_2040s = NA, changeBy_2050s = NA, changeBy_2060s = NA, changeBy_2070s = NA, changeBy_2080s = NA, changeBy_2090s = NA)
 for(thisMeasure in unique(dataOutput$Hazard_Measure)){
 	if(!(thisMeasure %in% c('Weighted Aggregate Score', 'Aggregate Score')))	{
-		measureOutput = subset(dataOutput, Scenario == "Middle of the Road" & Hazard_Measure == thisMeasure & Long_Term_Trend_Significance < 100)
+		measureOutput = subset(dataOutput, Scenario == "2. Middle of the Road" & Hazard_Measure == thisMeasure & Long_Term_Trend_Significance < 100)
 		for(cc in unique(measureOutput$Region)){
 			countryOutput = subset(measureOutput, Region == cc)
 			dataSummaryRegion = rbind(dataSummaryRegion,

@@ -23,7 +23,7 @@ climateDataSelection_f = function(
 		nc_decade = ncvar_get(nc_file, 'decade')
 		nc_scenario = ncvar_get(nc_file, 'rcpScen')
 		nc_valueClass = ncvar_get(nc_file, 'valueClass')
-		nc_values = ncvar_get(nc_file, 'tcfdVariable') # Lon, Lat, Decade (2010-2090, Scenarios (Low, Med, High), Value Type (1-12: months, 13: annual mean, 14:20: annual Q05, Q15, Q25, Q50, Q75, Q85, Q95)
+		nc_values = ncvar_get(nc_file, 'tcfdVariable') # Lon, Lat, Decade (2010-2090), Scenarios (Low, Med, High), Value Type (1-12: months, 13: annual mean, 14:20: annual Q05, Q15, Q25, Q50, Q75, Q85, Q95)
 
 		# defining array for holding climate data
 		if(thisClimVar == 1)	{

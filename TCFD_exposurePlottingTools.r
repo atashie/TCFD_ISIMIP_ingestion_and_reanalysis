@@ -35,9 +35,13 @@ provinces10 = st_as_sf(st_read('J:\\Cai_data\\ne_10m_admin_1_states_provinces\\n
 latlonBox = c(-55, 75, -180, 180) #(minlat, maxlat, minlon, maxlon)
 latlonBox_local = c(-60,-15,-80,-50)#c(35,53,-12,46)
 latlonBox_local = c(-58, 80,-170,-32)#c(35,53,-12,46)
-locOfInt = st_point(c(customerTable$Lat[1], customerTable$Lon[1]))
-
-
+latlonBox_local = c(34, 42,-125,-116)#c(35,53,-12,46)
+#locOfInt = st_point(c(customerTable$Lat[1], customerTable$Lon[1]))
+locOfInt <- data.frame(lon = c(-122.2), 
+                     lat = c(38.06))
+locOfInt_sf = st_as_sf(locOfInt, 
+                       coords = c("lon", "lat"),
+                       crs = 4326) 
 
 
 
@@ -51,7 +55,7 @@ locOfInt = st_point(c(customerTable$Lat[1], customerTable$Lon[1]))
 		# plantWaterDemand_transientSeasonalRegionalAvgSupplement_ssp_v2_processed		# aridityIndex_transientSeasonalRegionalTransientSeasonalSupplement_ssp_v2_processed		# plantWaterDemand_transientSeasonalRegionalTransientSeasonalSupplement_ssp_v2_processed
 
 
-varName = 'cwood-evgndltrv2_processed' #'plantWaterDemand_transientInterannualRegionalTransientInterannualSupplement_ssp_v2_processed'
+varName = 'burntareav2_processed' #'cwood-evgndltrv2_processed' #'plantWaterDemand_transientInterannualRegionalTransientInterannualSupplement_ssp_v2_processed'
 nc_close(myNC)
 myNC = nc_open(paste0(ncOutputPath, varName, '.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
@@ -63,8 +67,8 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 ###############
 # P1: maps
 # 1a: gridded
-myTitle = 'Softwood (evergreen) growth'
-mySubtitle = 'nonirrigated'
+myTitle = 'Burned Area' #'Softwood (evergreen) growth'
+mySubtitle = ""#'nonirrigated'
 thisCRS = 4087#4326
 
 #geomData = st_as_sf(data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 1, 2, 1])), coords = c('lon', 'lat'))
@@ -77,7 +81,8 @@ df_proj = st_transform(df_proj, crs = thisCRS)
 
 
 ggplot(data = geomData) +
-	with_blur(geom_raster(aes(y = lat, x = lon, fill = plotData), interpolate = FALSE), sigma = 5.5) +
+#	with_blur(geom_raster(aes(y = lat, x = lon, fill = plotData), interpolate = FALSE), sigma = 5.5) +
+	geom_raster(aes(y = lat, x = lon, fill = plotData), interpolate = FALSE) +
 #	geom_sf(aes(colour = plotData)	+
 	scale_fill_viridis(option = 'viridis', trans = scales::pseudo_log_trans(sigma = .5))	+
 #	geom_raster(interpolate = TRUE)	+
@@ -91,10 +96,12 @@ ggplot(data = geomData) +
 	borders('world', xlim=range(geomData$lon), ylim=range(geomData$lat), 
             colour='gray90', size=.2)	+
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='skyblue', size=5, shape='+', stroke=1)	+
+
 #	coord_quickmap(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2])) +
 #	coord_sf(default_crs = sf::st_crs(thisCRS), xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2])) + 
 #	coord_fixed(expand = FALSE)	+
 #	coord_sf(xlim=c(latlonBox[3], latlonBox[4]), ylim=c(latlonBox[1], latlonBox[2]), expand = FALSE) + 
+	geom_sf(data=locOfInt_sf, col='red1',size=5, shape='+', stroke=3) +
 	coord_sf(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2]), expand = FALSE) + 
 	labs(x = NULL, y = NULL, title=paste0(myTitle, ' - 2020s'),
 		subtitle=mySubtitle, 
