@@ -35,7 +35,7 @@ provinces10 = st_as_sf(st_read('J:\\Cai_data\\ne_10m_admin_1_states_provinces\\n
 latlonBox = c(-55, 75, -180, 180) #(minlat, maxlat, minlon, maxlon)
 latlonBox_local = c(-60,-15,-80,-50)#c(35,53,-12,46)
 latlonBox_local = c(-58, 80,-170,-32)#c(35,53,-12,46)
-latlonBox_local = c(34, 42,-125,-116)#c(35,53,-12,46)
+latlonBox_local = c(18, 52,-18,61)#c(35,53,-12,46)
 #locOfInt = st_point(c(customerTable$Lat[1], customerTable$Lon[1]))
 locOfInt <- data.frame(lon = c(-122.2), 
                      lat = c(38.06))
@@ -55,7 +55,7 @@ locOfInt_sf = st_as_sf(locOfInt,
 		# plantWaterDemand_transientSeasonalRegionalAvgSupplement_ssp_v2_processed		# aridityIndex_transientSeasonalRegionalTransientSeasonalSupplement_ssp_v2_processed		# plantWaterDemand_transientSeasonalRegionalTransientSeasonalSupplement_ssp_v2_processed
 
 
-varName = 'burntareav2_processed' #'cwood-evgndltrv2_processed' #'plantWaterDemand_transientInterannualRegionalTransientInterannualSupplement_ssp_v2_processed'
+varName = 'WRI_based_WaterStress_v2_processed' #'npp-c3sumv2_processed' #'cwood-evgndltrv2_processed' #'plantWaterDemand_transientInterannualRegionalTransientInterannualSupplement_ssp_v2_processed'
 nc_close(myNC)
 myNC = nc_open(paste0(ncOutputPath, varName, '.nc'))
 nc_lat = ncvar_get(myNC, 'lat')	# lat is given from high to low
@@ -67,7 +67,7 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 ###############
 # P1: maps
 # 1a: gridded
-myTitle = 'Burned Area' #'Softwood (evergreen) growth'
+myTitle = "Water Stress" #'Burned Area' #'Softwood (evergreen) growth'
 mySubtitle = ""#'nonirrigated'
 thisCRS = 4087#4326
 
@@ -111,13 +111,13 @@ ggsave(paste0(customerFolder, varName, "_gridded.png"), width = 16, height = 12)
 
 
 	# trends
-geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 2, 1] - nc_testDat[ , , 1, 2, 1]))
+geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 9, 2, 1] - nc_testDat[ , , 1, 2, 1]))
 df_sub = subset(geomData, lat >= latlonBox_local[1] & lat <= latlonBox_local[2] & lon >= latlonBox_local[3] & lon <= latlonBox_local[4])
 #lmt <- ceiling(10*max(abs(range(df_sub$plotData, na.rm=TRUE))))/10000
-lmt <- max(abs(range(df_sub$plotData, na.rm=TRUE)))
+lmt <- max(abs(range(geomData$plotData, na.rm=TRUE)))
 #lmt <- 1
 ggplot(data = geomData) +
-	with_blur(geom_raster(data = geomData, aes(fill = plotData, y = lat, x = lon), interpolate = FALSE), sigma = 5.5) +
+	with_blur(geom_raster(data = geomData, aes(fill = plotData, y = lat, x = lon), interpolate = FALSE), sigma = .5) +
 #	geom_raster(interploate = TRUE)	+
 #	geom_sf(data = df_sub, aes(fill = plotData, color = plotData)) +
 	theme_minimal(base_size = 22)	+
@@ -152,7 +152,7 @@ st_as_sf(provinces10)
 
 
 	# abs values
-geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 1, 3, 1]))
+geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 2, 1]))
 df_sub = subset(geomData, lat >= latlonBox[1] & lat <= latlonBox[2] & lon >= latlonBox[3] & lon <= latlonBox[4])
 #df_sub = subset(geomData, lat >= latlonBox_local[1] & lat <= latlonBox_local[2] & lon >= latlonBox_local[3] & lon <= latlonBox_local[4])
 geomData_sf = st_as_sf(df_sub, coords=c('lon','lat'), remove=FALSE, crs=4326, agr='constant')
@@ -166,12 +166,12 @@ geomNN = st_join(provinces10[missingLocs,], geomData_sf, join = st_nearest_featu
 geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
 
 	# countries
-#geomJoin = st_join(world, geomData_sf, join = st_intersects)
-#geomAvg = aggregate(plotData ~ sovereignt, mean, data = geomJoin)#, na.action = na.pass)
-#geomAvgMrg = merge(geomAvg, world, by = 'sovereignt')
-#missingLocs = which(!(world$sovereignt %in% geomAvgMrg$sovereignt))
-#geomNN = st_join(world[missingLocs,], geomData_sf, join = st_nearest_feature)
-#geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
+geomJoin = st_join(world, geomData_sf, join = st_intersects)
+geomAvg = aggregate(plotData ~ sovereignt, mean, data = geomJoin)#, na.action = na.pass)
+geomAvgMrg = merge(geomAvg, world, by = 'sovereignt')
+missingLocs = which(!(world$sovereignt %in% geomAvgMrg$sovereignt))
+geomNN = st_join(world[missingLocs,], geomData_sf, join = st_nearest_feature)
+geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
 
 
 geomAvgMrg_sf = st_as_sf(geomAvgMrg)
@@ -186,7 +186,7 @@ ggplot(data = geomAvgMrg_sf) +
 #	scale_fill_stepsn(colors=c('#b2182b','#ef8a62','#fddbc7',
  #                            '#f7f7f7','#d1e5f0','#67a9cf','#2166ac'),
   #           n.breaks=7, limits=c(-lmt,lmt), show.limits=T)  +
-	scale_fill_viridis(option = 'viridis', trans = scales::pseudo_log_trans(sigma = 5))	+
+	scale_fill_viridis(option = 'viridis', trans = scales::pseudo_log_trans(sigma = 0.00001))	+
 #	scale_fill_gradient2(low = 'skyblue', high = 'darkred', mid = 'white', trans = scales::pseudo_log_trans(sigma = .00005))	+
 #	scale_fill_gradient(low = 'skyblue', high = 'darkred', trans = scales::pseudo_log_trans(sigma = .00005))	+
 #	geom_sf(data = provinces10, fill = NA, color = 'grey75')
@@ -194,7 +194,7 @@ ggplot(data = geomAvgMrg_sf) +
 #	geom_sf(data = states, fill = NA, color = '#1A232F', size=1.4) +
 #	geom_sf(data = cityLocs_sf, size=4.4, stroke = 1.1, shape=21, col='white', fill='grey20')+ #c(rep('#039CE2',8), rep('#FDB600',7), '#23AF41')) +
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='skyblue', size=5, shape='+', stroke=1)	+
-	theme_minimal(base_size = 22)	+
+	theme_classic(base_size = 22)	+
 	theme(panel.ontop=FALSE, panel.background=element_blank()) +
 #	theme_minimal(base_size = 22)	+
 #	theme(panel.ontop=FALSE, panel.background=element_blank()) +
@@ -206,7 +206,7 @@ ggplot(data = geomAvgMrg_sf) +
 	guides(guide_legend(title=myTitle)) +
 #	coord_sf(xlim = latlonBox[c(3,4)], ylim = latlonBox[c(1,2)] + c(-1, -1), expand = FALSE) +
 	coord_sf(xlim = latlonBox_local[c(3,4)], ylim = latlonBox_local[c(1,2)] + c(-1, -1), expand = FALSE) +
-	labs(title=paste0(myTitle, ' - 2010s'), #subtitle=mySubtitle, 
+	labs(title=paste0(myTitle, ' - 2050s'), #subtitle=mySubtitle, 
         x="Longitude", y="Latitude", 
         fill='')
 ggsave(paste0(customerFolder, varName, "_polit_c.png"), width = 16, height = 12)
@@ -220,7 +220,7 @@ ggsave(paste0(customerFolder, varName, "_polit_c.png"), width = 16, height = 12)
 geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 2, 1] - nc_testDat[ , , 2, 2, 1]))
 geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)), plotData = as.vector(nc_testDat[ , , 5, 2, 3]))
 df_sub = subset(geomData, lat >= latlonBox[1] & lat <= latlonBox[2] & lon >= latlonBox[3] & lon <= latlonBox[4])
-#df_sub = subset(geomData, lat >= latlonBox_local[1] & lat <= latlonBox_local[2] & lon >= latlonBox_local[3] & lon <= latlonBox_local[4])
+df_sub = subset(geomData, lat >= latlonBox_local[1] & lat <= latlonBox_local[2] & lon >= latlonBox_local[3] & lon <= latlonBox_local[4])
 geomData_sf = st_as_sf(df_sub, coords=c('lon','lat'), remove=FALSE, crs=4326, agr='constant')
 
 	# provinces
@@ -232,12 +232,12 @@ geomNN = st_join(provinces10[missingLocs,], geomData_sf, join = st_nearest_featu
 geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
 
 	# countries
-#geomJoin = st_join(world, geomData_sf, join = st_intersects)
-#geomAvg = aggregate(plotData ~ sovereignt, mean, data = geomJoin)#, na.action = na.pass)
-#geomAvgMrg = merge(geomAvg, world, by = 'sovereignt')
-#missingLocs = which(!(world$sovereignt %in% geomAvgMrg$sovereignt))
-#geomNN = st_join(world[missingLocs,], geomData_sf, join = st_nearest_feature)
-#geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
+geomJoin = st_join(world, geomData_sf, join = st_intersects)
+geomAvg = aggregate(plotData ~ sovereignt, mean, data = geomJoin)#, na.action = na.pass)
+geomAvgMrg = merge(geomAvg, world, by = 'sovereignt')
+missingLocs = which(!(world$sovereignt %in% geomAvgMrg$sovereignt))
+geomNN = st_join(world[missingLocs,], geomData_sf, join = st_nearest_feature)
+geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
 
 
 geomAvgMrg_sf = st_as_sf(geomAvgMrg)
@@ -259,9 +259,9 @@ ggplot(data = geomAvgMrg_sf) +
 #	geom_sf(data = states, fill = NA, color = '#1A232F', size=1.4) +
 #	geom_sf(data = cityLocs_sf, size=4.4, stroke = 1.1, shape=21, col='white', fill='grey20')+ #c(rep('#039CE2',8), rep('#FDB600',7), '#23AF41')) +
 #	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='green4', size=5, shape='+', stroke=1)	+
-	theme_minimal(base_size = 22)	+
+	theme_classic(base_size = 22)	+
 	theme(panel.ontop=FALSE, panel.background=element_blank()) +
-#	theme(panel.grid = element_line(colour='grey20')) +
+	theme(panel.grid = element_line(colour='grey20')) +
 #	theme(panel.background = element_rect(fill = 'grey20', colour='grey20')) +
 #	theme(legend.position = 'right',
 #		legend.background = element_rect(fill='white', colour='grey20')) +

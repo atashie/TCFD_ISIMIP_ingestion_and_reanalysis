@@ -3,14 +3,18 @@
 library(ncdf4)
 library(data.table)
 
+
 ##########################################################
 # 3A- parsing, smoothing, and plotting the raw climate+hydro data
 climateDataSelection_f = function(	
-	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
+#	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
+	climVars = c("waterIndexUnderlyingData_precip", "waterIndexUnderlyingData_potevap","waterIndexUnderlyingData_qr", "waterIndexUnderlyingData_dis",	"waterIndexUnderlyingData_rootmoist", "waterIndexUnderlyingData_tws"),
+	climVarScalars = c(60*60*24*365.25,  60*60*24*365.25, 60*60*24*365.25, 60*60*24*365.25 / (1000^3), 1, 100),
 	ncFileLoc = 'J:\\Cai_data\\WaterIndex\\',
 	customerTable_input = customerTable,
 	climateName = climateName,
-	locationHeader = 'Location (name)'
+	locationHeader = 'Location (name)',
+	historicData = FALSE
 	)
 	{
 	# filling arrays with required climate data
@@ -21,13 +25,23 @@ climateDataSelection_f = function(
 		nc_lat = ncvar_get(nc_file, 'lat')	# lat is given from high to low
 		nc_lon = ncvar_get(nc_file, 'lon')
 		nc_decade = ncvar_get(nc_file, 'decade')
-		nc_scenario = ncvar_get(nc_file, 'rcpScen')
-		nc_valueClass = ncvar_get(nc_file, 'valueClass')
-		nc_values = ncvar_get(nc_file, 'tcfdVariable') # Lon, Lat, Decade (2010-2090), Scenarios (Low, Med, High), Value Type (1-12: months, 13: annual mean, 14:20: annual Q05, Q15, Q25, Q50, Q75, Q85, Q95)
+		nc_scenario = ncvar_get(nc_file, 'scenario') #ncvar_get(nc_file, 'rcpScen')
+		nc_valueClass = ncvar_get(nc_file, 'value_type') # ncvar_get(nc_file, 'valueClass')
+#		nc_values = ncvar_get(nc_file, names(nc_file$var)) # Lon, Lat, Decade (2010-2090), Scenarios (Low, Med, High), Value Type (1-12: months, 13: annual mean, 14:20: annual Q05, Q15, Q25, Q50, Q75, Q85, Q95)
+		nc_values = ncvar_get(nc_file, names(nc_file$var)) * climVarScalars[thisClimVar] # Decade (2010-2090), Value Type (1-12: months, 13: annual mean, 14:20: annual Q05, Q15, Q25, Q50, Q75, Q85, Q95), Scenarios (Low, 45, 60, High), Lon, Lat
 
+		if(thisClimVar != 5)	{nc_values[ , 1:12, , , ] = nc_values[ , 1:12, , , ] / 12} # converting annual tot to monthly tot
+
+			# !!!!!!!!! temp fix: different zarrs have different numbers of scenarios, so choosing the first middle and last
+		if(length(nc_scenario) > 3)	{
+			nc_values = nc_values[ , , c(1,3,length(nc_scenario)), , ]
+			nc_scenario = c(nc_scenario[1], nc_scenario[3], nc_scenario[length(nc_scenario)])
+		}
+			# !!!!!!!!! end temp fix
+			
 		# defining array for holding climate data
 		if(thisClimVar == 1)	{
-			myMissingData = -10^5
+			myMissingData = -(10^5)
 			climateData = array(rep(myMissingData, nrow(customerTable_input) * length(nc_decade) * length(nc_valueClass) * length(nc_scenario) * length(climVars)), 
 				dim = c(nrow(customerTable_input), length(nc_decade), length(nc_valueClass), length(nc_scenario), length(climVars)))
 		}
@@ -41,32 +55,38 @@ climateDataSelection_f = function(
 			closeishLons = rep(closestLon + c(-1,0,1), each = 3)
 			closeishLatsVals = (nc_lat[closeishLats] - customerTable_input$Lat[thisLoc])^2
 			closeishLonsVals = (nc_lon[closeishLons] - customerTable_input$Lon[thisLoc])^2
-			thisExponent = ifelse(climVars[thisClimVar] == 'Streamflow_decadalRawVals', 2, .5) 		# streamflow inputs may require a wider search
+			thisExponent = ifelse(climVars[thisClimVar] != 'Streamflow_decadalRawVals', 2, .5) 		# streamflow inputs may require a wider search
 			distanceBox = sqrt(closeishLatsVals + closeishLonsVals)
 	#		boxWeighting = max(distanceBox, na.rm=TRUE) - distanceBox
 			boxWeighting = 1 - distanceBox # since max distance of a 2x2 .5 deg grid is 1 deg
 
 				# un-weighting water / ocean tiles
 			for(thisIter in 1:length(closeishLats))	{
-				if(is.na(nc_values[closeishLons[thisIter], closeishLats[thisIter], 1, 1, 1]))	{
+				if(is.na(nc_values[1, 1, 1, closeishLons[thisIter], closeishLats[thisIter]]))	{
 					boxWeighting[thisIter] = 0
-					nc_values[closeishLons[thisIter], closeishLats[thisIter], , 1, ] = 0
+					nc_values[ , , , closeishLons[thisIter], closeishLats[thisIter]] = 0
 				}
 			}
 
 				# normalizing weighting 
 			boxWeighting = boxWeighting^thisExponent / sum(boxWeighting^thisExponent, na.rm=TRUE)
 
-			for(thisScenario in 1:length(nc_values[1,1,1, , 1]))	{ # input nc is in format [lon, lat, decade, rcpScen, valueClass]
+
+			for(thisScenario in 1:length(nc_scenario))	{ # input nc is in format [decade, valueClass, scenario, lon, lat]
 					# initializing array for holding 
-				theseClimateValues = nc_values[closeishLons[1], closeishLats[1], , thisScenario, ] * boxWeighting[1]
+				theseClimateValues = nc_values[ , , thisScenario, closeishLons[1], closeishLats[1]] * boxWeighting[1]
 					# accounting for ocean tiles
 				if(any(is.na(theseClimateValues))) { theseClimateValues[is.na(theseClimateValues)] = 0 }
 					
 				for(thisWeight in 2:length(boxWeighting))	{
-					nextClimateValues = nc_values[closeishLons[thisWeight], closeishLats[thisWeight], , thisScenario, ] 
+					nextClimateValues = nc_values[ , , thisScenario, closeishLons[thisWeight], closeishLats[thisWeight]] 
 					if(any(is.na(nextClimateValues))) { nextClimateValues[is.na(nextClimateValues)] = 0 }
-					theseClimateValues = theseClimateValues + nextClimateValues * boxWeighting[thisWeight]# input nc is in format [lon, lat, decade, rcpScen, valueClass]
+					theseClimateValues = theseClimateValues + nextClimateValues * boxWeighting[thisWeight]# input nc is in format [decade, valueClass, scenario, lon, lat]
+				}
+				
+									# rescaling ppt if necessary
+				if(thisClimVar == 1 & !is.na(customerTable_input$CurrentAnnualPrecip_mm[thisLoc]))	{
+					theseClimateValues = theseClimateValues * (customerTable_input$CurrentAnnualPrecip_mm[thisLoc] / mean(theseClimateValues[1:3, 13]))
 				}
 
 				climateData[thisLoc, , , thisScenario, thisClimVar] = theseClimateValues
@@ -75,18 +95,17 @@ climateDataSelection_f = function(
 		}
 		nc_close(nc_file)
 	}
-	saveRDS(climateData, paste0(customerFolder, clientName, '\\',  clientName, '_rawValues.rds'))
+		# pre 2010s data can be problematic
+	theseDecades = 1:length(nc_decade)
+	if(!historicData)	{theseDecades = theseDecades[-c(1:3)]}
+	saveRDS(climateData[ , theseDecades, , , ], paste0(customerFolder, clientName, '\\',  clientName, '_rawValues.rds'))
 }
 
-
-
-
-
-
-
-
-
-
+# data assessment
+#for(ggg in 1:20){
+#print(summary(as.vector(nc_values[1, ggg, 3, , ]))*100000000)
+#}
+#nc_close(nc_file)
 
 
 
@@ -96,7 +115,8 @@ climateDataSelection_f = function(
 ##########################################################
 # 3B- # standardized plots of data
 climateDataPlotting_f = function(	
-	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
+#	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
+	climVars = c("waterIndexUnderlyingData_precip", "waterIndexUnderlyingData_potevap","waterIndexUnderlyingData_qr", "waterIndexUnderlyingData_dis",	"waterIndexUnderlyingData_rootmoist", "waterIndexUnderlyingData_tws"),
 	ncFileLoc = 'J:\\Cai_data\\WaterIndex\\',
 	climVarNames = c('Precip (mm)', 'PET (mm)', 'GW Rech (mm)', 'Streamflow (km^2)', 'RZ Soil Moisture (%)', 'Total Storage (mm)'),
 	customerTable_input = customerTable,
@@ -104,17 +124,19 @@ climateDataPlotting_f = function(
 	rawDataColumnNames = c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Mean', 'Q05', 'Q15', 'Q25', 'Q50', 'Q75', 'Q85', 'Q95'),
 	clientName_input = clientName,
 	customerFolder_input = customerFolder,
-	locationHeader = 'Location (name)'
+	locationHeader = 'Location (name)',
+	historicData = FALSE
 	)
 	{
 		# initializing data
 	climDataPlot = readRDS(paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_rawValues.rds'))
-	if(any(climDataPlot[ , , , , 3] <= 0))	{climDataPlot[climDataPlot[ , , , , 3] <= 0] = 1}	# zero negative recharge, but no other values should be negative
-	if(any(climDataPlot <= 0))	{climDataPlot[climDataPlot <= 0] = 1 ; print('check the data')}	# zero negative recharge, but no other values should be negative
+#	if(any(climDataAll[ , , , , ] < 0))	{climDataAll[climDataAll[ , , , , 3] < 0] = 0}	# zero negative recharge, but no other values should be negative
+#	if(any(climDataAll <= 0))	{climDataAll[climDataAll <= 0] = 1 ; print('check the data')}	# zero negative recharge, but no other values should be negative
 
 	ncName = climVars[1]
 	nc_file =  nc_open(paste0(ncFileLoc, ncName, '.nc'))
 	nc_decade = ncvar_get(nc_file, 'decade')
+	if(!historicData)	{nc_decade = nc_decade[-c(1:3)]	}
 	nc_close(nc_file)
 
 	for(thisLoc in 1:nrow(customerTable_input))	{
@@ -130,14 +152,14 @@ climateDataPlotting_f = function(
 				ylabPctVals = c(seq(-5,5,0.1))
 				ylabPctValLocs = currentAverage + currentAverage * ylabPctVals
 			
-				yMin = min(climDataPlot[thisLoc, , 14, , thisClimVar])*0.985
+				yMin = min(climDataPlot[thisLoc, , 14, , thisClimVar])*1#0.985
 				yMax = max(climDataPlot[thisLoc, , 20, , thisClimVar])*1.025
-				plot(nc_decade, climDataPlot[thisLoc, , 20, thisScen, thisClimVar],  ylim = c(yMin,yMax) ,
+				plot(nc_decade, climDataPlot[thisLoc, , 14, thisScen, thisClimVar],  ylim = c(yMin,yMax) ,
 					type='l', lwd=1, col='white', xaxt = 'n', #log='y',
 					main='', ylab='', xlab='',
 					col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
 					family='A')
-				abline(h=mean(climDataPlot[thisLoc, 1:2, 17, 1:3, thisClimVar]), lwd=2, lty =2, col='#1A232F')
+				abline(h=mean(climDataPlot[thisLoc, 1:2, 17, thisScen, thisClimVar]), lwd=2, lty =2, col='#1A232F')
 				axis(1, at = nc_decade ,col.lab='#1A232F', col.axis='#666D74', 
 					labels = nc_decade)
 	#			if(ylabPctValLocs[2] != 0)	{
@@ -147,9 +169,9 @@ climateDataPlotting_f = function(
 			#	abline(v=fstOfMnths, lwd=1, col=adjustcolor('#666D74', alpha.f=0.1))
 				polygon(x=c(nc_decade, rev(nc_decade)), y=c(climDataPlot[thisLoc, , 14, thisScen, thisClimVar], rev(climDataPlot[thisLoc, , 20, thisScen, thisClimVar])),
 					col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-				polygon(x=c(nc_decade, rev(nc_decade)), y=c(climDataPlot[thisLoc, , 15, thisScen, thisClimVar], rev(climDataPlot[thisLoc, , 19, thisScen, thisClimVar])),
+				polygon(x=c(nc_decade, rev(nc_decade)), y=c(climDataPlot[thisLoc, , 19, thisScen, thisClimVar], rev(climDataPlot[thisLoc, , 15, thisScen, thisClimVar])),
 					col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-				polygon(x=c(nc_decade, rev(nc_decade)), y=c(climDataPlot[thisLoc, , 16, thisScen, thisClimVar], rev(climDataPlot[thisLoc, , 18, thisScen, thisClimVar])),
+				polygon(x=c(nc_decade, rev(nc_decade)), y=c(climDataPlot[thisLoc, , 18, thisScen, thisClimVar], rev(climDataPlot[thisLoc, , 16, thisScen, thisClimVar])),
 					col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
 				loessSmooth = loess(climDataPlot[thisLoc, , 17, thisScen, thisClimVar] ~ nc_decade)
 	#			lines(nc_decade, climDataPlot[thisLoc, , 17, thisScen, thisClimVar], 
@@ -164,10 +186,6 @@ climateDataPlotting_f = function(
 		}
 	}
 }	
-
-
-
-
 
 
 
@@ -320,7 +338,9 @@ waterIndexPlotter_f = function(
 	scenarioNames = c('LowEmissions', 'MedEmissions', 'HighEmissions'),
 	customerFolder_input = customerFolder,
 	locationHeader = 'Location (name)',
-	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
+#	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
+	baseNm = "waterIndexUnderlyingData_",
+	climVars = c(paste0(baseNm, "precip"), paste0(baseNm, "potevap"), paste0(baseNm, "qr"), paste0(baseNm, "dis"),	paste0(baseNm, "rootmoist"), paste0(baseNm, "tws")),
 	ncFileLoc = 'J:\\Cai_data\\WaterIndex\\',
 	indexValues = c('Aridity Index - Avg', 'Soil Moisture Stress - Avg', 'Plant Water Demand - Avg', 'Aridity Index - Drought', 'Soil Moisture Stress - Drought', 'Plant Water Demand - Drought', 'Aridity Index w/ Irrigation - Avg', 'Plant Water Demand w/ Irrigation - Avg', 'Aridity Index w/ Irrigation - Drought', 'Plant Water Demand w/ Irrigation - Drought')
 	)

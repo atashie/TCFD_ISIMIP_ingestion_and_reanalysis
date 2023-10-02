@@ -165,10 +165,10 @@ maskedLocs60 = which(is.na(dataOutArray[ , , 1, 2, 1]))
 histDatSubset60 =  dataOutArray[ , , 1, 2, 1][-maskedLocs60]
 maskedLocs85 = which(is.na(dataOutArray[ , , 1, 3, 1]))
 histDatSubset85 =  dataOutArray[ , , 1, 3, 1][-maskedLocs85]
-histQuants = quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, length.out=80))
+histQuants = quantile(c(histDatSubset26, histDatSubset60, histDatSubset85), seq(0.01, 1, length.out=100))
 histQuants
 
-minSignif = 0.7
+minSignif = 0.1
 	# removing low values from non-impacted regions
 maskedLocs26_zeroes = which(is.na(dataOutArray[ , , 1, 1, 1]) | dataOutArray[ , , 1, 1, 1] < minSignif)
 histDatSubset26_zeroes =  dataOutArray[ , , 1, 1, 1][-maskedLocs26_zeroes]
@@ -176,7 +176,7 @@ maskedLocs60_zeroes = which(is.na(dataOutArray[ , , 1, 2, 1]) | dataOutArray[ , 
 histDatSubset60_zeroes =  dataOutArray[ , , 1, 2, 1][-maskedLocs60_zeroes]
 maskedLocs85_zeroes = which(is.na(dataOutArray[ , , 1, 3, 1]) | dataOutArray[ , , 1, 3, 1] < minSignif)
 histDatSubset85_zeroes =  dataOutArray[ , , 1, 3, 1][-maskedLocs85_zeroes]
-histQuants = quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes, histDatSubset85_zeroes), seq(0.01, 1, length.out=80))
+histQuants = quantile(c(histDatSubset26_zeroes, histDatSubset60_zeroes, histDatSubset85_zeroes), seq(0.01, 1, length.out=100))
 histQuants
 
 
@@ -186,9 +186,9 @@ for(i in 1:length(whichDecades))	{
 	dataOutArray[ , , i, 2, 2] = 1
 	dataOutArray[ , , i, 3, 2] = 1
 	for(j in 1:(length(histQuants)))	{
-		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j + 20
-		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j + 20
-		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] > histQuants[j]] = j + 20
+		dataOutArray[ , , i, 1, 2][dataOutArray[ , , i, 1, 1] > histQuants[j]] = j + 0
+		dataOutArray[ , , i, 2, 2][dataOutArray[ , , i, 2, 1] > histQuants[j]] = j + 0
+		dataOutArray[ , , i, 3, 2][dataOutArray[ , , i, 3, 1] > histQuants[j]] = j + 0
 	}
 	dataOutArray[ , , i, 1, 2][maskedLocs26] = NA
 	dataOutArray[ , , i, 2, 2][maskedLocs60] = NA
@@ -242,12 +242,12 @@ nc_testDat = ncvar_get(myNC, 'tcfdVariable')
 
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,1])
-image(nc_lon, rev(nc_lat), nc_testDat[,,1,2,1])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,2])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,3])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,4])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,5])
 image(nc_lon, rev(nc_lat), nc_testDat[,,1,1,6])
+image(nc_lon, rev(nc_lat), nc_testDat[,,1,2,1])
 
 image(nc_lon, rev(nc_lat), nc_testDat[,,9,3,2] - nc_testDat[,,1,1,2])
 

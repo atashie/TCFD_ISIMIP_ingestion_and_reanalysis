@@ -7,9 +7,9 @@ source('C:\\Users\\arik\\Documents\\GitHub\\TCFD_ISIMIP_ingestion_and_reanalysis
 # customer data
 ncFileLoc = 'J:\\Cai_data\\WaterIndex\\'		#C:\\Users\\18033\\Documents\\CaiData\\ncFiles\\
 customerFolder = 'J:\\Cai_data\\Rabo\\Locations\\' # 'C:\\Users\\18033\\Documents\\CaiData\\temp_locationsForRabo\\Locations\\'
-clientName = 'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+clientName = 'AgricolaSanOsvaldo'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 
-customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_BNW.csv'),#'Customer Onboarding Information_WestHillsFarms.csv'),#'Customer Onboarding Information_agricolaSanOsvaldo.csv'),#'Customer Onboarding Information_BNW.csv'), 
+customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_agricolaSanOsvaldo.csv'),#'Customer Onboarding Information_BNW.csv'),#'Customer Onboarding Information_WestHillsFarms.csv'),#'Customer Onboarding Information_BNW.csv'), 
 	skip = 1) #'Customer_Hazards_and_Locations-Rabobank_grid - Sheet1.csv'
 locationHeader = 'Location (name)'
 
@@ -19,15 +19,17 @@ locationHeader = 'Location (name)'
 ##########################################################################################################################################################################################
 # running the data
 climateDataSelection_f(	
-	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
+#	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
+	climVars = c("waterIndexUnderlyingData_precip", "waterIndexUnderlyingData_potevap","waterIndexUnderlyingData_qr", "waterIndexUnderlyingData_dis",	"waterIndexUnderlyingData_rootmoist", "waterIndexUnderlyingData_tws"),
 	ncFileLoc = ncFileLoc,
 	customerTable_input = customerTable,
 	climateName = climateName,
-	locationHeader = locationHeader
+	locationHeader = locationHeader,
+	historicData = FALSE
 	)
 
 climateDataPlotting_f(	
-	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
+	climVars = c("waterIndexUnderlyingData_precip", "waterIndexUnderlyingData_potevap","waterIndexUnderlyingData_qr", "waterIndexUnderlyingData_dis",	"waterIndexUnderlyingData_rootmoist", "waterIndexUnderlyingData_tws"),
 	ncFileLoc = ncFileLoc,
 	climVarNames = c('Precip (mm)', 'PET (mm)', 'GW Rech (mm)', 'Streamflow (km^2)', 'RZ Soil Moisture (%)', 'Total Storage (mm)'),
 	customerTable_input = customerTable,
@@ -35,7 +37,8 @@ climateDataPlotting_f(
 	rawDataColumnNames = c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Mean', 'Q05', 'Q15', 'Q25', 'Q50', 'Q75', 'Q85', 'Q95'),
 	clientName_input = clientName,
 	customerFolder_input = customerFolder,
-	locationHeader = locationHeader
+	locationHeader = locationHeader,
+	historicData = FALSE
 	)
 
 waterIndexCalculations_f(	

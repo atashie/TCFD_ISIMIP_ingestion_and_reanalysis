@@ -58,8 +58,8 @@ customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\'
 customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-ASR-Jun2023 - Sheet1.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
-hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
-appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_june_29.csv'
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Weights - Hazard_Weights.csv'))				
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_sep_28.csv'
 waterOnly = FALSE
 
 
@@ -111,6 +111,31 @@ relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv')
 hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
 #appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
 waterOnly = TRUE
+
+
+# 	# EQ Cap - new format
+userName = 'EQ-Capital'	
+customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '_Sep2023\\')
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-EQ-Capital_Aug2023 - Correct Data.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Definitions - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard Scores - Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Weights - hazard_weights.csv'))				
+appendedHazardFileLoc =  paste0(customerFolder, 'EQ-Cap_temp_precip_hazards_sep_6.csv')
+waterOnly = FALSE
+
+
+# 	# Corbion - new format
+userName = 'Corbion'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\'
+
+customerTable = fread(paste0(customerFolder, 'Corbion_Locations_Sept2023 - New Format.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Weights - Hazard_Weights.csv'))				
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\Corbion_Nov2022\\Corbion_temp_precip_hazards_sep_28.csv'
+waterOnly = FALSE
+
 
 
 ########################################################################################################################
@@ -184,8 +209,10 @@ dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_', userN
 #dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Potato_2023-06-13.csv'))
 #customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Spice_Jun2023\\'
 #dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Spice_2023-06-13.csv'))
-#customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_FruitAndVeg_Jun2023\\'
-#dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_FruitAndVeg_2023-06-13.csv'))
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_FruitAndVeg_Jun2023\\'
+dataOutput_old = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_FruitAndVeg_2023-06-13.csv'))
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_FruitAndVeg_2023-06-13_fixedName.csv'))
+
 #customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Wood_Jun2023\\'
 #dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Wood_2023-06-13.csv'))
 #customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_VegOil_Jun2023\\'
@@ -209,17 +236,17 @@ summary(subset(dataOutput, Hazard != 'Coastal Flood')$Raw_Hazard_Value - subset(
 #	subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value[which(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value < subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_75th)]
 
 
-summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Water Scarcity'))
+summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Water Stress'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "3. High Emissions" & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Aggregate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "3. High Emissions" & Hazard == 'Aggregate Climate Score' & Hazard_Measure == 'Weighted Aggregate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "1. Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 2
+thisLoc = 7
 thisScen = unique(dataOutput$Scenario)[2]
-plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Stress' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
-plot(subset(dataOutput, Scenario == thisScen & Hazard == 'River Flood (Regional)' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Drought' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'River Flood (Local)' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Coastal Flood' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Availability' & Location == customerTable$Location[thisLoc])$Percentile)	
@@ -227,7 +254,7 @@ plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Intense Precipitation'
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Extreme Heat' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Extreme Cold' & Location == customerTable$Location[thisLoc])$Percentile)	
 
-plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Raw_Hazard_Value)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Stress' & Location == customerTable$Location[thisLoc])$Raw_Hazard_Value)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Availability' & Location == customerTable$Location[thisLoc])$Raw_Hazard_Value)	
 plot(subset(dataOutput, Scenario == 'Middle of the Road' & Hazard == 'Coastal Flood' & Location == customerTable$Location[1])$Raw_Hazard_Value)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Aggregate Climate Score' & Location %in% customerTable$Location)$Percentile)	

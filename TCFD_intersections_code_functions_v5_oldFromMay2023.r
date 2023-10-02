@@ -15,11 +15,10 @@ f_mainExposureData = function(
 	dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 		Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 		Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA,
-		Asset_Type = NA, Business_Unit = NA, Country = NA, State = NA, City = NA)
+		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA)
 
 	iter = 0
-	for(thisHazard in 11:ncol(customerTable))	{ ####!!!! temp fix, resolve hard coding  !!!!!!##########
+	for(thisHazard in 6:ncol(customerTable))	{ ####!!!! temp fix, resolve hard coding  !!!!!!##########
 		if(any(customerTable[, ..thisHazard]))	{
 			if(names(customerTable)[thisHazard] %in% appendedHazardNames)	{	
 				print(c('this hazard must be run independently and appended later:     ', names(customerTable)[thisHazard]))
@@ -82,12 +81,7 @@ f_mainExposureData = function(
 									Advanced_Data_Measures = NA,
 									Advanced_Data_Measures_Units = NA,
 									Raw_Hazard_Value_25th = c(theseData[ , 1, 5], theseData[ , 2, 5], theseData[ , 3, 5]),
-									Raw_Hazard_Value_75th = c(theseData[ , 1, 6], theseData[ , 2, 6], theseData[ , 3, 6]),
-									Asset_Type = customerTable$AssetType[thisLocation],
-									Business_Unit = customerTable$BusinessUnit[thisLocation],
-									Country = customerTable$Country[thisLocation],
-									State = customerTable$State[thisLocation],
-									City = customerTable$City[thisLocation])
+									Raw_Hazard_Value_75th = c(theseData[ , 1, 6], theseData[ , 2, 6], theseData[ , 3, 6]))
 							)
 						}
 						print(c(thisHazard, thisHazardMeasure, thisLocation))
@@ -98,8 +92,7 @@ f_mainExposureData = function(
 					dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 						Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 						Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-						Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA,
-						Asset_Type = NA, Business_Unit = NA, Country = NA, State = NA, City = NA)
+						Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA)
 				}
 			}
 		}
@@ -110,7 +103,7 @@ f_mainExposureData = function(
 	}
 
 	fwrite(finalOutput, paste0(customerFolder, 'processedOutput_', thisDate, '.csv'))
-}
+	}
 
 
 
@@ -156,8 +149,7 @@ f_riverFloods = function(
 	dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 		Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 		Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA,
-		Asset_Type = NA, Business_Unit = NA, Country = NA, State = NA, City = NA)
+		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th = NA)
 		
 		# read in historic floods data
 	fldDepthList = list()
@@ -224,7 +216,7 @@ f_riverFloods = function(
 	#					thisFldRcrDrctn = 		fldRcrVals[closeNCLon, closeNCLat, thisDecade, thisIntrvl, 3, thisScenario]
 						
 						if(thisFldRcrVal >= recurIntrvls[1])	{
-							closestFldRcrIntrvl = 	last(which(thisFldRcrVal >= recurIntrvls))
+							closestFldRcrIntrvl = 	last(which(thisFldRcrVal > recurIntrvls))
 							
 							theseFloodImpacts = fldDepthList[[closestFldRcrIntrvl]][theseLats, theseLons]
 							theseFloodImpacts[is.na(theseFloodImpacts)] = 0
@@ -268,12 +260,7 @@ f_riverFloods = function(
 										Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 										Advanced_Data_Measures_Units = "Yr Flood",
 										Raw_Hazard_Value_25th = NA,
-										Raw_Hazard_Value_75th = NA,
-										Asset_Type = customerTable$AssetType[thisLoc],
-										Business_Unit = customerTable$BusinessUnit[thisLoc],
-										Country = customerTable$Country[thisLoc],
-										State = customerTable$State[thisLoc],
-										City = customerTable$City[thisLoc]))
+										Raw_Hazard_Value_75th = NA))
 
 
 							} 	else	{ # if all theseFloodImpacts are NAs
@@ -301,12 +288,7 @@ f_riverFloods = function(
 										Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 										Advanced_Data_Measures_Units = "Yr Flood",
 										Raw_Hazard_Value_25th = NA,
-										Raw_Hazard_Value_75th = NA,
-										Asset_Type = customerTable$AssetType[thisLoc],
-										Business_Unit = customerTable$BusinessUnit[thisLoc],
-										Country = customerTable$Country[thisLoc],
-										State = customerTable$State[thisLoc],
-										City = customerTable$City[thisLoc]))
+										Raw_Hazard_Value_75th = NA))
 
 							}
 						}	else	{ # if thisFldRcrVal < 10 yr recurrence
@@ -334,12 +316,7 @@ f_riverFloods = function(
 									Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 									Advanced_Data_Measures_Units = "Yr Flood",
 									Raw_Hazard_Value_25th = NA,
-									Raw_Hazard_Value_75th = NA,
-									Asset_Type = customerTable$AssetType[thisLoc],
-									Business_Unit = customerTable$BusinessUnit[thisLoc],
-									Country = customerTable$Country[thisLoc],
-									State = customerTable$State[thisLoc],
-									City = customerTable$City[thisLoc]))
+									Raw_Hazard_Value_75th = NA))
 
 						}
 					} # for each decade
@@ -373,12 +350,7 @@ f_riverFloods = function(
 						Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 						Advanced_Data_Measures_Units = "Yr Flood",
 						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA,
-						Asset_Type = customerTable$AssetType[thisLoc],
-						Business_Unit = customerTable$BusinessUnit[thisLoc],
-						Country = customerTable$Country[thisLoc],
-						State = customerTable$State[thisLoc],
-						City = customerTable$City[thisLoc])), 
+						Raw_Hazard_Value_75th = NA)), 
 					data.table(
 						User = userName,
 						Location = customerTable$Location[thisLoc],
@@ -402,12 +374,7 @@ f_riverFloods = function(
 						Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 						Advanced_Data_Measures_Units = "Yr Flood",
 						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA,
-						Asset_Type = customerTable$AssetType[thisLoc],
-						Business_Unit = customerTable$BusinessUnit[thisLoc],
-						Country = customerTable$Country[thisLoc],
-						State = customerTable$State[thisLoc],
-						City = customerTable$City[thisLoc])), 
+						Raw_Hazard_Value_75th = NA)), 
 					data.table(
 						User = userName,
 						Location = customerTable$Location[thisLoc],
@@ -431,12 +398,7 @@ f_riverFloods = function(
 						Advanced_Data_Measures =  recurIntrvls[thisIntrvl],
 						Advanced_Data_Measures_Units = "Yr Flood",
 						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA,
-						Asset_Type = customerTable$AssetType[thisLoc],
-						Business_Unit = customerTable$BusinessUnit[thisLoc],
-						Country = customerTable$Country[thisLoc],
-						State = customerTable$State[thisLoc],
-						City = customerTable$City[thisLoc]))
+						Raw_Hazard_Value_75th = NA))
 
 			}
 			print(c(thisLoc, thisIntrvl))
@@ -449,8 +411,8 @@ f_riverFloods = function(
 	hazardDepthNames =  c("Avg Flood Depth (m)")
 	hazardExtentNames = c("Flood Areal Extent (%)")
 		# defining relative flood hazard
-	basSeqDepth = c(0,seq(0.01, 10, length.out=99))
-	basSeqLikli = c(0,seq(1, 100, length.out=99))
+	basSeqDepth = c(0,seq(0.01, 10, length.out=79))
+	basSeqLikli = c(0,seq(1, 100, length.out=79))
 	relFloodHazardDepth = (basSeqDepth^2 / max(basSeqDepth^2)) * 10 + min(basSeqDepth)
 	relFloodHazardLikli = basSeqLikli
 	#relFloodHazard = c(rep(0, 33), seq(0.01,10,length.out=(67)))
@@ -458,8 +420,8 @@ f_riverFloods = function(
 	depthRows = which(dataOutput$Hazard_Measure %in% hazardDepthNames)
 	likliRows = which(dataOutput$Hazard_Measure %in% hazardExtentNames)
 	for(ll in 1:length(relFloodHazardDepth))	{
-		dataOutput$Percentile_Score[depthRows][which(dataOutput$Raw_Hazard_Value[depthRows] > relFloodHazardDepth[ll])] = ll + 0
-		dataOutput$Percentile_Score[likliRows][which(dataOutput$Raw_Hazard_Value[likliRows] > relFloodHazardLikli[ll])] = ll + 0
+		dataOutput$Percentile_Score[depthRows][which(dataOutput$Raw_Hazard_Value[depthRows] > relFloodHazardDepth[ll])] = ll + 20
+		dataOutput$Percentile_Score[likliRows][which(dataOutput$Raw_Hazard_Value[likliRows] > relFloodHazardLikli[ll])] = ll + 20
 	}
 
 	fileName_localFlood = paste0(userName, '_', thisDate, '_highRestFlood_', (locationFootprint*2+1), 'km')
@@ -506,8 +468,7 @@ f_seaLevelRise = function(
 	dataOutput = data.frame(User = NA, Location = NA, Region = NA, Subregion = NA, Lat = NA, Lon = NA,
 		Hazard = NA, Hazard_Measure = NA, Decade = NA, Scenario = NA,
 		Raw_Hazard_Value = NA, Percentile_Score = NA, Relative_Hazard_Score = NA, Decadal_Trend_Strength = NA, Decadal_Trend_Significance = NA, Long_Term_Trend_Strength = NA, Long_Term_Trend_Significance = NA,
-		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th =  NA,
-		Asset_Type = NA, Business_Unit = NA, Country = NA, State = NA, City = NA)
+		Relative_Hazard_Score_Number = NA, Trend_Aggregated_For_Looker = NA, Advanced_Data_Measures = NA, Advanced_Data_Measures_Units = NA, Raw_Hazard_Value_25th = NA, Raw_Hazard_Value_75th = NA)
 
 	for(j in 1:nrow(customerTable))	{
 
@@ -569,12 +530,8 @@ f_seaLevelRise = function(
 									Advanced_Data_Measures =  NA,
 									Advanced_Data_Measures_Units = NA,
 									Raw_Hazard_Value_25th = as.numeric(seaLvl25th),
-									Raw_Hazard_Value_75th = as.numeric(seaLvl75th),
-									Asset_Type = customerTable$AssetType[j],
-									Business_Unit = customerTable$BusinessUnit[j],
-									Country = customerTable$Country[j],
-									State = customerTable$State[j],
-									City = customerTable$City[j]))
+									Raw_Hazard_Value_75th = as.numeric(seaLvl75th))
+					)
 				}
 			}
 		}	else	{
@@ -602,12 +559,7 @@ f_seaLevelRise = function(
 							Advanced_Data_Measures = NA,
 							Advanced_Data_Measures_Units = NA,
 							Raw_Hazard_Value_25th = 1000,
-							Raw_Hazard_Value_75th = 1000,
-							Asset_Type = customerTable$AssetType[j],
-							Business_Unit = customerTable$BusinessUnit[j],
-							Country = customerTable$Country[j],
-							State = customerTable$State[j],
-							City = customerTable$City[j]))
+							Raw_Hazard_Value_75th = 1000))
 		}
 	}
 		
@@ -617,13 +569,12 @@ f_seaLevelRise = function(
 
 	# in Key West, buildings must be 7 ft above sea level (or on piers of that height): https://www.cityofkeywest-fl.gov/671/Construction-in-Flood-Zones
 		# 7 ft ~ 2.1336
-	basSeqSeaLevElev = seq(0, 1, length.out=100)
-#	relSeaLevElevHaz = -(basSeqSeaLevElev^2 / max(basSeqSeaLevElev^2)) * (2 + 2.1336 * 4) + 2.1336 * 4
-	relSeaLevElevHaz = -(basSeqSeaLevElev) * (2 + 2.1336 * 4) + 2.1336 * 4
+	basSeqSeaLevElev = seq(0, 1, length.out=80)
+	relSeaLevElevHaz = -(basSeqSeaLevElev^2 / max(basSeqSeaLevElev^2)) * (10 + 2.1336 * 2) + 2.1336 * 2
 
 	dataOutput$Percentile_Score = 1
 	for(ll in 1:length(relSeaLevElevHaz))	{
-		dataOutput$Percentile_Score[which(dataOutput$Raw_Hazard_Value < relSeaLevElevHaz[ll])] = ll + 0
+		dataOutput$Percentile_Score[which(dataOutput$Raw_Hazard_Value < relSeaLevElevHaz[ll])] = ll + 20
 	}
 
 	fileName_seaLevelRise = paste0(userName, '_', thisDate, '_seaLevelRise_1km')
@@ -656,8 +607,7 @@ f_hazardAggregation = function(
 	userName = userName,
 	waterOnly = waterOnly,
 	appendedHazardFileLoc = appendedHazardFileLoc,
-	locationFootprint = locationFootprint,
-	hazardWeighting = hazardWeighting)
+	locationFootprint = locationFootprint)
 	{
 	
 	if(waterOnly)	{
@@ -670,17 +620,13 @@ f_hazardAggregation = function(
 		specializedOutput_LRF = fread(paste0(customerFolder, userName, '_', thisDate, '_highRestFlood_', (locationFootprint*2+1), 'km', thisDate, '.csv'))
 		specializedOutputs = merge(specializedOutput_LRF, specializedOutput_SLR, all = TRUE)
 		dataOutput = merge(mainHazardOutputs,  specializedOutputs, all = TRUE)
-		if(any(names(appendedOutputs) %in% c("BusinessUnit", "AssetType")))	{
-			colnames(appendedOutputs)[which(names(appendedOutputs) == "BusinessUnit")] = "Business_Unit"
-			colnames(appendedOutputs)[which(names(appendedOutputs) == "AssetType")] = "Asset_Type"
-		}
 		dataOutput = merge(dataOutput, appendedOutputs, all = TRUE)
 	}
 
 	allHazards = unique(dataOutput$Hazard)
 
 	theScenarios = c('RCP 2.6', 'RCP 4.5', 'RCP 6.0', 'RCP 8.5')
-	scenarioRename = c('1. Low Emissions', '2. Middle of the Road', '2. Middle of the Road', '3. High Emissions')
+	scenarioRename = c('Low Emissions', 'Middle of the Road', 'Middle of the Road', 'High Emissions')
 
 	for(thisDecade in unique(dataOutput$Decade))	{
 		for(thisScen in c(1,3,4))	{
@@ -689,6 +635,7 @@ f_hazardAggregation = function(
 				avgOfAllHazards = NULL
 				for(thisHazard in allHazards)	{
 					newHazard = subset(dataOutput, Decade == thisDecade & Scenario == theScenarios[thisScen] & Location == thisLoc & Hazard == thisHazard)
+		
 		# catching exceptions for agg score calculation (where some are calculated using a subset of hazard measures)
 						## !! temp fix, need to automate aggregate score exceptions  !!!!#####
 					if(thisHazard %in% aggScoreExceptions)	{
@@ -705,7 +652,11 @@ f_hazardAggregation = function(
 						}
 					}
 						## !! end temp fix, need to automate aggregate score exceptions  !!!!#####
-						
+				
+					
+
+
+					
 					dataOutput = rbind(dataOutput,
 						data.frame(
 							User = userName,
@@ -730,27 +681,11 @@ f_hazardAggregation = function(
 							Advanced_Data_Measures = NA,
 							Advanced_Data_Measures_Units = NA,
 							Raw_Hazard_Value_25th = NA,
-							Raw_Hazard_Value_75th = NA,
-							Asset_Type = customerTable$AssetType[locRow],
-							Business_Unit = customerTable$BusinessUnit[locRow],
-							Country = customerTable$Country[locRow],
-							State = customerTable$State[locRow],
-							City = customerTable$City[locRow])
+							Raw_Hazard_Value_75th = NA)
+
 					)
 
 					avgOfAllHazards = c(avgOfAllHazards, mean(newHazard$Percentile_Score, na.rm=TRUE))
-				}
-				
-				hazardWeights = rep(1, length(allHazards))
-				for(thisHazWeight in 1:length(allHazards))	{
-					newWeightLoc = which(hazardWeighting$Hazard == allHazards[thisHazWeight] & hazardWeighting$Asset_type == customerTable$AssetType[locRow])
-					if(identical(newWeightLoc, integer(0)))	{
-						print(c('asset not found', allHazards[thisHazWeight]))
-						newWeight = 1
-					}	else	{
-						newWeight = hazardWeighting$Hazard_weight[newWeightLoc]
-					}
-					hazardWeights[thisHazWeight] = newWeight
 				}
 
 				dataOutput = rbind(dataOutput,
@@ -762,11 +697,11 @@ f_hazardAggregation = function(
 						Lat = customerTable$Lat[locRow],
 						Lon = customerTable$Lon[locRow],
 						Hazard = "Aggregate Climate Score",
-						Hazard_Measure = c("Aggregate Score", "Weighted Aggregate Score"),
+						Hazard_Measure = "Aggregate Score",
 						Decade = thisDecade,
 						Scenario = scenarioRename[thisScen],
 						Raw_Hazard_Value = NA,
-						Percentile_Score = c(mean(avgOfAllHazards, na.rm=TRUE), weighted.mean(avgOfAllHazards, hazardWeights, na.rm=TRUE)),
+						Percentile_Score = mean(avgOfAllHazards, na.rm=TRUE),
 						Relative_Hazard_Score = NA,
 						Decadal_Trend_Strength = NA,
 						Decadal_Trend_Significance = NA,
@@ -777,56 +712,15 @@ f_hazardAggregation = function(
 						Advanced_Data_Measures = NA,
 						Advanced_Data_Measures_Units = NA,
 						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA,
-						Asset_Type = customerTable$AssetType[locRow],
-						Business_Unit = customerTable$BusinessUnit[locRow],
-						Country = customerTable$Country[locRow],
-						State = customerTable$State[locRow],
-						City = customerTable$City[locRow])
+						Raw_Hazard_Value_75th = NA)
 				)
-					
-					# ugh these *!@#$$$% ad hoc requests are driving me crazy..... ugh....
-					# to be rewritten: here, we are calculating a reweighted score (1-150) for each hazard
-				dataOutput = rbind(dataOutput,
-					data.frame(
-						User = userName,
-						Location = customerTable$Location[locRow],
-						Region = customerTable$Region[locRow],
-						Subregion = customerTable$Subregion[locRow],
-						Lat = customerTable$Lat[locRow],
-						Lon = customerTable$Lon[locRow],
-						Hazard = allHazards,
-						Hazard_Measure = "Weighted Aggregate Score",
-						Decade = thisDecade,
-						Scenario = scenarioRename[thisScen],
-						Raw_Hazard_Value = NA,
-						Percentile_Score = avgOfAllHazards * hazardWeights,
-						Relative_Hazard_Score = NA,
-						Decadal_Trend_Strength = NA,
-						Decadal_Trend_Significance = NA,
-						Long_Term_Trend_Strength = NA,
-						Long_Term_Trend_Significance = NA,
-						Relative_Hazard_Score_Number = NA,
-						Trend_Aggregated_For_Looker = NA,
-						Advanced_Data_Measures = NA,
-						Advanced_Data_Measures_Units = NA,
-						Raw_Hazard_Value_25th = NA,
-						Raw_Hazard_Value_75th = NA,
-						Asset_Type = customerTable$AssetType[locRow],
-						Business_Unit = customerTable$BusinessUnit[locRow],
-						Country = customerTable$Country[locRow],
-						State = customerTable$State[locRow],
-						City = customerTable$City[locRow])
-				)
-	
-
 			}
 		}
 	}
 
 
 		# quick fix to rename scenarios
-	scenariosRename = c('1. Low Emissions', '2. Middle of the Road', '2. Middle of the Road', '3. High Emissions')
+	scenariosRename = c('Low Emissions', 'Middle of the Road', 'Middle of the Road', 'High Emissions')
 	for(i in 1:length(scenariosRename))	{
 		dataOutput$Scenario[dataOutput$Scenario == theScenarios[i]] = scenariosRename[i]
 	}
@@ -874,8 +768,3 @@ f_hazardAggregation = function(
 
 	fwrite(dataOutput, paste0(customerFolder, 'processedOutputForAllHazards_', userName, '_', thisDate, '.csv'))
 	}
-
-
-
-
-
