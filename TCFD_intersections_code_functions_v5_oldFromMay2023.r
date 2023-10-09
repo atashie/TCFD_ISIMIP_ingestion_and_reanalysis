@@ -216,7 +216,7 @@ f_riverFloods = function(
 	#					thisFldRcrDrctn = 		fldRcrVals[closeNCLon, closeNCLat, thisDecade, thisIntrvl, 3, thisScenario]
 						
 						if(thisFldRcrVal >= recurIntrvls[1])	{
-							closestFldRcrIntrvl = 	last(which(thisFldRcrVal > recurIntrvls))
+							closestFldRcrIntrvl = 	last(which(thisFldRcrVal >= recurIntrvls))
 							
 							theseFloodImpacts = fldDepthList[[closestFldRcrIntrvl]][theseLats, theseLons]
 							theseFloodImpacts[is.na(theseFloodImpacts)] = 0
@@ -766,5 +766,11 @@ f_hazardAggregation = function(
 	dataOutput$Trend_Aggregated_For_Looker[signifiDecreaseRows] = dataOutput$Decadal_Trend_Strength[signifiDecreaseRows]
 	dataOutput$Trend_Aggregated_For_Looker[signifiIncreaseRows] = dataOutput$Decadal_Trend_Strength[signifiIncreaseRows]
 
+	dataOutput$Asset_Type = NA
+	dataOutput$Business_Unit = NA
+	dataOutput$Country = NA
+	dataOutput$State = NA
+	dataOutput$City = NA
 	fwrite(dataOutput, paste0(customerFolder, 'processedOutputForAllHazards_', userName, '_', thisDate, '.csv'))
 	}
+	
