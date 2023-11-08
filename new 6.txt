@@ -1,0 +1,36 @@
+### !!!! this doesn't work as the for loops are not embarrassingly parallel !!!!#####
+function SM_routine_fh(infiltration::Vector{Float64}, PET::Vector{Float64},
+    rcScl = 0.1,
+    rcExp = 1.3,
+    PETexp = 2,
+    Zr = 1000.0,
+    n = 0.5,
+    smhp = 0.00,
+    smwp = 0.10,
+    smfc = 0.25,
+    s0 = 0.5)
+    
+    nt = length(infiltration)
+    SM_store = [s0; fill(missing,nt)]
+    smhp_stor = Zr * smhp
+    smwp_stor = Zr * smwp
+    smfc_stor = Zr * smfc
+    max_stor = Zr * n
+
+    for i in 1:length(infiltration)
+        thisSMstor = SM_store[i]
+        AET = (thisSMstor > smhp_stor) ? min(thisSMstor - smhp_stor, PET[i] * (thisSMstor / max_stor) ^ PETexp) : 0
+        thisSMstor = thisSMstor - AET
+        deepDrainage = (thisSMstor > smfc_stor) ?  min(thisSMstor - smfc_stor, rcScl * thisSMstor * (thisSMstor / smfc_stor)^rcExp) : 0
+        SM_store[i+1] = min(max_stor, thisSMstor - min(thisSMstor, deepDrainage) + infiltration[i])
+    end
+    return(SM_store / n)
+end
+
+	# generating dummy data for testing, e.g. 20 years of climate data
+using BenchmarkTools, Distributions
+exInfiltration = rand(Normal(1,1), 365*20)
+exPET = rand(Normal(2,1), 365*20)
+
+	# benchmarking
+@benchmark SM_routine_f1($exInfiltration, $exPET)

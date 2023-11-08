@@ -27,6 +27,41 @@ aggScoreExceptionsValues = c(0, 38, 30)
 # this is the only section that needs to be updated between runs
 # !!!!!!!!!!!!!!!!!!!!!!!!
 
+# 	# Nuveen - Aus_Viticulture
+userName = 'Nuveen - Aus_Viticulture'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\NuveenAusViticulture_Oct2023\\'
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-NuveenAusViticulture_Oct2023.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\NuveenAusViticulture_Oct2023\\NuveenAusViticulture_temp_precip_hazards_oct_17.csv'
+waterOnly = FALSE
+
+# 	# Nuveen - LATAM Table Grapes
+userName = 'Nuveen - LATAM Table Grapes'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\NuveenLATAMTableGrapes_Oct2023\\'
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-NuveenLATAMTableGrapes_Oct2023.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
+waterOnly = TRUE
+
+
+# 	# Nuveen - LATAM Cherries
+userName = 'Nuveen - LATAM Cherries'	
+customerFolder = 'J:\\Cai_data\\TCFD\\locations\\NuveenLATAMCherries_Oct2023\\'
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-NuveenLATAMCherries_Oct2023.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
+#appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
+waterOnly = TRUE
+
+
 # 	# Nuveen - Spanish Almonds
 userName = 'Nuveen - Spanish Almonds'	
 customerFolder = 'J:\\Cai_data\\TCFD\\locations\\NuveenSpanishAlmonds_Oct2023\\'
@@ -249,6 +284,9 @@ customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_FruitAndVeg_Jun2023\\'
 dataOutput_old = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_FruitAndVeg_2023-06-13.csv'))
 dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_FruitAndVeg_2023-06-13_fixedName.csv'))
 
+customerFolder = "J:\\Cai_data\\TCFD\\locations\\NuveenLATAMCherries_Oct2023\\"
+dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_Nuveen - LATAM Cherries_2023-10-17.csv'))
+
 #customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_Wood_Jun2023\\'
 #dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Wood_2023-06-13.csv'))
 #customerFolder = 'J:\\Cai_data\\TCFD\\locations\\ITC_VegOil_Jun2023\\'
@@ -278,7 +316,7 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "3. High Emissions" & Ha
 summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "1. Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 2
+thisLoc = 8
 thisScen = unique(dataOutput$Scenario)[2]
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
@@ -340,7 +378,7 @@ fwrite(dataTrends, paste0(customerFolder, 'currentAnd2050sAllLocs.csv'))
 
 
 ## reformatting for a table view
-dataOutputReformatted = data.table(Location = NA, Region = NA, Scenario = NA, Variable = NA, 
+dataOutputReformatted = data.table(Location = NA, Region = NA, Subregion = NA, Scenario = NA, Variable = NA, 
 	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend = NA)
 for(thisLoc in unique(dataOutput$Location))	{
 	for(thisScen in unique(dataOutput$Scenario))	{
@@ -351,6 +389,7 @@ for(thisLoc in unique(dataOutput$Location))	{
 					data.table(
 						Location = thisLoc,
 						Region = theseOutputs$Region[1],
+						Subregion = theseOutputs$Subregion[1],
 						Scenario = thisScen,
 						Variable = thisVariable,
 						D2010s= subset(theseOutputs, Decade == 2010)$Raw_Hazard_Value, 
@@ -392,6 +431,61 @@ for(thisVariable in unique(dataOutputReformatted$Variable))	{
 	)
 }
 fwrite(dataOutputSuperSimple, paste0(customerFolder, 'portfolioAvgValues.csv'))
+
+dataOutputSuperSimple = data.table(Variable = NA, Region = NA,
+	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend = NA)
+thisScen = '2. Middle of the Road'
+for(thisVariable in unique(dataOutputReformatted$Variable))	{
+	for(thisRegion in unique(dataOutputReformatted$Region))	{
+		if(!is.na(thisRegion))	{
+			theseOutputs = subset(dataOutputReformatted, Scenario == thisScen & Variable == thisVariable & Region == thisRegion)
+			dataOutputSuperSimple = rbind(dataOutputSuperSimple, 
+				data.table(
+					Variable = thisVariable,
+					Region = thisRegion,
+					D2010s= mean(theseOutputs$D2010), 
+					D2020s= mean(theseOutputs$D2020), 
+					D2030s= mean(theseOutputs$D2030), 
+					D2040s= mean(theseOutputs$D2040), 
+					D2050s= mean(theseOutputs$D2050), 
+					D2060s= mean(theseOutputs$D2060), 
+					D2070s= mean(theseOutputs$D2070), 
+					D2080s= mean(theseOutputs$D2080), 
+					D2090s= mean(theseOutputs$D2090),
+					Trend = mean(theseOutputs$Trend))
+			)
+		}
+	}
+}
+fwrite(dataOutputSuperSimple, paste0(customerFolder, 'portfolioRegionAvgValues.csv'))
+
+dataOutputSuperSimple = data.table(Variable = NA, Subregion = NA,
+	D2010s= NA, D2020s= NA, D2030s= NA, D2040s= NA, D2050s= NA, D2060s= NA, D2070s= NA, D2080s= NA, D2090s= NA, Trend = NA)
+thisScen = '2. Middle of the Road'
+for(thisVariable in unique(dataOutputReformatted$Variable))	{
+	for(thisSubregion in unique(dataOutputReformatted$Subregion))	{
+		if(!is.na(thisSubregion))	{
+			theseOutputs = subset(dataOutputReformatted, Scenario == thisScen & Variable == thisVariable & Subregion == thisSubregion)
+			dataOutputSuperSimple = rbind(dataOutputSuperSimple, 
+				data.table(
+					Variable = thisVariable,
+					Subregion = thisSubregion,
+					D2010s= mean(theseOutputs$D2010), 
+					D2020s= mean(theseOutputs$D2020), 
+					D2030s= mean(theseOutputs$D2030), 
+					D2040s= mean(theseOutputs$D2040), 
+					D2050s= mean(theseOutputs$D2050), 
+					D2060s= mean(theseOutputs$D2060), 
+					D2070s= mean(theseOutputs$D2070), 
+					D2080s= mean(theseOutputs$D2080), 
+					D2090s= mean(theseOutputs$D2090),
+					Trend = mean(theseOutputs$Trend))
+			)
+		}
+	}
+}
+fwrite(dataOutputSuperSimple, paste0(customerFolder, 'portfolioSubregionAvgValues.csv'))
+
 
 
 
