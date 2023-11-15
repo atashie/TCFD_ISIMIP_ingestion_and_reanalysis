@@ -446,12 +446,12 @@ climateDataPlotting_f = function(
 waterIndexCalculations_f = function(	
 	customerTable_input = customerTable,
 	petGlobAvg = 2000,
-	runoffRatio = 0.08,
+#	runoffRatio = 0.08,
+#	effectiveIrrigationRatio = 0.85,
 	humidAI = 0.65,
 	clientName_input = clientName,
 	customerFolder_input = customerFolder,
 	cropPhenologyTable = "J:\\Cai_data\\WaterIndex\\crop_info\\cropWaterNeedsLookupTable_v1.csv",
-	hydroBasins_crops_input = "J:\\Cai_data\\WaterIndex\\crop_info\\global_crops\\global.shp",
 	indexValues = c('Aridity Index - Avg', 'Plant Water Demand - Avg', 'Aridity Index - Drought', 'Plant Water Demand - Drought', 'Aridity Index w/ Irrigation - Avg', 'Plant Water Demand w/ Irrigation - Avg', 'Aridity Index w/ Irrigation - Drought', 'Plant Water Demand w/ Irrigation - Drought')
 	)
 	{
@@ -469,27 +469,64 @@ waterIndexCalculations_f = function(
 	climateData = readRDS(paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_rawValues.rds'))
 	indexValuesArray = array(rep(myMissingData, nrow(customerTable) * length(climateData[1, ,1,1,1]) * length(indexValueQuant) * length(climateData[1,1,1, ,1]) * length(indexValues) * length(indexValueClass)), 
 										dim = c(nrow(customerTable),  length(climateData[1, ,1,1,1]),  length(indexValueQuant),  length(climateData[1,1,1, ,1]),  length(indexValues), length(indexValueClass)))
-	calibOuts = data.table::data.table(numRuns = NA, meanVal = NA, streamflowRechargeScalar = NA, thisFrcAreaUnderCult = NA, thisFrcCultAreaWthIrr = NA, thisWplant = NA, runoffRatio = NA, graceSlp = NA)
+	calibOuts = data.table::data.table(location = NA, numRuns = NA, meanVal = NA, streamflowRechargeScalar = NA, thisFrcAreaUnderCult = NA, thisFrcCultAreaWthIrr = NA, thisWplant = NA,
+		runoffRatio = NA, initialSoilMoisture = NA, effectiveIrrigationRatio = NA, recentHistoricSlope = NA, rescaledRecentHistoricSlope = NA)
 
 		# reading in crop phenology table
 #	cropPhenology_df = data.table::fread(cropPhenologyTable)
 		# reading in GRACE trends
 	historicTrends = data.table::fread(paste0(customerFolder_input, clientName_input, '\\',  clientName_input, "_graceTrends.csv"))
-		# readining hydroBasins data
+		# readning hydroBasins data
 	hydroBasins = data.table::fread(paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_hydroBasins.csv'))
+	hydroBasins$currentDeficit = NA
+	hydroBasins$currentRatio = NA
+	hydroBasins$recentHistoricSlope = NA
+	hydroBasins$rescaledRecentHistoricSlope = NA
+	hydroBasins$streamflowRechargeScalar = NA
+	hydroBasins$thisFrcAreaUnderCult = NA
+	hydroBasins$thisFrcCultAreaWthIrr =NA
+	hydroBasins$initialSoilMoisture = NA
+	hydroBasins$thisWplant = NA
+	hydroBasins$runoffRatio = NA
 
 	for(thisRow in 1:nrow(customerTable_input))	{
 			# initializing static values
-		growSeason = round(seq(1,12, length.out=hydroBasins$growDaysAvg[thisRow] / 30), 0)
+		# defining the growing season
+		if(is.na(customerTable_input$GrowMonth_Start[thisRow]) | is.na(customerTable_input$GrowMonth_End[thisRow]))	{
+			if(is.na(hydroBasins$growDaysAvg[thisRow]))	{growSeason = 1:12} else {growSeason = round(seq(1,12, length.out=hydroBasins$growDaysAvg[thisRow] / 30), 0)}
+		} else {
+			if(customerTable_input$GrowMonth_Start[thisRow] < customerTable_input$GrowMonth_End[thisRow])	{
+				growSeason = seq(customerTable_input$GrowMonth_Start[thisRow], customerTable_input$GrowMonth_End[thisRow], 1)
+			}
+			if(customerTable_input$GrowMonth_Start[thisRow] > customerTable_input$GrowMonth_End[thisRow])	{
+				growSeason = unique(c(seq(customerTable_input$GrowMonth_Start[thisRow], 12, by=1), seq(1, customerTable_input$GrowMonth_End[thisRow], by=1)))
+			}
+			if(customerTable_input$GrowMonth_Start[thisRow] == customerTable_input$GrowMonth_End[thisRow])	{
+				growSeason = customerTable_input$GrowMonth_Start[thisRow]
+			}
+		}
+
+			# defining current surplus / deficit in water availability
+		if(!is.na(customerTable_input$CurrentStorageTrend_mm[thisRow]))	{recentHistoricTrend = customerTable_input$CurrentStorageTrend_mm[thisRow]} else {recentHistoricTrend = historicTrends$Slope[thisRow]}
+		
+			# global average PET standardized by growing season
 		petGlobAvgForGrowSeason = petGlobAvg * (length(growSeason) / 12)
 	
+			# water demand and cultivated area
 		thisFrcAreaUnderCult = max(hydroBasins$no_irr_cro[thisRow] + hydroBasins$irr_cropla[thisRow], 0.01, na.rm=TRUE)	# defining water needs by location
 		thisFrcCultAreaWthIrr = min(max(hydroBasins$irr_cropla[thisRow], 0.001, na.rm=TRUE), thisFrcAreaUnderCult)
 		if(is.na(hydroBasins$waterUse_irr[thisRow])){thisWplant = 650} else {thisWplant = hydroBasins$waterUse_irr[thisRow]} 
 
+			# defining runoff, w/ or w/o on-site storage 
 		runoffRatio = 0.08
+		if(customerTable_input$OnsiteReservoirs[thisRow]) {storageRescalar = 0} else {storageRescalar = 1}
+
+			# defining irrigation losses
+		effectiveIrrigationRatio = 0.85
+		if(customerTable$DripIrrigation[thisRow])	{effectiveIrrigationRatio = 0.98}
 
 		thisDivertibleStrmfl = ifelse(is.na(customerTable_input$DivertibleStreamflow_Ratio[thisRow]), 0, customerTable_input$DivertibleStreamflow_Ratio[thisRow]) # defining extractible water by location
+
 			# accounting for soils at field capacity at the start of the growing season
 		if(length(growSeason) == 12){initialSoilMoisture = 0} else {initialSoilMoisture = 120}
 
@@ -511,8 +548,7 @@ waterIndexCalculations_f = function(
 		strmflQntsAvg = sqrt(strmflQntsNrml) * climateData[thisRow, , rep(17,8), , 4]
 		strmflQntsDrght = sqrt(strmflQntsNrml) * climateData[thisRow, , rep(15,8), , 4]
 		strmflQntsDrghtShft = sqrt(strmflQntsNrml) * (1 - ((climateData[thisRow, , rep(17,8), , 4] - climateData[thisRow, , rep(15,8), , 4]) / climateData[thisRow, , rep(17,8), , 4]))
-#		streamflowScalar = ifelse(customerTable$SurfaceWater_Access[thisRow], thisDivertibleStrmfl, thisStrmflCaptureRatio)
-		
+
 		
 			# Aridity Index - Avg
 #		aridityIndex_rel = (pptQntsAvg / petQntsAvg) / humidAI
@@ -523,13 +559,22 @@ waterIndexCalculations_f = function(
 
 			# using the Aridity Index to estimate streamflow losses to groundwater (i.e., regionally driven groundwater recharge)
 		streamflowRechargeScalar = max(1 - aridityIndex[1:3, 4, ]^(1/20), 0)
-			
+
+			# customer inputs defining streamflow diversions
+		streamflowImports_km2 = 0
+		if(!is.na(customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]))	{streamflowImports_km2 = customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]}
 
 		tooHigh = TRUE
 		tooLow = TRUE
 		numRuns = 0
 		while(any(c(tooHigh, tooLow)))	{
 			numRuns = numRuns + 1
+
+				# customer inputs defining streamflow capture
+			if(!is.na(customerTable$SurfaceWaterDiversion_Percent[thisRow]))	{streamflowRechargeScalar = customerTable$SurfaceWaterDiversion_Percent[thisRow]}
+			streamflowImports_mm =  kmToMm * (streamflowImports_km2 / hydroBasins$SUB_AREA[thisRow]) / thisFrcCultAreaWthIrr
+				
+
 				# Plant Water Demand - Avg
 			meanToMedianRatio_ppt = 1 # mean(climateData[thisRow, , 17, , 1] / climateData[thisRow, , 13, , 1])
 			meanToMedianRatio_pet = 1 # mean(climateData[thisRow, , 17, , 2] / climateData[thisRow, , 13, , 2])
@@ -541,7 +586,18 @@ waterIndexCalculations_f = function(
 			}
 			petScalar = growSeasonPETqntsAvgRatio; petScalar[which(petScalar < 0.7)] = 0.7; petScalar[which(petScalar > 1.5)] = 1.5
 
-			effectivePPT = initialSoilMoisture * max(aridityIndex, 1) + (1 - runoffRatio) * growSeasonPPTqntsAvg
+
+				# estimating recharge ratios
+			rechRaw = climateData[thisRow, , 13, , 3]
+			if(any(rechRaw < 0))	{rechRaw[which(rechRaw < 0)] = 0}
+			rechRatio = mean(rechRaw) / mean(climateData[thisRow, , 13, , 1])
+			rechAvg = climateData[thisRow, , rep(13,8), , 3]
+			if(any(rechAvg < 0))	{rechAvg[which(rechAvg < 0)] = 0}
+	
+
+				# estimating effective precip and recharge
+			effectivePPT = initialSoilMoisture * max(aridityIndex, 1) + (1 - runoffRatio * storageRescalar - rechRatio) * growSeasonPPTqntsAvg
+			effectiveRech = effectiveIrrigationRatio * rechAvg / thisFrcAreaUnderCult
 			effectiveWPlant = petScalar * thisWplant
 			indexValuesArray[thisRow, , , , 2, 1] = effectivePPT / effectiveWPlant
 			indexValuesArray[thisRow, , , , 2, 2] = effectivePPT - effectiveWPlant
@@ -558,25 +614,22 @@ waterIndexCalculations_f = function(
 			for(thisMonth in growSeason[-1])	{
 				growSeasonPPTqntsdrought_local = growSeasonPPTqntsdrought_local + sqrt(pptQntsDrghtShft) * climateData[thisRow, , rep(thisMonth, 8), , 1]	
 			}
-			effectivePPTdrought = initialSoilMoisture * 0.5 * max(aridityIndex) +  (1 - runoffRatio) * growSeasonPPTqntsdrought_local
+			effectivePPTdrought = 0.5 * initialSoilMoisture * max(aridityIndex, 1) + (1 - runoffRatio * storageRescalar - rechRatio) * growSeasonPPTqntsAvg
 			indexValuesArray[thisRow, , , , 4, 1] = effectivePPTdrought / effectiveWPlant
 			indexValuesArray[thisRow, , , , 4, 2] = effectivePPTdrought - effectiveWPlant
 
 			
 			# Aridity Index w/ Irrigation - Avg
-				# estimating recharge
-			rechAvg = (1 - thisFrcAreaUnderCult) * climateData[thisRow, , rep(17,8), , 3] # only allowing recharge in non-ag since the runoff ratio of 0.08 is already very low
-			if(any(rechAvg < 0))	{rechAvg[which(rechAvg < 0)] = 0}
 				# using the Aridity Index to estimate streamflow losses to groundwater (i.e., regionally driven groundwater recharge)
-			effectiveStrmfl = (streamflowRechargeScalar / thisFrcCultAreaWthIrr) * (strmflQntsAvg / gridArea) * kmToMm 
-			effectiveStrmflDrght = (streamflowRechargeScalar / thisFrcCultAreaWthIrr) * (strmflQntsDrght / gridArea) * kmToMm 
+			effectiveStrmfl = 	effectiveIrrigationRatio * (streamflowImports_mm + (streamflowRechargeScalar / thisFrcCultAreaWthIrr) * (strmflQntsAvg / gridArea) * kmToMm)
+			effectiveStrmflDrght = 	effectiveIrrigationRatio * (streamflowImports_mm * 0.5 + (streamflowRechargeScalar / thisFrcCultAreaWthIrr) * (strmflQntsDrght / gridArea) * kmToMm)
 			if(any(effectiveStrmfl > 1000))	{effectiveStrmfl[effectiveStrmfl > 1000] = 1000}
 			if(any(effectiveStrmflDrght > 1000))	{effectiveStrmflDrght[effectiveStrmflDrght > 1000] = 1000}
 
-			indexValuesArray[thisRow, , , , 5, 1] = ((pptQntsDrght + rechAvg + effectiveStrmfl) / petQntsAvg) / humidAI
-			indexValuesArray[thisRow, , , , 5, 2] = (pptQntsDrght + rechAvg + effectiveStrmfl) - petQntsAvg * humidAI
+			indexValuesArray[thisRow, , , , 5, 1] = ((pptQntsDrght + effectiveRech + effectiveStrmfl) / petQntsAvg) / humidAI
+			indexValuesArray[thisRow, , , , 5, 2] = (pptQntsDrght + effectiveRech + effectiveStrmfl) - petQntsAvg * humidAI
 				# Plant Water Demand w/ Irrigation - Avg'
-			rechAvg_local = rechAvg
+			rechAvg_local = effectiveRech
 			if(customerTable$Groundwater_Access[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing groundwater if it cannot be used
 			indexValuesArray[thisRow, , , , 6, 1] = (effectivePPT + rechAvg_local + effectiveStrmfl) / effectiveWPlant
 			indexValuesArray[thisRow, , , , 6, 2] = (effectivePPT + rechAvg_local + effectiveStrmfl) - effectiveWPlant
@@ -590,6 +643,7 @@ waterIndexCalculations_f = function(
 
 			calibOuts = rbind(calibOuts, 
 				data.table::data.table(
+					location = customerTable_input$Location_Name[thisRow],
 					numRuns = numRuns,
 					meanVal = mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]),
 					streamflowRechargeScalar = streamflowRechargeScalar,
@@ -597,47 +651,54 @@ waterIndexCalculations_f = function(
 					thisFrcCultAreaWthIrr = thisFrcCultAreaWthIrr,
 					thisWplant = thisWplant,
 					runoffRatio = runoffRatio,
-					graceSlp = historicTrends$Slope[thisRow] / max(thisFrcCultAreaWthIrr, .0125))
+					initialSoilMoisture = initialSoilMoisture,
+					effectiveIrrigationRatio = effectiveIrrigationRatio,
+					recentHistoricSlope = recentHistoricTrend,
+					rescaledRecentHistoricSlope = recentHistoricTrend / max(thisFrcCultAreaWthIrr, .0125))
 			)
 		
 				# recalibrating if necessary
-			if(mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]) > ((historicTrends$Slope[thisRow] + 2)/ max(thisFrcCultAreaWthIrr, .0125))) {
-				streamflowRechargeScalar = max(streamflowRechargeScalar * 0.5 - 0.001, 0)
-				thisFrcAreaUnderCult = min(thisFrcAreaUnderCult * 1.01 + 0.01, 1)
-				thisFrcCultAreaWthIrr = min(min(thisFrcCultAreaWthIrr * 1.01 + 0.01, 1), thisFrcAreaUnderCult)
+			if(( -5 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]) * max(thisFrcCultAreaWthIrr, .001)) > recentHistoricTrend |
+			  (-500 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2])) > (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) {
+				streamflowRechargeScalar = max(streamflowRechargeScalar * 0.67 - 0.0001, 0)
+				thisFrcAreaUnderCult = min(thisFrcAreaUnderCult * 1.005 + 0.01, 1)
+				thisFrcCultAreaWthIrr = min(min(thisFrcCultAreaWthIrr * 1.005 + 0.01, 1), thisFrcAreaUnderCult)
 				thisWplant = thisWplant * 1.02
-				runoffRatio = min(runoffRatio * 1.03 + 0.01, 1)
+				initialSoilMoisture = initialSoilMoisture * 0.9
+				runoffRatio = min(runoffRatio * 1.05 + 0.01, 1)
+				effectiveIrrigationRatio = effectiveIrrigationRatio * 0.98
 			} else	{tooHigh = FALSE}
-			if(mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]) < ((historicTrends$Slope[thisRow] - 2) / max(thisFrcCultAreaWthIrr, .0125))) {
-				streamflowRechargeScalar = min(streamflowRechargeScalar * 1.05 + 0.01, 0.65)
-				thisFrcAreaUnderCult = thisFrcAreaUnderCult * 0.99
-				thisFrcCultAreaWthIrr = min(thisFrcCultAreaWthIrr * 0.99, thisFrcAreaUnderCult)
+			if(( 5 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]) * max(thisFrcCultAreaWthIrr, .001)) < recentHistoricTrend  |
+			  (500 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2])) < (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) {
+				streamflowRechargeScalar = min(streamflowRechargeScalar * 1.03 + 0.01, 0.65)
+				thisFrcAreaUnderCult = max(thisFrcAreaUnderCult * 0.995 - 0.01, 0.001)
+				thisFrcCultAreaWthIrr = max(thisFrcCultAreaWthIrr * 0.995 - 0.01, 0.001)
+				initialSoilMoisture = initialSoilMoisture * 1.01
 				thisWplant = thisWplant * 0.98
-				runoffRatio = runoffRatio * 0.97
+				runoffRatio = runoffRatio * 0.95
+				effectiveIrrigationRatio = max(effectiveIrrigationRatio * 1.01, 1)
 			} else {tooLow = FALSE}
-			
+				
 			if(numRuns == 10)	{ tooLow = FALSE; tooHigh = FALSE}
 
 		}
-		calibOuts = rbind(calibOuts, 
-			data.table::data.table(
-				location = customerTable_input$Location_Name[thisRow],
-				numRuns = numRuns,
-				meanVal = mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]),
-				streamflowRechargeScalar = streamflowRechargeScalar,
-				thisFrcAreaUnderCult = thisFrcAreaUnderCult,
-				thisFrcCultAreaWthIrr = thisFrcCultAreaWthIrr,
-				thisWplant = thisWplant,
-				runoffRatio = runoffRatio,
-				graceSlp = historicTrends$Slope[thisRow] / max(thisFrcCultAreaWthIrr, .0125))
-		)
-
+	hydroBasins$currentDeficit[thisRow] = mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2])
+	hydroBasins$currentRatio[thisRow] = mean(indexValuesArray[thisRow, 1:2, 8, , 6, 1])
+	hydroBasins$recentHistoricSlope[thisRow] = recentHistoricTrend
+	hydroBasins$rescaledRecentHistoricSlope[thisRow] = recentHistoricTrend / max(thisFrcCultAreaWthIrr, .0125)
+	hydroBasins$streamflowRechargeScalar[thisRow] = streamflowRechargeScalar
+	hydroBasins$thisFrcAreaUnderCult[thisRow] = thisFrcAreaUnderCult
+	hydroBasins$thisFrcCultAreaWthIrr[thisRow] =thisFrcCultAreaWthIrr
+	hydroBasins$initialSoilMoisture[thisRow] = initialSoilMoisture
+	hydroBasins$thisWplant[thisRow] = thisWplant
+	hydroBasins$runoffRatio[thisRow] = runoffRatio
+	hydroBasins$effectiveIrrigationRatio[thisRow] = effectiveIrrigationRatio
+	
 	}
 	saveRDS(indexValuesArray, paste0(customerFolder_input, clientName_input, '\\',  clientName_input, "_waterIndex.rds"))
 	data.table::fwrite(calibOuts, paste0(customerFolder_input, clientName_input, '\\',  clientName_input, "_calibrationRoutine_v2.csv"))
+	data.table::fwrite(hydroBasins, paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_hydroBasins_wIndex.csv'))
 }
-
-
 
 
 
@@ -659,7 +720,8 @@ waterIndexPlotter_f = function(
 #	climVars = c('Precipitation_decadalRawVals', 'PotentialEvapotranspiration_decadalRawVals', 'GroundwaterRecharge_decadalRawVals', 'Streamflow_decadalRawVals',	'RootZoneSoilMoisture_decadalRawVals', 'TotalWaterStorage_decadalRawVals'),
 	baseNm = "waterIndexUnderlyingData_",
 	ncFileLoc = 'J:\\Cai_data\\WaterIndex\\',
-	indexValues = c('Aridity Index - Avg', 'Plant Water Demand - Avg', 'Aridity Index - Drought', 'Plant Water Demand - Drought', 'Aridity Index w/ Irrigation - Avg', 'Plant Water Demand w/ Irrigation - Avg', 'Aridity Index w/ Irrigation - Drought', 'Plant Water Demand w/ Irrigation - Drought')
+	indexValues = c('Aridity Index - Avg', 'Plant Water Demand - Avg', 'Aridity Index - Drought', 'Plant Water Demand - Drought', 'Aridity Index w/ Irrigation - Avg', 'Plant Water Demand w/ Irrigation - Avg', 'Aridity Index w/ Irrigation - Drought', 'Plant Water Demand w/ Irrigation - Drought'),
+	doPlot = FALSE
 	)
 	{
 
@@ -681,81 +743,82 @@ waterIndexPlotter_f = function(
 	indexValuesToPlot = c(2,4,6,8)
 
 	for(thisLoc in 1:nrow(customerTable_input))	{
-		for(thisScen in 1:length(scenarioNames))	{
-			
-				# water index ratios
-	#		png(paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexRatio.png"), width=1100, height=1200)
-	#		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(4,2), font.lab=1.6, bty='l', cex.lab=2.0*1.8, cex.axis=2.0*1.4, cex.main=2.0*1.8, col='#1A232F')
-			png(paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, "Location_Name"], '_', scenarioNames[thisScen], "_waterIndexRatio.png"), width=1100, height=800)
-			par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(2,2), font.lab=1.6, bty='l', cex.lab=1.5*1.8, cex.axis=2.0*1.4, cex.main=1.5*1.8, col='#1A232F')
-			windowsFonts(A = windowsFont("Roboto"))
-			for(thisIndexVal in indexValuesToPlot)	{
-					# waterIndexDataPlot is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
-				plotRange = c(min(min(waterIndexDataPlot[thisLoc, , , , thisIndexVal, 1])*1.025, 0.9),  max(max(waterIndexDataPlot[thisLoc, , , , thisIndexVal, 1])*1.025, 1.1))
-				plot(nc_decade, waterIndexDataPlot[thisLoc, , 8, thisScen, thisIndexVal, 1],  
-					ylim = plotRange,
-					type='l', lwd=1, col='white', xaxt = 'n', #log='y',
-					main='', ylab='', xlab='',
-					col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-					family='A')
-				abline(h=1, lwd=2, lty=1, col='#1A232F')
-				abline(h=mean(waterIndexDataPlot[thisLoc, 1:2, 8, 1:3, thisIndexVal, 1]), lwd=2, lty =2, col='#1A232F')
-				axis(1, at = nc_decade ,col.lab='#1A232F', col.axis='#666D74', 
-					labels = nc_decade)
-			#	abline(v=fstOfMnths, lwd=1, col=adjustcolor('#666D74', alpha.f=0.1))
-				polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 1, thisScen, thisIndexVal, 1], rev(waterIndexDataPlot[thisLoc, , 7, thisScen, thisIndexVal, 1])),
-					col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-				polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 2, thisScen, thisIndexVal, 1], rev(waterIndexDataPlot[thisLoc, , 6, thisScen, thisIndexVal, 1])),
-					col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-				polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 3, thisScen, thisIndexVal, 1], rev(waterIndexDataPlot[thisLoc, , 5, thisScen, thisIndexVal, 1])),
-					col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-				loessSmooth = loess(waterIndexDataPlot[thisLoc, , 4, thisScen, thisIndexVal, 1] ~ nc_decade)
-	#			lines(nc_decade, waterIndexDataPlot[thisLoc, , 17, thisScen, thisIndexVal], 
-	#				col='#54575a', lwd=5)	#4cbfad
-				lines(nc_decade, predict(loessSmooth),
-					col='#EE6222', lwd=3)
-				text(nc_decade[1], plotRange[1],  paste0(indexValues[thisIndexVal], ' (-)'), adj = c(0,0), cex=2.05)
-	#			lines(nc_decade, nc_testDat[thisLon, thisLat, , 1, 1], 
-	#				col='#4cbfad', lwd=3) #015f6f
-			}
-			dev.off()
+		if(doPlot){
+			for(thisScen in 1:length(scenarioNames))	{
+				
+					# water index ratios
+		#		png(paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexRatio.png"), width=1100, height=1200)
+		#		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(4,2), font.lab=1.6, bty='l', cex.lab=2.0*1.8, cex.axis=2.0*1.4, cex.main=2.0*1.8, col='#1A232F')
+				png(paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, "Location_Name"], '_', scenarioNames[thisScen], "_waterIndexRatio.png"), width=1100, height=800)
+				par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(2,2), font.lab=1.6, bty='l', cex.lab=1.5*1.8, cex.axis=2.0*1.4, cex.main=1.5*1.8, col='#1A232F')
+				windowsFonts(A = windowsFont("Roboto"))
+				for(thisIndexVal in indexValuesToPlot)	{
+						# waterIndexDataPlot is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
+					plotRange = c(min(min(waterIndexDataPlot[thisLoc, , , , thisIndexVal, 1])*1.025, 0.9),  max(max(waterIndexDataPlot[thisLoc, , , , thisIndexVal, 1])*1.025, 1.1))
+					plot(nc_decade, waterIndexDataPlot[thisLoc, , 8, thisScen, thisIndexVal, 1],  
+						ylim = plotRange,
+						type='l', lwd=1, col='white', xaxt = 'n', #log='y',
+						main='', ylab='', xlab='',
+						col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+						family='A')
+					abline(h=1, lwd=2, lty=1, col='#1A232F')
+					abline(h=mean(waterIndexDataPlot[thisLoc, 1:2, 8, 1:3, thisIndexVal, 1]), lwd=2, lty =2, col='#1A232F')
+					axis(1, at = nc_decade ,col.lab='#1A232F', col.axis='#666D74', 
+						labels = nc_decade)
+				#	abline(v=fstOfMnths, lwd=1, col=adjustcolor('#666D74', alpha.f=0.1))
+					polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 1, thisScen, thisIndexVal, 1], rev(waterIndexDataPlot[thisLoc, , 7, thisScen, thisIndexVal, 1])),
+						col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+					polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 2, thisScen, thisIndexVal, 1], rev(waterIndexDataPlot[thisLoc, , 6, thisScen, thisIndexVal, 1])),
+						col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+					polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 3, thisScen, thisIndexVal, 1], rev(waterIndexDataPlot[thisLoc, , 5, thisScen, thisIndexVal, 1])),
+						col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+					loessSmooth = loess(waterIndexDataPlot[thisLoc, , 4, thisScen, thisIndexVal, 1] ~ nc_decade)
+		#			lines(nc_decade, waterIndexDataPlot[thisLoc, , 17, thisScen, thisIndexVal], 
+		#				col='#54575a', lwd=5)	#4cbfad
+					lines(nc_decade, predict(loessSmooth),
+						col='#EE6222', lwd=3)
+					text(nc_decade[1], plotRange[1],  paste0(indexValues[thisIndexVal], ' (-)'), adj = c(0,0), cex=2.05)
+		#			lines(nc_decade, nc_testDat[thisLon, thisLat, , 1, 1], 
+		#				col='#4cbfad', lwd=3) #015f6f
+				}
+				dev.off()
 
-				# water index deficits
-	#		png(paste0(customerFolder_input, clientName_input, '\\', customerTable_input[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexDeficit.png"), width=1100, height=1200)
-	#		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(4,2), font.lab=1.6, bty='l', cex.lab=2.0*1.8, cex.axis=2.0*1.4, cex.main=2.0*1.8, col='#1A232F')
-			png(paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, "Location_Name"], '_', scenarioNames[thisScen], "_waterIndexDeficit.png"), width=1100, height=800)
-			par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(2,2), font.lab=1.6, bty='l', cex.lab=1.5*1.8, cex.axis=2.0*1.4, cex.main=1.5*1.8, col='#1A232F')
-			windowsFonts(A = windowsFont("Roboto"))
-			for(thisIndexVal in indexValuesToPlot)	{
-					# waterIndexDataPlot is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
-				plotRange = c(min(min(waterIndexDataPlot[thisLoc, , , , thisIndexVal, 2]), 0), max(max(waterIndexDataPlot[thisLoc, , , , thisIndexVal, 2]), 0))
-				plot(nc_decade, waterIndexDataPlot[thisLoc, , 8, thisScen, thisIndexVal, 2],  ylim = plotRange,
-					type='l', lwd=1, col='white', xaxt = 'n', #log='y',
-					main='', ylab='', xlab='',
-					col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-					family='A')
-				abline(h=0, lwd=2, lty=1, col='#1A232F')
-				abline(h=mean(waterIndexDataPlot[thisLoc, 1:2, 8, 1:3, thisIndexVal, 2]), lwd=2, lty =2, col='#1A232F')
-				axis(1, at = nc_decade ,col.lab='#1A232F', col.axis='#666D74', 
-					labels = nc_decade)
-			#	abline(v=fstOfMnths, lwd=1, col=adjustcolor('#666D74', alpha.f=0.1))
-				polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 1, thisScen, thisIndexVal, 2], rev(waterIndexDataPlot[thisLoc, , 7, thisScen, thisIndexVal, 2])),
-					col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-				polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 2, thisScen, thisIndexVal, 2], rev(waterIndexDataPlot[thisLoc, , 6, thisScen, thisIndexVal, 2])),
-					col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-				polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 3, thisScen, thisIndexVal, 2], rev(waterIndexDataPlot[thisLoc, , 5, thisScen, thisIndexVal, 2])),
-					col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-				loessSmooth = loess(waterIndexDataPlot[thisLoc, , 8, thisScen, thisIndexVal, 2] ~ nc_decade)
-	#			lines(nc_decade, waterIndexDataPlot[thisLoc, , 17, thisScen, thisIndexVal], 
-	#				col='#54575a', lwd=5)	#4cbfad
-				lines(nc_decade, predict(loessSmooth),
-					col='#EE6222', lwd=3)
-				text(nc_decade[1], min(plotRange), paste0(indexValues[thisIndexVal], ' (mm)'), adj = c(0,0), cex=2.05)
-	#			lines(nc_decade, nc_testDat[thisLon, thisLat, , 1, 1], 
-	#				col='#4cbfad', lwd=3) #015f6f
+					# water index deficits
+		#		png(paste0(customerFolder_input, clientName_input, '\\', customerTable_input[thisLoc, ..locationHeader], '_', scenarioNames[thisScen], "_waterIndexDeficit.png"), width=1100, height=1200)
+		#		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(4,2), font.lab=1.6, bty='l', cex.lab=2.0*1.8, cex.axis=2.0*1.4, cex.main=2.0*1.8, col='#1A232F')
+				png(paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, "Location_Name"], '_', scenarioNames[thisScen], "_waterIndexDeficit.png"), width=1100, height=800)
+				par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(2,2), font.lab=1.6, bty='l', cex.lab=1.5*1.8, cex.axis=2.0*1.4, cex.main=1.5*1.8, col='#1A232F')
+				windowsFonts(A = windowsFont("Roboto"))
+				for(thisIndexVal in indexValuesToPlot)	{
+						# waterIndexDataPlot is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
+					plotRange = c(min(min(waterIndexDataPlot[thisLoc, , , , thisIndexVal, 2]), 0), max(max(waterIndexDataPlot[thisLoc, , , , thisIndexVal, 2]), 0))
+					plot(nc_decade, waterIndexDataPlot[thisLoc, , 8, thisScen, thisIndexVal, 2],  ylim = plotRange,
+						type='l', lwd=1, col='white', xaxt = 'n', #log='y',
+						main='', ylab='', xlab='',
+						col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+						family='A')
+					abline(h=0, lwd=2, lty=1, col='#1A232F')
+					abline(h=mean(waterIndexDataPlot[thisLoc, 1:2, 8, 1:3, thisIndexVal, 2]), lwd=2, lty =2, col='#1A232F')
+					axis(1, at = nc_decade ,col.lab='#1A232F', col.axis='#666D74', 
+						labels = nc_decade)
+				#	abline(v=fstOfMnths, lwd=1, col=adjustcolor('#666D74', alpha.f=0.1))
+					polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 1, thisScen, thisIndexVal, 2], rev(waterIndexDataPlot[thisLoc, , 7, thisScen, thisIndexVal, 2])),
+						col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+					polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 2, thisScen, thisIndexVal, 2], rev(waterIndexDataPlot[thisLoc, , 6, thisScen, thisIndexVal, 2])),
+						col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+					polygon(x=c(nc_decade, rev(nc_decade)), y=c(waterIndexDataPlot[thisLoc, , 3, thisScen, thisIndexVal, 2], rev(waterIndexDataPlot[thisLoc, , 5, thisScen, thisIndexVal, 2])),
+						col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+					loessSmooth = loess(waterIndexDataPlot[thisLoc, , 8, thisScen, thisIndexVal, 2] ~ nc_decade)
+		#			lines(nc_decade, waterIndexDataPlot[thisLoc, , 17, thisScen, thisIndexVal], 
+		#				col='#54575a', lwd=5)	#4cbfad
+					lines(nc_decade, predict(loessSmooth),
+						col='#EE6222', lwd=3)
+					text(nc_decade[1], min(plotRange), paste0(indexValues[thisIndexVal], ' (mm)'), adj = c(0,0), cex=2.05)
+		#			lines(nc_decade, nc_testDat[thisLon, thisLat, , 1, 1], 
+		#				col='#4cbfad', lwd=3) #015f6f
+				}
+				dev.off()
 			}
-			dev.off()
-
 
 		}
 		summaryRatioOutput = as.data.frame(waterIndexDataPlot[thisLoc, , 8, , 6, 1])
@@ -771,13 +834,89 @@ waterIndexPlotter_f = function(
 
 	# input array is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
 
-
+startTime = Sys.time()
 gracePlotter_f()
 climateDataSelection_f()
-climateDataPlotting_f()
+#climateDataPlotting_f()
 waterIndexCalculations_f()
 waterIndexPlotter_f()
+endTime = Sys.time()
+endTime - startTime
 
+library(ggplot2)
+library(viridis)
+library(rnaturalearth)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+hydroBasins = data.table::fread(paste0(customerFolder, clientName, '\\',  clientName, '_hydroBasins_wIndex.csv'))
+test = sf::st_read("J:\\Cai_data\\BasinATLAS_Data_v10\\BasinATLAS_v10\\BasinATLAS_v10_lev12.shp")[,1]
+
+myBasins = merge(test, hydroBasins, all.y=TRUE, by="HYBAS_ID")
+
+myBasins_rejigger = myBasins	; myBasins_rejigger$currentRatio[myBasins$currentRatio > 2] = 2
+
+#lmt <- ceiling(10*max(abs(range(geomAvgMrg_sf$plotData, na.rm=TRUE))))/2000
+lmt = 2
+variableOfInt = "currentRatio"
+myTitle ='water risk index sample'
+latlonBox_local = c(38,42.5,-118,-124.5)
+ggplot(data = myBasins) +
+	geom_sf(data = myBasins_rejigger, size=6.4, shape=15, aes(fill=currentRatio, color=currentRatio), color ='grey25', linewidth = 0.0001) +
+	scale_fill_stepsn(colors=c('#b2182b','#ef8a62','#fddbc7',
+                             '#f7f7f7','#d1e5f0','#67a9cf','#2166ac'),
+             n.breaks=7, limits=c(0,lmt), show.limits=T)  +
+#	scale_fill_viridis(option = 'rocket')+#, trans = scales::pseudo_log_trans(sigma = 0.9))	+#
+#	scale_fill_gradient2(low = 'darkred', high = 'skyblue', mid = 'white', trans = scales::pseudo_log_trans(sigma = .5), limits = c(0,lmt))	+
+#	scale_color_gradient2(low = 'darkred', high = 'skyblue', mid = 'white', trans = scales::pseudo_log_trans(sigma = .5), limits = c(0,lmt))	+
+#	scale_fill_gradient(low = 'skyblue', high = 'darkred', trans = scales::pseudo_log_trans(sigma = .00005))	+
+#	geom_sf(data = provinces10, fill = NA, color = 'grey75')
+	geom_sf(data = world, color = 'grey40', fill = NA, linewidth =1) +
+#	geom_sf(data = states, fill = NA, color = '#1A232F', size=1.4) +
+#	geom_sf(data = cityLocs_sf, size=4.4, stroke = 1.1, shape=21, col='white', fill='grey20')+ #c(rep('#039CE2',8), rep('#FDB600',7), '#23AF41')) +
+#	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='skyblue', size=5, shape='+', stroke=1)	+
+	theme(panel.grid = element_line(colour='grey20')) +
+	theme(panel.background = element_rect(fill = 'grey20', colour='grey20')) +
+	theme(legend.position = 'right',
+		legend.background = element_rect(fill='white', colour='grey20')) +
+	guides(guide_legend(title=myTitle)) +
+	coord_sf(xlim = latlonBox_local[c(3,4)], ylim = latlonBox_local[c(1,2)] + c(-1, -1), expand = FALSE) +
+	labs(title=paste0(myTitle), #subtitle=mySubtitle, 
+        x="Longitude", y="Latitude", 
+        fill='')
+ggsave(paste0(customerFolder, variableOfInt, ".png"), width = 20, height = 8)
+
+myBasins_rejigger$currentDeficit[myBasins$currentDeficit > 1000] = 1000
+
+#lmt <- ceiling(10*max(abs(range(geomAvgMrg_sf$plotData, na.rm=TRUE))))/2000
+lmt = 1000
+variableOfInt = "currentSurplus"
+myTitle ='water risk index sample'
+latlonBox_local = c(38,42.5,-118,-124.5)
+ggplot(data = myBasins) +
+	geom_sf(data = myBasins_rejigger, size=6.4, shape=15, aes(fill=currentDeficit, color=currentDeficit), color ='grey25', linewidth = 0.0001) +
+#	scale_fill_stepsn(colors=c('#b2182b','#ef8a62','#fddbc7',
+#                             '#f7f7f7','#d1e5f0','#67a9cf','#2166ac'),
+#			limits=c(-lmt,lmt),
+#            n.breaks=7,  show.limits=T)  +
+#	scale_fill_viridis(option = 'rocket')+#, trans = scales::pseudo_log_trans(sigma = 0.9))	+#
+	scale_fill_gradient2(low = 'darkred', high = 'skyblue', mid = 'white', trans = scales::pseudo_log_trans(sigma = .5), limits = c(-lmt,lmt))	+
+#	scale_color_gradient2(low = 'darkred', high = 'skyblue', mid = 'white', trans = scales::pseudo_log_trans(sigma = .5), limits = c(0,lmt))	+
+#	scale_fill_gradient(low = 'skyblue', high = 'darkred', trans = scales::pseudo_log_trans(sigma = .00005))	+
+#	geom_sf(data = provinces10, fill = NA, color = 'grey75')
+	geom_sf(data = world, color = 'grey40', fill = NA, linewidth =1) +
+#	geom_sf(data = states, fill = NA, color = '#1A232F', size=1.4) +
+#	geom_sf(data = cityLocs_sf, size=4.4, stroke = 1.1, shape=21, col='white', fill='grey20')+ #c(rep('#039CE2',8), rep('#FDB600',7), '#23AF41')) +
+#	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='skyblue', size=5, shape='+', stroke=1)	+
+	theme(panel.grid = element_line(colour='grey20')) +
+	theme(panel.background = element_rect(fill = 'grey20', colour='grey20')) +
+	theme(legend.position = 'right',
+		legend.background = element_rect(fill='white', colour='grey20')) +
+	guides(guide_legend(title=myTitle)) +
+	coord_sf(xlim = latlonBox_local[c(3,4)], ylim = latlonBox_local[c(1,2)] + c(-1, -1), expand = FALSE) +
+	labs(title=paste0(myTitle), #subtitle=mySubtitle, 
+        x="Longitude", y="Latitude", 
+        fill='')
+ggsave(paste0(customerFolder,  "_", variableOfInt, ".png"), width = 20, height = 8)
 
 
 

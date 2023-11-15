@@ -209,6 +209,32 @@ aggScoreExceptionsValues = c(0, 38, 30)
 waterOnly = FALSE
 
 
+# 	# ITC all locs for November 2023
+userName = 'ITC_allLocs'	#ITC_Buffalo, ITC_VegOil, ITC_Wood, ITC_Spice, ITC_FruitAndVeg, ITC_Shrimp, ITC_Potato, ITC_Rice
+customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '_Nov2023\\')
+customerTable_redundant = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-', userName, '_Nov2023.csv')) #'HMClause_locations_allCucurbit.csv'
+customerTable = customerTable_redundant[!duplicated(customerTable_redundant$Location),]
+
+hazardTable = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Tables - Hazard Weights.csv'))				
+appendedHazardFileLoc = 'J:\\Cai_data\\TCFD\\locations\\ASR_May2023\\ASR_temp_precip_hazards_may_17.csv'
+waterOnly = TRUE
+
+
+
+# 	# Cimpress - new format
+userName = 'Cimpress'	
+customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '_Nov2023\\')
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-Cimpress-Nov2023.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Definitions - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard Scores - Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Weights - hazard_weights.csv'))				
+appendedHazardFileLoc =  paste0(customerFolder, 'Cimpress_temp_precip_hazards_nov_14.csv')
+waterOnly = FALSE
+
+
 ########################################################################################################################
 # functions to run analysis
 
@@ -316,9 +342,9 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "3. High Emissions" & Ha
 summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "1. Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 8
+thisLoc = 13
 thisScen = unique(dataOutput$Scenario)[2]
-plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Scarcity' & Location == customerTable$Location[thisLoc])$Percentile)	
+plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Stress' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Drought' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'River Flood (Local)' & Location == customerTable$Location[thisLoc])$Percentile)	
@@ -494,7 +520,7 @@ dataSummaryRegion =    data.frame(Region = NA, Subregion = NA, Measure = NA, val
 dataSummarySubregion = data.frame(Region = NA, Subregion = NA, Measure = NA, values_2010s = NA, changeBy_2020s = NA, changeBy_2030s = NA, changeBy_2040s = NA, changeBy_2050s = NA, changeBy_2060s = NA, changeBy_2070s = NA, changeBy_2080s = NA, changeBy_2090s = NA)
 for(thisMeasure in unique(dataOutput$Hazard_Measure)){
 	if(!(thisMeasure %in% c('Weighted Aggregate Score', 'Aggregate Score')))	{
-		measureOutput = subset(dataOutput, Scenario == "2. Middle of the Road" & Hazard_Measure == thisMeasure & Long_Term_Trend_Significance < 100)
+		measureOutput = subset(dataOutput, Scenario == "2. Middle of the Road" & Hazard_Measure == thisMeasure & Long_Term_Trend_Significance < 0.1)
 		for(cc in unique(measureOutput$Region)){
 			countryOutput = subset(measureOutput, Region == cc)
 			dataSummaryRegion = rbind(dataSummaryRegion,
@@ -534,8 +560,8 @@ for(thisMeasure in unique(dataOutput$Hazard_Measure)){
 		}
 	}
 }
-fwrite(dataSummaryRegion,  paste0(customerFolder, 'regionAllDifferences.csv'))
-fwrite(dataSummarySubregion,  paste0(customerFolder, 'subregionAllDifferences.csv'))
+#fwrite(dataSummaryRegion,  paste0(customerFolder, 'regionAllDifferences.csv'))
+#fwrite(dataSummarySubregion,  paste0(customerFolder, 'subregionAllDifferences.csv'))
 
 fwrite(dataSummaryRegion,  paste0(customerFolder, 'regionSignifDifferences.csv'))
 fwrite(dataSummarySubregion,  paste0(customerFolder, 'subregionSignifDifferences.csv'))
