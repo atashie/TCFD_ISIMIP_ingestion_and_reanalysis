@@ -521,17 +521,13 @@ f_seaLevelRise = function(
 
 			#### !!!! todo: implement new smoothing scheme!!!!!
 				# ensuring dem is on a land tile
-			if(is.na(nc_elev[closeDemLats, closeDemLons]))	{
-				closeDemLons = closeDemLons + 1
-					if(is.na(nc_elev[closeDemLats, closeDemLons]))	{
-						closeDemLons = closeDemLons - 2
-							if(is.na(nc_elev[closeDemLats, closeDemLons]))	{
-								closeDemLons = closeDemLons + 1
-								closeDemLats = closeDemLats + 1
-								if(is.na(nc_elev[closeDemLats, closeDemLons]))	{
-									closeDemLats = closeDemLats - 2
-			}}}}
 			avgElev = nc_elev[closeDemLats, closeDemLons]
+			if(is.na(avgElev))	{
+				avgElev = mean(nc_elev[seq(closeDemLats -1,closeDemLats+1,1), seq(closeDemLons -1, closeDemLons+1)], na.rm = TRUE)
+			}
+			if(is.na(avgElev))	{
+				avgElev = mean(nc_elev[seq(closeDemLats-2,closeDemLats+2,1), seq(closeDemLons-2, closeDemLons+2)], na.rm = TRUE)
+			}
 
 			for(thisScen in 1:length(seaL_scen))	{
 				seaLvlTrend_all =  mean(seaL_elev[closeSeaLons, closeSeaLats, 9, thisScen, 3], na.rm=TRUE) / 1000
