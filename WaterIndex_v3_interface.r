@@ -9,8 +9,11 @@ ncFileLoc = 'J:\\Cai_data\\WaterIndex\\'		#C:\\Users\\18033\\Documents\\CaiData\
 customerFolder = 'J:\\Cai_data\\Rabo\\Locations\\' # 'C:\\Users\\18033\\Documents\\CaiData\\temp_locationsForRabo\\Locations\\'
 #clientName = 'AutomatedWRI_test'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 clientName = 'Accenture_Nov2023'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+clientName = 'Kempen_Nov2023'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+clientName = 'NuveenLATAM_Dec2023'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+clientName = 'NuveenAus_Dec2023'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 
-customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_Accenture_Nov2023.csv'),#'Customer Onboarding Information_BNW.csv'),#'Customer Onboarding Information_WestHillsFarms.csv'),#'Customer Onboarding Information_BNW.csv'), 
+customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_Kempen_Nov2023.csv'),#'Customer Onboarding Information_BNW.csv'),#'Customer Onboarding Information_WestHillsFarms.csv'),#'Customer Onboarding Information_BNW.csv'), 
 	skip = 1) #'Customer_Hazards_and_Locations-Rabobank_grid - Sheet1.csv'
 locationHeader = 'Location (name)'
 
