@@ -642,7 +642,7 @@ waterIndexCalculations_f = function(
 			indexValuesArray[thisRow, , , , 3, 2] = pptQntsDrght - petQntsAvg * humidAI
 			# Plant Water Demand - Drought
 			growSeasonPPTqntsdrought_local = sqrt(pptQntsDrghtShft) * climateData[thisRow, , rep(growSeason[1], 8), , 1]	
-	#		if(customerTable$Soil_Moisture[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing soil moisture is it cannot be used
+	#		if(!customerTable$Soil_Moisture[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing soil moisture is it cannot be used
 			for(thisMonth in growSeason[-1])	{
 				growSeasonPPTqntsdrought_local = growSeasonPPTqntsdrought_local + sqrt(pptQntsDrghtShft) * climateData[thisRow, , rep(thisMonth, 8), , 1]	
 			}
@@ -662,7 +662,7 @@ waterIndexCalculations_f = function(
 			indexValuesArray[thisRow, , , , 5, 2] = (pptQntsDrght + effectiveRech + effectiveStrmfl) - petQntsAvg * humidAI
 				# Plant Water Demand w/ Irrigation - Avg'
 			rechAvg_local = effectiveRech
-			if(customerTable$Groundwater_Access[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing groundwater if it cannot be used
+			if(!customerTable$Groundwater_Access[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing groundwater if it cannot be used
 			indexValuesArray[thisRow, , , , 6, 1] = (effectivePPT + rechAvg_local + effectiveStrmfl) / effectiveWPlant
 			indexValuesArray[thisRow, , , , 6, 2] = (effectivePPT + rechAvg_local + effectiveStrmfl) - effectiveWPlant
 
@@ -693,28 +693,28 @@ waterIndexCalculations_f = function(
 				# recalibrating if necessary
 			if(( -5 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]) * max(thisFrcCultAreaWthIrr, .001)) > recentHistoricTrend |
 			  (-500 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2])) > (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) {
-				streamflowRechargeScalar = max(streamflowRechargeScalar * 0.67 - 0.0005, 0)
-				thisFrcAreaUnderCult = min(thisFrcAreaUnderCult * 1.005 + 0.01, 1)
-				thisFrcCultAreaWthIrr = min(min(thisFrcCultAreaWthIrr * 1.005 + 0.01, 1), thisFrcAreaUnderCult)
-				thisWplant = thisWplant * 1.02
-				initialSoilMoisture = initialSoilMoisture * 0.95
-				runoffRatio = min(runoffRatio * 1.05 + 0.01, 1)
-				effectiveIrrigationRatio = effectiveIrrigationRatio * 0.99
-				rechScalar = rechScalar * 0.9
+				streamflowRechargeScalar = max(streamflowRechargeScalar * 0.835 - 0.00025, 0)
+				thisFrcAreaUnderCult = min(thisFrcAreaUnderCult * 1.0025 + 0.005, 1)
+				thisFrcCultAreaWthIrr = min(min(thisFrcCultAreaWthIrr * 1.0025 + 0.005, 1), thisFrcAreaUnderCult)
+				thisWplant = thisWplant * 1.01
+				initialSoilMoisture = initialSoilMoisture * 0.975
+				runoffRatio = min(runoffRatio * 1.025 + 0.01, 1)
+				effectiveIrrigationRatio = effectiveIrrigationRatio * 0.995
+				rechScalar = rechScalar * 0.95
 			} else	{tooHigh = FALSE}
 			if(( 5 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]) * max(thisFrcCultAreaWthIrr, .001)) < recentHistoricTrend  |
 			  (500 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2])) < (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) {
-				streamflowRechargeScalar = min(streamflowRechargeScalar * 1.01 + 0.0001, 0.65)
-				thisFrcAreaUnderCult = max(thisFrcAreaUnderCult * 0.995 - 0.005, 0.001)
-				thisFrcCultAreaWthIrr = max(thisFrcCultAreaWthIrr * 0.995 - 0.005, 0.001)
-				initialSoilMoisture = initialSoilMoisture * 1.01
-				thisWplant = thisWplant * 0.98
-				runoffRatio = runoffRatio * 0.98
-				effectiveIrrigationRatio = max(effectiveIrrigationRatio * 1.005, 1)
-				rechScalar = rechScalar * 1.1
+				streamflowRechargeScalar = min(streamflowRechargeScalar * 1.005 + 0.00005, 0.65)
+				thisFrcAreaUnderCult = max(thisFrcAreaUnderCult * 0.9975 - 0.0025, 0.001)
+				thisFrcCultAreaWthIrr = max(thisFrcCultAreaWthIrr * 0.9975 - 0.0025, 0.001)
+				initialSoilMoisture = initialSoilMoisture * 1.005
+				thisWplant = thisWplant * 0.99
+				runoffRatio = runoffRatio * 0.99
+				effectiveIrrigationRatio = min(effectiveIrrigationRatio * 1.0025, 1)
+				rechScalar = rechScalar * 1.05
 			} else {tooLow = FALSE}
 				
-			if(numRuns == 10)	{ tooLow = FALSE; tooHigh = FALSE}
+			if(numRuns == 20)	{ tooLow = FALSE; tooHigh = FALSE}
 
 		}
 
@@ -983,18 +983,18 @@ waterIndexCalculations_locationSpecific_f = function(
 		thisFrcAreaUnderCult = hydroBasins$thisFrcCultAreaWthIrr[thisRow]	# defining water needs by location
 		thisFrcCultAreaWthIrr = hydroBasins$thisFrcCultAreaWthIrr[thisRow]
 		
-		if(is.na(customerTable_input$Annual_Water_Needs_mm[thisRow])){thisWplant = hydroBasins$thisWplant[thisRow]} else {thisWplant = customerTable_input$Annual_Water_Needs_mm[thisRow]} 
+		if(is.na(customerTable_input$Annual_Water_Needs_mm[thisRow])){thisWplant = hydroBasins$thisWplant[thisRow]} else {thisWplant = mean(customerTable_input$Annual_Water_Needs_mm[thisRow], hydroBasins$thisWplant[thisRow])} 
 
 			# defining runoff, w/ or w/o on-site storage 
 		runoffRatio = hydroBasins$runoffRatio[thisRow]
-		if(customerTable_input$OnsiteReservoirs[thisRow]) {storageRescalar = 0} else {storageRescalar = 1}
+		if(customerTable_input$OnsiteReservoirs[thisRow]) {storageRescalar = 0} else {storageRescalar = 0.5}
 
 			# rescalar of recharge, since recharge is poorly constrained
 		rechScalar = hydroBasins$rechScalar[thisRow]
 
 			# defining irrigation losses
 		effectiveIrrigationRatio = hydroBasins$effectiveIrrigationRatio[thisRow]
-		if(customerTable$DripIrrigation[thisRow])	{effectiveIrrigationRatio = 0.98}
+		if(customerTable$DripIrrigation[thisRow])	{effectiveIrrigationRatio = mean(0.98, effectiveIrrigationRatio)}
 
 			# accounting for soils at field capacity at the start of the growing season
 		if(length(growSeason) == 12){initialSoilMoisture = 0} else {initialSoilMoisture = hydroBasins$initialSoilMoisture[thisRow]}
@@ -1030,10 +1030,13 @@ waterIndexCalculations_locationSpecific_f = function(
 		streamflowRechargeScalar =  hydroBasins$streamflowRechargeScalar[thisRow]
 
 			# customer inputs defining streamflow diversions and average depth
-		streamflowImports_km3 = 0
-		if(!is.na(customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]))	{streamflowImports_km3 = customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]}
+		streamflowImports_km3 = 0	; doubleCountingStreamflow = FALSE
+		if(!is.na(customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]))	{
+			streamflowImports_km3 = customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]
+			doubleCountingStreamflow = TRUE
+		}
 		if(!is.na(customerTable$TotalAreaUnderCultivation_km2[thisRow]))	{
-			totLocalAreaUnderCult = min(customerTable$TotalAreaUnderCultivation_km2[thisRow], thisFrcCultAreaWthIrr * hydroBasins$SUB_AREA[thisRow])
+			totLocalAreaUnderCult = customerTable$TotalAreaUnderCultivation_km2[thisRow]
 		}	else	{ 
 			totLocalAreaUnderCult = thisFrcCultAreaWthIrr * hydroBasins$SUB_AREA[thisRow]
 		}
@@ -1075,7 +1078,7 @@ waterIndexCalculations_locationSpecific_f = function(
 		indexValuesArray[thisRow, , , , 3, 2] = pptQntsDrght - petQntsAvg * humidAI
 		# Plant Water Demand - Drought
 		growSeasonPPTqntsdrought_local = sqrt(pptQntsDrghtShft) * climateData[thisRow, , rep(growSeason[1], 8), , 1]	
-#		if(customerTable$Soil_Moisture[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing soil moisture is it cannot be used
+#		if(!customerTable$Soil_Moisture[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing soil moisture is it cannot be used
 		for(thisMonth in growSeason[-1])	{
 			growSeasonPPTqntsdrought_local = growSeasonPPTqntsdrought_local + sqrt(pptQntsDrghtShft) * climateData[thisRow, , rep(thisMonth, 8), , 1]	
 		}
@@ -1086,8 +1089,17 @@ waterIndexCalculations_locationSpecific_f = function(
 			
 		# Aridity Index w/ Irrigation - Avg
 			# using the Aridity Index to estimate streamflow losses to groundwater (i.e., regionally driven groundwater recharge)
-		effectiveStrmfl = 	effectiveIrrigationRatio * (streamflowImports_mm + (streamflowRechargeScalar / thisFrcCultAreaWthIrr) * (strmflQntsAvg / gridArea) * kmToMm)
-		effectiveStrmflDrght = 	effectiveIrrigationRatio * (streamflowImports_mm * 0.7 + (streamflowRechargeScalar / thisFrcCultAreaWthIrr) * (strmflQntsDrght / gridArea) * kmToMm)
+		streamflowRecharge = (streamflowRechargeScalar / thisFrcCultAreaWthIrr) * (strmflQntsAvg / gridArea) * kmToMm
+		streamflowRechargeDrght = (streamflowRechargeScalar / thisFrcCultAreaWthIrr) * (strmflQntsDrght / gridArea) * kmToMm
+		if(doubleCountingStreamflow)	{
+			streamflowRecharge = streamflowRecharge - 0.8 * streamflowImports_mm
+			if(any(streamflowRecharge < 0))	{	streamflowRecharge[which(streamflowRecharge < 0)] = 0	}
+			streamflowRechargeDrght = streamflowRechargeDrght - 0.8 * streamflowImports_mm
+			if(any(streamflowRechargeDrght < 0))	{	streamflowRechargeDrght[which(streamflowRechargeDrght < 0)] = 0	}
+		}
+		effectiveStrmfl = 	effectiveIrrigationRatio * (streamflowImports_mm + streamflowRecharge)
+		effectiveStrmflDrght = 	effectiveIrrigationRatio * (streamflowImports_mm * 0.9 + streamflowRechargeDrght)
+
 #		if(any(effectiveStrmfl > 1000))	{effectiveStrmfl[effectiveStrmfl > 1000] = 1000}
 #		if(any(effectiveStrmflDrght > 1000))	{effectiveStrmflDrght[effectiveStrmflDrght > 1000] = 1000}
 
@@ -1095,7 +1107,7 @@ waterIndexCalculations_locationSpecific_f = function(
 		indexValuesArray[thisRow, , , , 5, 2] = (pptQntsDrght + effectiveRech + effectiveStrmfl) - petQntsAvg * humidAI
 			# Plant Water Demand w/ Irrigation - Avg'
 		rechAvg_local = effectiveRech
-		if(customerTable$Groundwater_Access[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing groundwater if it cannot be used
+		if(!customerTable$Groundwater_Access[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing groundwater if it cannot be used
 		indexValuesArray[thisRow, , , , 6, 1] = (effectivePPT + rechAvg_local + effectiveStrmfl) / effectiveWPlant
 		indexValuesArray[thisRow, , , , 6, 2] = (effectivePPT + rechAvg_local + effectiveStrmfl) - effectiveWPlant
 
