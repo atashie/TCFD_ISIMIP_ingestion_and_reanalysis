@@ -12,8 +12,9 @@ clientName = 'Accenture_Nov2023'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvald
 clientName = 'Kempen_Nov2023'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 clientName = 'NuveenLATAM_Dec2023'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 clientName = 'NuveenAus_Dec2023'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+clientName = 'NuveenCali_Jan2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 
-customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_Kempen_Nov2023.csv'),#'Customer Onboarding Information_BNW.csv'),#'Customer Onboarding Information_WestHillsFarms.csv'),#'Customer Onboarding Information_BNW.csv'), 
+customerTable = data.table::fread(paste0(customerFolder, clientName, '\\', 'Customer Onboarding Information_NuveenCali_Jan2024.csv'),#Information_NuveenAus_Dec2023.csv'),#Information_Kempen_Nov2023#'Customer Onboarding Information_BNW.csv'),#'Customer Onboarding Information_WestHillsFarms.csv'),#'Customer Onboarding Information_BNW.csv'), 
 	skip = 1) #'Customer_Hazards_and_Locations-Rabobank_grid - Sheet1.csv'
 locationHeader = 'Location (name)'
 

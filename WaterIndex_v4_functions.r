@@ -176,6 +176,8 @@ if(rerunConcatenate) 	{
 
 
 	test = sf::st_read("J:\\Cai_data\\BasinATLAS_Data_v10\\BasinATLAS_v10\\BasinATLAS_v10_lev12.shp")
+	onlyGeo = test[, c("HYBAS_ID", "geometry")]
+	sf::st_write(onlyGeo, "J:\\Cai_data\\BasinATLAS_Data_v10\\BasinATLAS_v10\\BasinATLAS_v10_lev12_shapeOnly.shp", append=FALSE)
 	sf::sf_use_s2(FALSE)
 	hydroBasins_orig = sf::st_centroid(test)
 	hydroBasins_orig = cbind(hydroBasins_orig, sf::st_coordinates(hydroBasins_orig))
@@ -183,7 +185,7 @@ if(rerunConcatenate) 	{
 	rm(test)
 	#headdata.table::fwrite(hydroBasins_orig[,c(1, 7:8, 59:60, 73:74, 101:102, 257:258, 233:234, 237:238, 295:296)], 'J:\\Cai_data\\BasinATLAS_Data_v10\\basinAt12_df_centroid_lev12.csv')
 
-	hydroBasins_all = merge(hydroBasins_crops, hydroBasins_orig[,c(1, 7:8, 59:60, 73:74, 101:102, 257:258, 233:234, 237:238, 295:296)], all=TRUE, by = "HYBAS_ID")
+	hydroBasins_all = merge(hydroBasins_crops, hydroBasins_orig[,c(1, 7:8, 59:60, 73:74, 101:102, 257:258, 233:234, 237:238, 295:296)], all=TRUE, by = "HYBAS_ID", sort=FALSE)
 	rm(hydroBasins_crops)
 	rm(hydroBasins_orig)
 	data.table::fwrite(hydroBasins_all, "J:\\Cai_data\\BasinATLAS_Data_v10\\basinAt12_df_centroid_wCrop_simple.csv")
@@ -198,6 +200,7 @@ climateDataSelection_f = function(
 	climVarScalars = c(60*60*24*365.25,  60*60*24*365.25, 60*60*24*365.25, 60*60*24*365.25 / (1000^3), 1, 100),
 	ncFileLoc = 'J:\\Cai_data\\WaterIndex\\',
 	watershedInfoLoc = "J:\\Cai_data\\BasinATLAS_Data_v10\\basinAt12_df_centroid_wCrop_simple.csv",
+	watershedShapes = "J:\\Cai_data\\BasinATLAS_Data_v10\\BasinATLAS_v10\\BasinATLAS_v10_lev12_shapeOnly.shp",
 	customerTable_input = customerTable,
 	clientName_input = clientName,
 	historicData = FALSE,
@@ -244,11 +247,13 @@ climateDataSelection_f = function(
 				dim = c(nrow(customerTable_input), length(nc_decade), length(nc_valueClass), length(nc_scenario), length(climVars)))
 		}
 
+		allCloseBasins = NULL
 		for(thisLoc in 1:nrow(customerTable_input))	{
 			closestLat = which.min(abs(nc_lat - customerTable_input$Lat[thisLoc]))
 			closestLon = which.min(abs(nc_lon - customerTable_input$Lon[thisLoc]))
 
 			closestBasin = which.min((hydroBasins_df$Y - customerTable_input$Lat[thisLoc])^2 + (hydroBasins_df$X - customerTable_input$Lon[thisLoc])^2)
+			allCloseBasins = c(allCloseBasins, closestBasin)
 
 				# smoothing / downscaling and reweighting based on distance
 			closeishLats = rep(closestLat + c(-1,0,1), 3)
@@ -346,6 +351,13 @@ climateDataSelection_f = function(
 	theseDecades = 1:length(nc_decade)
 	saveRDS(climateData[ , theseDecades, , , ], paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_regional_rawValues.rds'))
 	data.table::fwrite(hydroBasins_out_df, paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_hydroBasins.csv'))
+	watershedShapes_shp = sf::st_read(watershedShapes)
+	mergeRow = NULL
+	for(i in 1:nrow(hydroBasins_out_df))	{
+		mergeRow = c(mergeRow, which(watershedShapes_shp$HYBAS_ID == hydroBasins_out_df$HYBAS_ID[i]))
+	}
+	watershedShapes_sub = watershedShapes_shp[mergeRow, ]
+	sf::st_write(watershedShapes_sub,  paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_hydroBasins_shapesOnly.shp'), append=FALSE)
 }
 
 # data assessment
@@ -763,7 +775,7 @@ waterIndexCalculations_f = function(
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 2, 6, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendMed_Deficit_C[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 2, 6, 2])$slope}
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 3, 6, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendHigh_Deficit_C[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 3, 6, 2])$slope}
 		hydroBasins$currentDeficit_D[thisRow] = 		mean(indexValuesArray[thisRow, 1:2, 8, , 8, 2])
-		hydroBasins$currentRatio_D[thisRow] = 			mean(indexValuesArray[thisRow, 1:2, 8, , 8, 2])
+		hydroBasins$currentRatio_D[thisRow] = 			mean(indexValuesArray[thisRow, 1:2, 8, , 8, 1])
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 1, 8, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendLow_Deficit_D[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 1, 8, 2])$slope}
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 2, 8, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendMed_Deficit_D[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 2, 8, 2])$slope}
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 3, 8, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendHigh_Deficit_D[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 3, 8, 2])$slope}
@@ -1094,11 +1106,11 @@ waterIndexCalculations_locationSpecific_f = function(
 		if(doubleCountingStreamflow)	{
 			streamflowRecharge = streamflowRecharge - 0.8 * streamflowImports_mm
 			if(any(streamflowRecharge < 0))	{	streamflowRecharge[which(streamflowRecharge < 0)] = 0	}
-			streamflowRechargeDrght = streamflowRechargeDrght - 0.8 * streamflowImports_mm
+			streamflowRechargeDrght = streamflowRechargeDrght - 0.27 * streamflowImports_mm
 			if(any(streamflowRechargeDrght < 0))	{	streamflowRechargeDrght[which(streamflowRechargeDrght < 0)] = 0	}
 		}
 		effectiveStrmfl = 	effectiveIrrigationRatio * (streamflowImports_mm + streamflowRecharge)
-		effectiveStrmflDrght = 	effectiveIrrigationRatio * (streamflowImports_mm * 0.9 + streamflowRechargeDrght)
+		effectiveStrmflDrght = 	effectiveIrrigationRatio * (streamflowImports_mm * 0.37 + streamflowRechargeDrght)
 
 #		if(any(effectiveStrmfl > 1000))	{effectiveStrmfl[effectiveStrmfl > 1000] = 1000}
 #		if(any(effectiveStrmflDrght > 1000))	{effectiveStrmflDrght[effectiveStrmflDrght > 1000] = 1000}
@@ -1213,6 +1225,8 @@ waterIndexPlotter_f(
 	doPlot = TRUE,
 	locOrReg = "regional"
 	)
+endTime = Sys.time()
+endTime - startTime
 waterIndexCalculations_locationSpecific_f()
 waterIndexPlotter_f(
 	doPlot = TRUE,

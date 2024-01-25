@@ -266,6 +266,16 @@ hazardWeighting = fread(paste0(customerFolder, 'Hazard_Weights - hazard_weights.
 appendedHazardFileLoc =  paste0(customerFolder, 'EQ_CAP_JAN_2024_temp_precip_hazards_jan_2.csv')
 waterOnly = FALSE
 
+# 	# EQ Cap - new format
+userName = 'EQ-Capital'	
+customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '_Jan2024b\\')
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-EQCap-JAN2024.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Definitions - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard Scores - Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Weights - hazard_weights.csv'))				
+appendedHazardFileLoc =  paste0(customerFolder, 'EQ_CAP_JAN_2024_temp_precip_hazards_jan_2.csv')
+waterOnly = FALSE
 
 ########################################################################################################################
 # functions to run analysis
