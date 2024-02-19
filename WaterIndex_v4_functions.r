@@ -925,7 +925,7 @@ waterIndexPlotter_f = function(
 #		for(thisScen in 1:3)	{
 #			summaryRatioOutput[,thisScen] = ksmooth(1:nrow(summaryRatioOutput), summaryRatioOutput[, thisScen], kernel = 'normal', bandwidth = 5, n.points = nrow(summaryRatioOutput))$y
 #		}
-		fwrite(summaryRatioOutput, paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, "Location_Name"],'_',locOrReg, '_', "_waterIndRatioSummary.csv"))
+#		fwrite(summaryRatioOutput, paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, "Location_Name"],'_',locOrReg, '_', "_waterIndRatioSummary.csv"))
 	}
 }
 
@@ -1212,8 +1212,6 @@ waterIndexCalculations_locationSpecific_f = function(
 
 
 
-
-
 	# input array is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
 
 startTime = Sys.time()
@@ -1222,18 +1220,44 @@ climateDataSelection_f()
 climateDataPlotting_f()
 waterIndexCalculations_f()
 waterIndexPlotter_f(
-	doPlot = TRUE,
+	doPlot = FALSE,
 	locOrReg = "regional"
 	)
 endTime = Sys.time()
 endTime - startTime
 waterIndexCalculations_locationSpecific_f()
 waterIndexPlotter_f(
-	doPlot = TRUE,
+	doPlot = FALSE,
 	locOrReg = "local"
 )
 endTime = Sys.time()
 endTime - startTime
+
+
+
+
+
+
+
+
+# extract watersheds for a country
+allHucs = sf::st_read("J:\\Cai_data\\BasinATLAS_Data_v10\\BasinATLAS_v10\\BasinATLAS_v10_lev12.shp")
+library(rnaturalearth)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+myCountry = subset(world, geounit == "Chile")
+library(sf)
+sf_use_s2(FALSE)
+
+agHucs = subset(allHucs, crp_pc_sse > 5)
+countryBasins = sf::st_crop(agHucs, myCountry)
+countryBasinsCents = sf::st_centroid(countryBasins)
+
+countryXy = as.data.frame(st_coordinates(countryBasinsCents))
+countryXySubset = subset(countryXy, Y < -29 & Y > -34 )
+write.csv(countryXySubset, "J:\\Downloads\\countrySubset.csv")
+
+
+
 
 library(ggplot2)
 library(viridis)
@@ -1658,7 +1682,7 @@ waterIndexPlotter_f = function(
 #		for(thisScen in 1:3)	{
 #			summaryRatioOutput[,thisScen] = ksmooth(1:nrow(summaryRatioOutput), summaryRatioOutput[, thisScen], kernel = 'normal', bandwidth = 5, n.points = nrow(summaryRatioOutput))$y
 #		}
-		fwrite(summaryRatioOutput, paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, ..locationHeader], '_', "_waterIndRatioSummary.csv"))
+#		fwrite(summaryRatioOutput, paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, ..locationHeader], '_', "_waterIndRatioSummary.csv"))
 	}
 }
 

@@ -278,7 +278,7 @@ appendedHazardFileLoc =  paste0(customerFolder, 'EQ_CAP_JAN_2024_2_OFFICES_temp_
 waterOnly = FALSE
 
 # 	# EQ Cap - new format
-userName = 'EQ-CAP-JAN-2024-2-OFFICES'	
+userName = 'EQ-CAP-31JAN-2024'	
 customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '\\')
 
 customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-EQCap-JAN2024.csv')) #'HMClause_locations_allCucurbit.csv'
