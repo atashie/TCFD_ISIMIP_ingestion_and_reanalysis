@@ -21,7 +21,8 @@ gracePlotter_f = function(
 	customerTable_input = customerTable,
 	customerFolder_input = customerFolder,
 	clientName_input = clientName,
-	graceDataLoc = 'J:\\Cai_data\\Rabo\\GRACE\\GRCTellus.JPL.200204_202211.GLO.RL06.1M.MSCNv03CRI.nc'
+	graceDataLoc = 'J:\\Cai_data\\Rabo\\GRACE\\GRCTellus.JPL.200204_202211.GLO.RL06.1M.MSCNv03CRI.nc',
+	doPlot = FALSE
 	)
 	{
 	#test = nc_open('J:\\Cai_data\\Rabo\\GRACE\\GRCTellus.JPL.200204_202211.GLO.RL06.1M.MSCNv03.nc')
@@ -91,40 +92,42 @@ gracePlotter_f = function(
 		}
 
 
-			# water index deficits
-		png(paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, "Location_Name"], '_', "_GRACE-historicalGW.png"), width=900, height=600)
-		par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(1,1), font.lab=1.5, bty='l', cex.lab=1.5*1.8, cex.axis=1.5*1.4, cex.main=1.5*1.8, col='#1A232F')
-		windowsFonts(A = windowsFont("Roboto"))
+		if(doPlot)	{
+				# water index deficits
+			png(paste0(customerFolder_input, clientName_input, '\\',  customerTable_input[thisLoc, "Location_Name"], '_', "_GRACE-historicalGW.png"), width=900, height=600)
+			par(mar=2*c(1.75,1.75,0.75,1.75), mgp=2*c(1.5,.6,0), mfrow=c(1,1), font.lab=1.5, bty='l', cex.lab=1.5*1.8, cex.axis=1.5*1.4, cex.main=1.5*1.8, col='#1A232F')
+			windowsFonts(A = windowsFont("Roboto"))
 
-		plotRange = c(min(theseLweThickLand) - max(theseUncertLand), max(theseLweThickLand) + max(theseUncertLand))
-		plot(graceDates, theseLweThickLand,  ylim = plotRange,
-			type='l', lwd=1, col='white', #xaxt = 'n', #log='y',
-			main='', ylab='', xlab='',
-			col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
-			family='A')
-		abline(h=0, lwd=2, lty=1, col='#1A232F')
-	#	axis(1, at = nc_decade ,col.lab='#1A232F', col.axis='#666D74', 
-	#		labels = nc_decade)
-	#	abline(v=fstOfMnths, lwd=1, col=adjustcolor('#666D74', alpha.f=0.1))
-		polygon(x=c(graceDates, rev(graceDates)), y=c(theseLweThickLand + theseUncertLand, rev(theseLweThickLand - theseUncertLand)),
-			col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-		polygon(x=c(graceDates, rev(graceDates)), y=c(theseLweThickLand + 2*theseUncertLand, rev(theseLweThickLand - 2*theseUncertLand)),
-			col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-		polygon(x=c(graceDates, rev(graceDates)), y=c(theseLweThickLand + 4*theseUncertLand, rev(theseLweThickLand - 4*theseUncertLand)),
-			col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
-	#	loessSmooth = loess(theseLweThickLand ~ nc_time)
-		linearTrend = lm(theseLweThickLand ~ nc_time)
-	#	lines(nc_decade, waterIndexDataPlot[thisLoc, , 17, thisScen, thisIndexVal], 
-	#		col='#54575a', lwd=5)	#4cbfad
-		lines(graceDates, theseLweThickLand,
-			col='#0098B2', lwd=1.5)
-		lines(graceDates, predict(linearTrend),
-			col='#EE6222', lwd=3)
-		text(last(graceDates), 0, '2004-2010 avg', adj = c(1,-0.2), cex=1.25, col='#666D74')
-		text(first(graceDates), min(theseLweThickLand), paste0(round(linearTrend$coefficients[2]* 365, 0), ' mm per Year'), adj = c(0,0), cex=2.25, col ='#EE6222')
-	#	lines(nc_decade, nc_testDat[thisLon, thisLat, , 1, 1], 
-	#		col='#4cbfad', lwd=3) #015f6f
-		dev.off()
+			plotRange = c(min(theseLweThickLand) - max(theseUncertLand), max(theseLweThickLand) + max(theseUncertLand))
+			plot(graceDates, theseLweThickLand,  ylim = plotRange,
+				type='l', lwd=1, col='white', #xaxt = 'n', #log='y',
+				main='', ylab='', xlab='',
+				col.lab='#1A232F', col.axis='#666D74', col.main='#1A232F',
+				family='A')
+			abline(h=0, lwd=2, lty=1, col='#1A232F')
+		#	axis(1, at = nc_decade ,col.lab='#1A232F', col.axis='#666D74', 
+		#		labels = nc_decade)
+		#	abline(v=fstOfMnths, lwd=1, col=adjustcolor('#666D74', alpha.f=0.1))
+			polygon(x=c(graceDates, rev(graceDates)), y=c(theseLweThickLand + theseUncertLand, rev(theseLweThickLand - theseUncertLand)),
+				col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+			polygon(x=c(graceDates, rev(graceDates)), y=c(theseLweThickLand + 2*theseUncertLand, rev(theseLweThickLand - 2*theseUncertLand)),
+				col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+			polygon(x=c(graceDates, rev(graceDates)), y=c(theseLweThickLand + 4*theseUncertLand, rev(theseLweThickLand - 4*theseUncertLand)),
+				col=adjustcolor('#0098B2', alpha.f=0.1), border=NA)
+		#	loessSmooth = loess(theseLweThickLand ~ nc_time)
+			linearTrend = lm(theseLweThickLand ~ nc_time)
+		#	lines(nc_decade, waterIndexDataPlot[thisLoc, , 17, thisScen, thisIndexVal], 
+		#		col='#54575a', lwd=5)	#4cbfad
+			lines(graceDates, theseLweThickLand,
+				col='#0098B2', lwd=1.5)
+			lines(graceDates, predict(linearTrend),
+				col='#EE6222', lwd=3)
+			text(last(graceDates), 0, '2004-2010 avg', adj = c(1,-0.2), cex=1.25, col='#666D74')
+			text(first(graceDates), min(theseLweThickLand), paste0(round(linearTrend$coefficients[2]* 365, 0), ' mm per Year'), adj = c(0,0), cex=2.25, col ='#EE6222')
+		#	lines(nc_decade, nc_testDat[thisLon, thisLat, , 1, 1], 
+		#		col='#4cbfad', lwd=3) #015f6f
+			dev.off()
+		}
 
 
 		graceDataTable = rbind(graceDataTable, data.table(
@@ -1248,15 +1251,45 @@ myCountry = subset(world, geounit == "Chile")
 library(sf)
 sf_use_s2(FALSE)
 
-agHucs = subset(allHucs, crp_pc_sse > 5)
+agHucs = subset(allHucs, crp_pc_sse > 20)
 countryBasins = sf::st_crop(agHucs, myCountry)
 countryBasinsCents = sf::st_centroid(countryBasins)
 
 countryXy = as.data.frame(st_coordinates(countryBasinsCents))
-countryXySubset = subset(countryXy, Y < -29 & Y > -34 )
+countryXySubset = subset(countryXy, (Y < -29 & Y > -34 & X < -70) | (Y < -37.6 & Y > -39.5 & X < -70) )
 write.csv(countryXySubset, "J:\\Downloads\\countrySubset.csv")
 
 
+
+# extract watersheds by shapefile intersection
+library(sf)
+sf_use_s2(FALSE)
+allHucs = sf::st_read("J:\\Cai_data\\BasinATLAS_Data_v10\\BasinATLAS_v10\\BasinATLAS_v10_lev12.shp")
+#userShp = sf::st_read("J:\\")
+#mergedHucs = 
+
+agHucs = subset(allHucs, crp_pc_sse > 20)
+countryBasins = sf::st_crop(agHucs, myCountry)
+countryBasinsCents = sf::st_centroid(countryBasins)
+
+countryXy = as.data.frame(st_coordinates(countryBasinsCents))
+countryXySubset = subset(countryXy, (Y < -29 & Y > -34 & X < -70) | (Y < -37.6 & Y > -39.5 & X < -70) )
+write.csv(countryXySubset, "J:\\Downloads\\countrySubset.csv")
+
+# or
+library(sf)
+sf_use_s2(FALSE)
+allHucs = sf::st_read("J:\\Cai_data\\BasinATLAS_Data_v10\\BasinATLAS_v10\\BasinATLAS_v10_lev12.shp", layer = "BasinATLAS_v10_lev12")
+agHucs = subset(allHucs, crp_pc_sse > 5)
+rm(allHucs)
+userShp = sf::st_read("J:\\Downloads\\McCain_growingBasins.gpkg")
+
+userIntersects = st_intersects(userShp[49:55,],agHucs)
+countryBasins = agHucs[unlist(userIntersects), ]
+countryBasinsCents = sf::st_centroid(countryBasins)
+
+countryXy = as.data.frame(st_coordinates(countryBasinsCents))
+write.csv(countryXy, "J:\\Downloads\\countrySubset_McCain.csv")
 
 
 library(ggplot2)
