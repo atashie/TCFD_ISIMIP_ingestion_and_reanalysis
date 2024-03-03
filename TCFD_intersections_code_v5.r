@@ -278,14 +278,14 @@ appendedHazardFileLoc =  paste0(customerFolder, 'EQ_CAP_JAN_2024_2_OFFICES_temp_
 waterOnly = FALSE
 
 # 	# EQ Cap - new format
-userName = 'EQ-CAP-31JAN-2024'	
-customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\', userName, '\\')
+userName = 'EQCap-31JAN2024'	
+customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\EQ-CAP-31JAN-2024\\')
 
-customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-EQCap-JAN2024.csv')) #'HMClause_locations_allCucurbit.csv'
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-EQCap-31JAN2024.csv')) #'HMClause_locations_allCucurbit.csv'
 hazardTable = fread(paste0(customerFolder, 'Hazard_Definitions - Hazard Definitions.csv'))							# 
 relHazScores = fread(paste0(customerFolder, 'Hazard Scores - Hazard_Tables - Hazard Scores.csv'))				
 hazardWeighting = fread(paste0(customerFolder, 'Hazard_Weights - hazard_weights.csv'))				
-appendedHazardFileLoc =  paste0(customerFolder, 'EQ_CAP_JAN_2024_2_OFFICES_temp_precip_hazards_jan_24.csv')
+appendedHazardFileLoc =  paste0(customerFolder, 'EQCap-31JAN2024_temp_precip_hazards_feb_6.csv')
 waterOnly = FALSE
 
 ########################################################################################################################
@@ -395,7 +395,7 @@ summary(subset(dataOutput, Decade == 2090 & Scenario == "3. High Emissions" & Ha
 summary(subset(dataOutput, Decade == 2090 & Scenario == "2. Middle of the Road" & Hazard == 'Aggregate Climate Score'))
 summary(subset(dataOutput, Decade == 2090 & Scenario == "1. Low Emissions" & Hazard == 'Aggregate Climate Score'))
 par(mfrow = c(3,3))
-thisLoc = 1
+thisLoc = 2
 thisScen = unique(dataOutput$Scenario)[3]
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Water Stress' & Location == customerTable$Location[thisLoc])$Percentile)	
 plot(subset(dataOutput, Scenario == thisScen & Hazard == 'Hurricanes' & Location == customerTable$Location[thisLoc])$Percentile)	
