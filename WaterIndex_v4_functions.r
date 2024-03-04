@@ -1218,9 +1218,11 @@ waterIndexCalculations_locationSpecific_f = function(
 	# input array is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
 
 startTime = Sys.time()
-gracePlotter_f()
+gracePlotter_f(
+	doPlot = FALSE
+	)
 climateDataSelection_f()
-climateDataPlotting_f()
+#climateDataPlotting_f()
 waterIndexCalculations_f()
 waterIndexPlotter_f(
 	doPlot = FALSE,
@@ -1232,7 +1234,7 @@ waterIndexCalculations_locationSpecific_f()
 waterIndexPlotter_f(
 	doPlot = FALSE,
 	locOrReg = "local"
-)
+	)
 endTime = Sys.time()
 endTime - startTime
 
