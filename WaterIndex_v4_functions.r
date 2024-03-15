@@ -706,8 +706,11 @@ waterIndexCalculations_f = function(
 			)
 		
 				# recalibrating if necessary
-			if(( -5 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]) * max(thisFrcCultAreaWthIrr, .001)) > recentHistoricTrend |
-			  (-500 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2])) > (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) {
+			waterBalanceUnscal = mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2])
+			waterBalanceScaled = waterBalanceUnscal * max(thisFrcCultAreaWthIrr, .001)
+			currentAridityIndex = mean(indexValuesArray[thisRow, 1:2, 8, , 1, 1]) * humidAI
+			if(( -5 + waterBalanceScaled) > recentHistoricTrend  |
+			  (-1000 + waterBalanceUnscal) > (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) {
 				streamflowRechargeScalar = max(streamflowRechargeScalar * 0.835 - 0.00025, 0)
 				thisFrcAreaUnderCult = min(thisFrcAreaUnderCult * 1.0025 + 0.005, 1)
 				thisFrcCultAreaWthIrr = min(min(thisFrcCultAreaWthIrr * 1.0025 + 0.005, 1), thisFrcAreaUnderCult)
@@ -715,20 +718,20 @@ waterIndexCalculations_f = function(
 				initialSoilMoisture = initialSoilMoisture * 0.975
 				runoffRatio = min(runoffRatio * 1.025 + 0.01, 1)
 				effectiveIrrigationRatio = effectiveIrrigationRatio * 0.995
-				rechScalar = rechScalar * 0.95
+				rechScalar = rechScalar * 0.98
 			} else	{tooHigh = FALSE}
-			if(( 5 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]) * max(thisFrcCultAreaWthIrr, .001)) < recentHistoricTrend  |
-			  (500 + mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2])) < (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) {
+			if((( 5 + waterBalanceScaled) < recentHistoricTrend & (2000 + waterBalanceUnscal) < (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) |
+			  (500 + waterBalanceUnscal) < (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) {
 				streamflowRechargeScalar = min(streamflowRechargeScalar * 1.005 + 0.00005, 0.65)
 				thisFrcAreaUnderCult = max(thisFrcAreaUnderCult * 0.9975 - 0.0025, 0.001)
 				thisFrcCultAreaWthIrr = max(thisFrcCultAreaWthIrr * 0.9975 - 0.0025, 0.001)
-				initialSoilMoisture = initialSoilMoisture * 1.005
+				initialSoilMoisture = initialSoilMoisture * 1.025
 				thisWplant = thisWplant * 0.99
 				runoffRatio = runoffRatio * 0.99
 				effectiveIrrigationRatio = min(effectiveIrrigationRatio * 1.0025, 1)
-				rechScalar = rechScalar * 1.05
+				rechScalar = rechScalar * 1.02
 			} else {tooLow = FALSE}
-				
+			
 			if(numRuns == 20)	{ tooLow = FALSE; tooHigh = FALSE}
 
 		}
@@ -1180,7 +1183,7 @@ waterIndexCalculations_locationSpecific_f = function(
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 2, 6, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendMed_Deficit_C[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 2, 6, 2])$slope}
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 3, 6, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendHigh_Deficit_C[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 3, 6, 2])$slope}
 		hydroBasins$currentDeficit_D[thisRow] = 		mean(indexValuesArray[thisRow, 1:2, 8, , 8, 2])
-		hydroBasins$currentRatio_D[thisRow] = 			mean(indexValuesArray[thisRow, 1:2, 8, , 8, 2])
+		hydroBasins$currentRatio_D[thisRow] = 			mean(indexValuesArray[thisRow, 1:2, 8, , 8, 1])
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 1, 8, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendLow_Deficit_D[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 1, 8, 2])$slope}
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 2, 8, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendMed_Deficit_D[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 2, 8, 2])$slope}
 		if(cor.test(1:numDecades, indexValuesArray[thisRow, , 8, 3, 8, 2], method="spearman")$p.value < 0.1) {hydroBasins$trendHigh_Deficit_D[thisRow] = 		robslopes::TheilSen(1:numDecades, indexValuesArray[thisRow, , 8, 3, 8, 2])$slope}
