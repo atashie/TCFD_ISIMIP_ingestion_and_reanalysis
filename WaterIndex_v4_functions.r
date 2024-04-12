@@ -59,6 +59,7 @@ gracePlotter_f = function(
 			# smoothing / downscaling and reweighting based on distance
 		closeishLats = rep(closestLat + c(-2,-1,0,1,2), 5)
 		closeishLons = rep(closestLon + c(-2,-1,0,1,2), each = 5)
+		if(any(closeishLons > 720)) {closeishLons[which(closeishLons > 720)] = 1} # prime meridian
 		closeishLatsVals = (nc_lat[closeishLats] - customerTable_input$Lat[thisLoc])^2
 		closeishLonsVals = (nc_lon[closeishLons] - customerTable_input$Lon[thisLoc])^2
 		thisExponent = 2 		# may want to revisit weighting, bu this should be standard
@@ -192,6 +193,7 @@ if(rerunConcatenate) 	{
 	rm(hydroBasins_crops)
 	rm(hydroBasins_orig)
 	data.table::fwrite(hydroBasins_all, "J:\\Cai_data\\BasinATLAS_Data_v10\\basinAt12_df_centroid_wCrop_simple.csv")
+#	sf::st_write(hydroBasins_simpleCrop_sf[,c(1, 7:8, 59:60, 73:74, 101:102, 257:258, 233:234, 237:238))
 }
 
 
@@ -319,6 +321,13 @@ climateDataSelection_f = function(
 					}
 				}
 				if(thisClimVar == 4)	{
+						# checking for negative streamflow values and forcing to 0
+					if(any(theseClimateValues < 0)) {theseClimateValues[theseClimateValues < 0] = 0}
+						#!!! TEMP FIX
+						# dampening the mean until we get the geometric mean running
+					theseClimateValues[ , 13] = (theseClimateValues[ , 13] + theseClimateValues[ , 15] + theseClimateValues[ , 16] + theseClimateValues[ , 17] + theseClimateValues[ , 18] + theseClimateValues[ , 19]) / 6
+						#!!! END TEMP FIX
+						# rescaling
 					if(!is.na(customerTable_input$SurfaceWater_annualAvgFlows_km3[thisLoc]))	{
 						theseClimateValues = theseClimateValues * (customerTable_input$SurfaceWater_annualAvgFlows_km3[thisLoc] / mean(theseClimateValues[1:2, 13]))
 					} else	{
