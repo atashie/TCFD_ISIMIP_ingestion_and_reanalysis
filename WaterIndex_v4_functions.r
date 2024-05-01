@@ -60,6 +60,7 @@ gracePlotter_f = function(
 		closeishLats = rep(closestLat + c(-2,-1,0,1,2), 5)
 		closeishLons = rep(closestLon + c(-2,-1,0,1,2), each = 5)
 		if(any(closeishLons > 720)) {closeishLons[which(closeishLons > 720)] = 1} # prime meridian
+		if(any(closeishLons <= 0)) {closeishLons[which(closeishLons <= 0)] = 720} # prime meridian
 		closeishLatsVals = (nc_lat[closeishLats] - customerTable_input$Lat[thisLoc])^2
 		closeishLonsVals = (nc_lon[closeishLons] - customerTable_input$Lon[thisLoc])^2
 		thisExponent = 2 		# may want to revisit weighting, bu this should be standard
@@ -497,7 +498,7 @@ waterIndexCalculations_f = function(
 	numDecades = length(climateData[1, ,1,1,1])
 	indexValuesArray = array(rep(myMissingData, nrow(customerTable) * numDecades * length(indexValueQuant) * length(climateData[1,1,1, ,1]) * length(indexValues) * length(indexValueClass)), 
 										dim = c(nrow(customerTable),  numDecades,  length(indexValueQuant),  length(climateData[1,1,1, ,1]),  length(indexValues), length(indexValueClass)))
-	calibOuts = data.table::data.table(location = NA, numRuns = NA, meanVal = NA, streamflowRechargeScalar = NA, thisFrcAreaUnderCult = NA, thisFrcCultAreaWthIrr = NA, thisWplant = NA,
+	calibOuts = data.table::data.table(location = NA, numRuns = NA, meanVal_raw_C = NA, meanVal_ratio_A = NA, meanVal_ratio_B = NA, streamflowRechargeScalar = NA, thisFrcAreaUnderCult = NA, thisFrcCultAreaWthIrr = NA, thisWplant = NA,
 		runoffRatio = NA, initialSoilMoisture = NA, effectiveIrrigationRatio = NA, recentHistoricSlope = NA, rescaledRecentHistoricSlope = NA, rechScalar = NA)
 
 		# reading in crop phenology table
@@ -701,7 +702,9 @@ waterIndexCalculations_f = function(
 				data.table::data.table(
 					location = customerTable_input$Location_Name[thisRow],
 					numRuns = numRuns,
-					meanVal = mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]),
+					meanVal_raw_C = mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2]),
+					meanVal_ratio_A = mean(indexValuesArray[thisRow, 1:2, 8, , 2, 1]),
+					meanVal_ratio_B = mean(indexValuesArray[thisRow, 1:2, 8, , 4, 1]),
 					streamflowRechargeScalar = streamflowRechargeScalar,
 					thisFrcAreaUnderCult = thisFrcAreaUnderCult,
 					thisFrcCultAreaWthIrr = thisFrcCultAreaWthIrr,
@@ -715,6 +718,8 @@ waterIndexCalculations_f = function(
 			)
 		
 				# recalibrating if necessary
+			if(mean(indexValuesArray[thisRow, 1:2, 8, , 2, 1]) > 0.9)	{tooHigh = FALSE; tooLow = FALSE}
+
 			waterBalanceUnscal = mean(indexValuesArray[thisRow, 1:2, 8, , 6, 2])
 			waterBalanceScaled = waterBalanceUnscal * max(thisFrcCultAreaWthIrr, .001)
 			currentAridityIndex = mean(indexValuesArray[thisRow, 1:2, 8, , 1, 1]) * humidAI
@@ -729,8 +734,9 @@ waterIndexCalculations_f = function(
 				effectiveIrrigationRatio = effectiveIrrigationRatio * 0.995
 				rechScalar = rechScalar * 0.98
 			} else	{tooHigh = FALSE}
-			if((( 5 + waterBalanceScaled) < recentHistoricTrend & (2000 + waterBalanceUnscal) < (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) |
-			  (500 + waterBalanceUnscal) < (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) {
+			if(((5 + waterBalanceScaled) < recentHistoricTrend & (2000 + waterBalanceUnscal) < (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001))) |
+			  (750 + waterBalanceUnscal) < (recentHistoricTrend / max(thisFrcCultAreaWthIrr, .001)) |
+			  (waterBalanceUnscal > 1000)) {
 				streamflowRechargeScalar = min(streamflowRechargeScalar * 1.005 + 0.00005, 0.65)
 				thisFrcAreaUnderCult = max(thisFrcAreaUnderCult * 0.9975 - 0.0025, 0.001)
 				thisFrcCultAreaWthIrr = max(thisFrcCultAreaWthIrr * 0.9975 - 0.0025, 0.001)
