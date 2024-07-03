@@ -18,6 +18,7 @@ clientName = 'Rabo_Feb2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'
 clientName = 'McCain_Feb2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 clientName = 'McCain_Mar2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 clientName = 'NuveenIberia_Apr2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+clientName = 'NuveenChile_May2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 
 customerTable = data.table::fread(paste0(customerFolder, clientName, '\\Customer Onboarding Information_',
 		clientName, '.csv'),#Information_NuveenAus_Dec2023.csv'),#Information_Kempen_Nov2023#'Customer Onboarding Information_BNW.csv'),#'Customer Onboarding Information_WestHillsFarms.csv'),#'Customer Onboarding Information_BNW.csv'), 

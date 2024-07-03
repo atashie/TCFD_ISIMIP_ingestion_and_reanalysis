@@ -288,6 +288,18 @@ hazardWeighting = fread(paste0(customerFolder, 'Hazard_Weights - hazard_weights.
 appendedHazardFileLoc =  paste0(customerFolder, 'EQCap-31JAN2024_temp_precip_hazards_feb_6.csv')
 waterOnly = FALSE
 
+# 	# EQ Cap - new format
+userName = 'EQ-CAP-JUN-2024'	
+customerFolder = paste0('J:\\Cai_data\\TCFD\\locations\\EQ-CAP-Jun2024\\')
+
+customerTable = fread(paste0(customerFolder, 'Customer_Hazards_and_Locations-EQ-CAP-Jun2024.csv')) #'HMClause_locations_allCucurbit.csv'
+hazardTable = fread(paste0(customerFolder, 'Hazard_Definitions - Hazard Definitions.csv'))							# 
+relHazScores = fread(paste0(customerFolder, 'Hazard Scores - Hazard_Tables - Hazard Scores.csv'))				
+hazardWeighting = fread(paste0(customerFolder, 'Hazard_Weights - hazard_weights.csv'))				
+appendedHazardFileLoc =  paste0(customerFolder, 'EQCap-13JUN2024_temp_precip_hazards.csv')
+waterOnly = FALSE
+
+
 ########################################################################################################################
 # functions to run analysis
 
@@ -376,7 +388,7 @@ dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_Nuveen -
 #dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_ITC_Buffalo_2023-06-13.csv'))
 customerFolder = 'J:\\Cai_data\\TCFD\\locations\\NuveenPistachio_Jun2023\\'
 dataOutput = fread(paste0(customerFolder, 'processedOutputForAllHazards_Nuveen - Pistachio_2023-06-26.csv'))
-
+dataOutput = fread(paste0(customerFolder,"processedOutputForAllHazards_EQ-CAP-Jun2024_2024-06-13.csv"))
 
 
 summary(subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value - subset(dataOutput, Hazard == 'Coastal Flood')$Raw_Hazard_Value_25th)

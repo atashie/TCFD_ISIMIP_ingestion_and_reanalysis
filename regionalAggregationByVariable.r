@@ -3509,6 +3509,126 @@ st_write(finalShapefile, "J:\\Cai_data\\TCFD\\PoliticalBoundaries\\IndianStates\
 
 
 
+############# global provinces / counties
+provinces10 = st_as_sf(st_read('J:\\Cai_data\\ne_10m_admin_1_states_provinces\\ne_10m_admin_1_states_provinces.shp'))
+
+
+
+################################ choose your variable
+	################################ choose your variable
+hazardName = 'cwood-dcddrybdltrv2_processed'
+thisDecade = 1
+rawOrPercentile = 1
+	################################ choose your variable
+	################################ choose your variable
+
+hazardMeasureNC = nc_open(paste0(hazardFolder, hazardName, '.nc'))
+hazardData = ncvar_get(hazardMeasureNC, "tcfdVariable")
+nc_lat = ncvar_get(hazardMeasureNC, 'lat')
+nc_lon = ncvar_get(hazardMeasureNC, 'lon')
+
+	# abs values
+	# nc in dimensions of [lon/lat, lat/lon, decade, scen, variable]
+		#variable med = 1, Q25=5, Q75=6, slope=3, pval=4, percentile=2
+geomData = data.frame(lat = rep(nc_lat, each=length(nc_lon)), lon = rep(nc_lon, length(nc_lat)),
+	plotData = as.vector(hazardData[ , , thisDecade, 2, rawOrPercentile]))
+#df_sub = subset(geomData, lat >= latlonBox[1] & lat <= latlonBox[2] & lon >= latlonBox[3] & lon <= latlonBox[4])
+geomData_sf = st_as_sf(geomData, coords=c('lon','lat'), remove=FALSE, crs=4326, agr='constant')
+
+	# provinces
+geomJoin = st_join(provinces10, geomData_sf, join = st_intersects)
+#geomAvg = aggregate(plotData ~ State_Name, mean, data = geomJoin)#, na.action = na.pass)
+#geomAvgMrg = merge(geomAvg, india, by = 'State_Name')
+#geomAvg = aggregate(plotData ~ shapeName, mean, data = geomJoin, na.action = na.pass)
+#geomAvgMrg = merge(geomAvg, india, by = 'shapeName')
+geomAvg = aggregate(plotData ~ name, mean, data = geomJoin, na.action = na.omit)
+geomAvgMrg = merge(geomAvg, provinces10, by = 'name')
+missingLocs = which(!(provinces10$name %in% geomAvgMrg$name))
+geomNN = st_join(provinces10[missingLocs,], geomData_sf, join = st_nearest_feature)
+geomAvgMrg = dplyr::bind_rows(geomAvgMrg, geomNN)
+geomAvgMrg_sf = st_as_sf(geomAvgMrg)
+
+
+
+
+
+
+ggplot(data = geomAvgMrg_sf) +
+	geom_sf(colour = "grey10", aes(fill = plotData, color=NA))	+
+	scale_fill_viridis(option = 'viridis', 
+		trans = scales::pseudo_log_trans(sigma = 3), 
+		direction = 1, name = "kg/m2")	+
+
+#	geom_raster(interpolate = TRUE)	+
+#	geom_sf(data = df_sub, aes(fill = plotData, color = plotData)) +
+	theme_light(base_size = 22)	+
+	theme(panel.ontop=FALSE, panel.background=element_blank(), legend.position = c(.1,.2)) +
+#	scale_colour_distiller(palette='Spectral', 
+#                         limits=c(quantile(df_sub, .7, na.rm=T), 
+#                                  quantile(df_sub, .999, na.rm=T))) +
+#	geom_sf(data=ocean50, fill="white", colour='white')+
+#	borders('world', xlim=range(latlonBox_local$lon), ylim=range(latlonBox_local$lat), 
+ #           colour='gray90', size=.2)	+
+#	geom_point(data=customerTable, aes(y=Lat, x=Lon),  col='skyblue', size=5, shape='+', stroke=1)	+
+
+#	coord_quickmap(xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2])) +
+#	coord_sf(default_crs = sf::st_crs(thisCRS), xlim=c(latlonBox_local[3], latlonBox_local[4]), ylim=c(latlonBox_local[1], latlonBox_local[2])) + 
+#	coord_fixed(expand = FALSE)	+
+#	coord_sf(xlim=c(latlonBox[3], latlonBox[4]), ylim=c(latlonBox[1], latlonBox[2]), expand = FALSE) + 
+#	geom_sf(data=locOfInt_sf, col='red1',size=5, shape='+', stroke=3) +
+	coord_sf(xlim=c(-170, -30), ylim=c(-60,75), expand = FALSE) + 
+	labs(x = NULL, y = NULL, title=paste0('Timber'),
+		subtitle='kg / m2', 
+         x="Longitude", y="Latitude", 
+         fill='')
+
+
+
+
+
+
+
+
+queens <- poly2nb(geomAvgMrg_sf, queen = TRUE, snap = 1)
+if(any(is.na(geomAvgMrg_sf$plotData)))	{
+	for(i in which(is.na(geomAvgMrg_sf$plotData)))	{
+		geomAvgMrg_sf$plotData[i] <- geomAvgMrg_sf$plotData[queens[[i]][1]]
+	}
+}
+
+finalShapefile = geomAvgMrg_sf[,1]
+
+	################################ name your variable
+	################################ name your variable
+finalShapefile$DroughtSeverity_2010 = geomAvgMrg_sf$plotData
+	################################ name your variable
+	################################ name your variable
+st_write(finalShapefile, "J:\\Cai_data\\TCFD\\PoliticalBoundaries\\IndianStates\\indiaBasicAssessData_MAR2024.shp", overwrite = TRUE, append=FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 myWaterMask = readRDS(waterMaskLoc)
 
 		# identifying lat lon coordinates for tiffs
