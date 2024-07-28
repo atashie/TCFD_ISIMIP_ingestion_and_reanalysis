@@ -63,7 +63,7 @@ gracePlotter_f = function(
 		if(any(closeishLons <= 0)) {closeishLons[which(closeishLons <= 0)] = 720} # prime meridian
 		closeishLatsVals = (nc_lat[closeishLats] - customerTable_input$Lat[thisLoc])^2
 		closeishLonsVals = (nc_lon[closeishLons] - customerTable_input$Lon[thisLoc])^2
-		thisExponent = 2 		# may want to revisit weighting, bu this should be standard
+		thisExponent = 2 		# may want to revisit weighting, but this should be standard
 		distanceBox = sqrt(closeishLatsVals + closeishLonsVals)
 		boxWeighting = max(distanceBox, na.rm=TRUE) - distanceBox
 	#	boxWeighting = 1 - distanceBox # since max distance of a 2x2 .5 deg grid is 1 deg
@@ -496,8 +496,8 @@ waterIndexCalculations_f = function(
 	indexValueQuant = c('Q05', 'Q15', 'Q25', 'Q50', 'Q75', 'Q85', 'Q95', 'Mn')
 	climateData = readRDS(paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_regional_rawValues.rds'))
 	numDecades = length(climateData[1, ,1,1,1])
-	indexValuesArray = array(rep(myMissingData, nrow(customerTable) * numDecades * length(indexValueQuant) * length(climateData[1,1,1, ,1]) * length(indexValues) * length(indexValueClass)), 
-										dim = c(nrow(customerTable),  numDecades,  length(indexValueQuant),  length(climateData[1,1,1, ,1]),  length(indexValues), length(indexValueClass)))
+	indexValuesArray = array(rep(myMissingData, nrow(customerTable_input) * numDecades * length(indexValueQuant) * length(climateData[1,1,1, ,1]) * length(indexValues) * length(indexValueClass)), 
+										dim = c(nrow(customerTable_input),  numDecades,  length(indexValueQuant),  length(climateData[1,1,1, ,1]),  length(indexValues), length(indexValueClass)))
 	calibOuts = data.table::data.table(location = NA, numRuns = NA, meanVal_raw_C = NA, meanVal_ratio_A = NA, meanVal_ratio_B = NA, streamflowRechargeScalar = NA, thisFrcAreaUnderCult = NA, thisFrcCultAreaWthIrr = NA, thisWplant = NA,
 		runoffRatio = NA, initialSoilMoisture = NA, effectiveIrrigationRatio = NA, recentHistoricSlope = NA, rescaledRecentHistoricSlope = NA, rechScalar = NA)
 
@@ -509,7 +509,7 @@ waterIndexCalculations_f = function(
 	hydroBasins = data.table::fread(paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_hydroBasins.csv'))
 
 		# adding new col names
-	hydroBasins$Location = customerTable$Location_Name
+	hydroBasins$Location = customerTable_input$Location_Name
 	
 	hydroBasins$currentPrecip_avg = NA		;	hydroBasins$currentPrecip_var = NA
 	hydroBasins$trendLow_Precip_avg = NA	;  hydroBasins$trendMed_Precip_avg = NA	; hydroBasins$trendHigh_Precip_avg = NA
@@ -578,7 +578,7 @@ waterIndexCalculations_f = function(
 
 			# defining irrigation losses
 		effectiveIrrigationRatio = 0.85
-#		if(customerTable$DripIrrigation[thisRow])	{effectiveIrrigationRatio = 0.98}
+#		if(customerTable_input$DripIrrigation[thisRow])	{effectiveIrrigationRatio = 0.98}
 
 #		thisDivertibleStrmfl = ifelse(is.na(customerTable_input$DivertibleStreamflow_Ratio[thisRow]), 0, customerTable_input$DivertibleStreamflow_Ratio[thisRow]) # defining extractible water by location
 
@@ -598,7 +598,7 @@ waterIndexCalculations_f = function(
 	#	petQntsDrght = sqrt(petQntsNrml) * climateData[thisRow, , rep(19,7), , 2]
 
 		#strmfl = streamflow
-		gridArea = halfDegInKm * (halfDegInKm * cos(customerTable$Lat[thisRow] * pi / 180))
+		gridArea = halfDegInKm * (halfDegInKm * cos(customerTable_input$Lat[thisRow] * pi / 180))
 		strmflQntsNrml = climateData[thisRow, , c(14:20,13), , 4] /  climateData[thisRow, , rep(13,8), , 4]
 		strmflQntsAvg = sqrt(strmflQntsNrml) * climateData[thisRow, , rep(13,8), , 4]
 		strmflQntsDrght = sqrt(strmflQntsNrml) * climateData[thisRow, , rep(16,8), , 4]
@@ -617,7 +617,7 @@ waterIndexCalculations_f = function(
 
 			# customer inputs defining streamflow diversions
 		streamflowImports_km3 = 0
-#		if(!is.na(customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]))	{streamflowImports_km3 = customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]}
+#		if(!is.na(customerTable_input$SurfaceWaterDiversion_averageInCubicKM[thisRow]))	{streamflowImports_km3 = customerTable_input$SurfaceWaterDiversion_averageInCubicKM[thisRow]}
 
 		tooHigh = TRUE
 		tooLow = TRUE
@@ -626,7 +626,7 @@ waterIndexCalculations_f = function(
 			numRuns = numRuns + 1
 
 				# customer inputs defining streamflow capture
-			if(!is.na(customerTable$SurfaceWaterDiversion_Percent[thisRow]))	{streamflowRechargeScalar = customerTable$SurfaceWaterDiversion_Percent[thisRow]}
+			if(!is.na(customerTable_input$SurfaceWaterDiversion_Percent[thisRow]))	{streamflowRechargeScalar = customerTable_input$SurfaceWaterDiversion_Percent[thisRow]}
 			streamflowImports_mm = 0 # kmToMm * (streamflowImports_km3 / hydroBasins$SUB_AREA[thisRow]) / thisFrcCultAreaWthIrr
 				
 
@@ -667,7 +667,7 @@ waterIndexCalculations_f = function(
 			indexValuesArray[thisRow, , , , 3, 2] = pptQntsDrght - petQntsAvg * humidAI
 			# Plant Water Demand - Drought
 			growSeasonPPTqntsdrought_local = sqrt(pptQntsDrghtShft) * climateData[thisRow, , rep(growSeason[1], 8), , 1]	
-	#		if(!customerTable$Soil_Moisture[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing soil moisture is it cannot be used
+	#		if(!customerTable_input$Soil_Moisture[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing soil moisture is it cannot be used
 			for(thisMonth in growSeason[-1])	{
 				growSeasonPPTqntsdrought_local = growSeasonPPTqntsdrought_local + sqrt(pptQntsDrghtShft) * climateData[thisRow, , rep(thisMonth, 8), , 1]	
 			}
@@ -687,7 +687,7 @@ waterIndexCalculations_f = function(
 			indexValuesArray[thisRow, , , , 5, 2] = (pptQntsDrght + effectiveRech + effectiveStrmfl) - petQntsAvg * humidAI
 				# Plant Water Demand w/ Irrigation - Avg'
 			rechAvg_local = effectiveRech
-			if(!customerTable$Groundwater_Access[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing groundwater if it cannot be used
+			if(!customerTable_input$Groundwater_Access[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing groundwater if it cannot be used
 			indexValuesArray[thisRow, , , , 6, 1] = (effectivePPT + rechAvg_local + effectiveStrmfl) / effectiveWPlant
 			indexValuesArray[thisRow, , , , 6, 2] = (effectivePPT + rechAvg_local + effectiveStrmfl) - effectiveWPlant
 
@@ -966,7 +966,8 @@ waterIndexCalculations_locationSpecific_f = function(
 	clientName_input = clientName,
 	customerFolder_input = customerFolder,
 	cropPhenologyTable = "J:\\Cai_data\\WaterIndex\\crop_info\\cropWaterNeedsLookupTable_v1.csv",
-	indexValues = c('Aridity Index - Avg', 'Plant Water Demand - Avg', 'Aridity Index - Drought', 'Plant Water Demand - Drought', 'Aridity Index w/ Irrigation - Avg', 'Plant Water Demand w/ Irrigation - Avg', 'Aridity Index w/ Irrigation - Drought', 'Plant Water Demand w/ Irrigation - Drought')
+	indexValues = c('Aridity Index - Avg', 'Plant Water Demand - Avg', 'Aridity Index - Drought', 'Plant Water Demand - Drought', 'Aridity Index w/ Irrigation - Avg', 'Plant Water Demand w/ Irrigation - Avg', 'Aridity Index w/ Irrigation - Drought', 'Plant Water Demand w/ Irrigation - Drought'),
+	streamflowDroughtScalar = 0.70 #0.37
 	)
 	{
 
@@ -982,8 +983,8 @@ waterIndexCalculations_locationSpecific_f = function(
 	indexValueQuant = c('Q05', 'Q15', 'Q25', 'Q50', 'Q75', 'Q85', 'Q95', 'Mn')
 	climateData = readRDS(paste0(customerFolder_input, clientName_input, '\\',  clientName_input, '_regional_rawValues.rds'))
 	numDecades = length(climateData[1, ,1,1,1])
-	indexValuesArray = array(rep(myMissingData, nrow(customerTable) * numDecades * length(indexValueQuant) * length(climateData[1,1,1, ,1]) * length(indexValues) * length(indexValueClass)), 
-										dim = c(nrow(customerTable),  numDecades,  length(indexValueQuant),  length(climateData[1,1,1, ,1]),  length(indexValues), length(indexValueClass)))
+	indexValuesArray = array(rep(myMissingData, nrow(customerTable_input) * numDecades * length(indexValueQuant) * length(climateData[1,1,1, ,1]) * length(indexValues) * length(indexValueClass)), 
+										dim = c(nrow(customerTable_input),  numDecades,  length(indexValueQuant),  length(climateData[1,1,1, ,1]),  length(indexValues), length(indexValueClass)))
 	calibOuts = data.table::data.table(location = NA, numRuns = NA, meanVal = NA, streamflowRechargeScalar = NA, thisFrcAreaUnderCult = NA, thisFrcCultAreaWthIrr = NA, thisWplant = NA,
 		runoffRatio = NA, initialSoilMoisture = NA, effectiveIrrigationRatio = NA, recentHistoricSlope = NA, rescaledRecentHistoricSlope = NA, rechScalar = NA)
 
@@ -1027,7 +1028,7 @@ waterIndexCalculations_locationSpecific_f = function(
 
 			# defining irrigation losses
 		effectiveIrrigationRatio = hydroBasins$effectiveIrrigationRatio[thisRow]
-		if(customerTable$DripIrrigation[thisRow])	{effectiveIrrigationRatio = mean(0.98, effectiveIrrigationRatio)}
+		if(customerTable_input$DripIrrigation[thisRow])	{effectiveIrrigationRatio = mean(0.98, effectiveIrrigationRatio)}
 
 			# accounting for soils at field capacity at the start of the growing season
 		if(length(growSeason) == 12){initialSoilMoisture = 0} else {initialSoilMoisture = hydroBasins$initialSoilMoisture[thisRow]}
@@ -1045,7 +1046,7 @@ waterIndexCalculations_locationSpecific_f = function(
 	#	petQntsDrght = sqrt(petQntsNrml) * climateData[thisRow, , rep(19,7), , 2]
 
 		#strmfl = streamflow
-		gridArea = halfDegInKm * (halfDegInKm * cos(customerTable$Lat[thisRow] * pi / 180))
+		gridArea = halfDegInKm * (halfDegInKm * cos(customerTable_input$Lat[thisRow] * pi / 180))
 		strmflQntsNrml = climateData[thisRow, , c(14:20,13), , 4] /  climateData[thisRow, , rep(13,8), , 4]
 		strmflQntsAvg = sqrt(strmflQntsNrml) * climateData[thisRow, , rep(13,8), , 4]
 		strmflQntsDrght = sqrt(strmflQntsNrml) * climateData[thisRow, , rep(16,8), , 4]
@@ -1064,12 +1065,12 @@ waterIndexCalculations_locationSpecific_f = function(
 
 			# customer inputs defining streamflow diversions and average depth
 		streamflowImports_km3 = 0	; doubleCountingStreamflow = FALSE
-		if(!is.na(customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]))	{
-			streamflowImports_km3 = customerTable$SurfaceWaterDiversion_averageInCubicKM[thisRow]
+		if(!is.na(customerTable_input$SurfaceWaterDiversion_averageInCubicKM[thisRow]))	{
+			streamflowImports_km3 = customerTable_input$SurfaceWaterDiversion_averageInCubicKM[thisRow]
 			doubleCountingStreamflow = TRUE
 		}
-		if(!is.na(customerTable$TotalAreaUnderCultivation_km2[thisRow]))	{
-			totLocalAreaUnderCult = customerTable$TotalAreaUnderCultivation_km2[thisRow]
+		if(!is.na(customerTable_input$TotalAreaUnderCultivation_km2[thisRow]))	{
+			totLocalAreaUnderCult = customerTable_input$TotalAreaUnderCultivation_km2[thisRow]
 		}	else	{ 
 			totLocalAreaUnderCult = thisFrcCultAreaWthIrr * hydroBasins$SUB_AREA[thisRow]
 		}
@@ -1111,7 +1112,7 @@ waterIndexCalculations_locationSpecific_f = function(
 		indexValuesArray[thisRow, , , , 3, 2] = pptQntsDrght - petQntsAvg * humidAI
 		# Plant Water Demand - Drought
 		growSeasonPPTqntsdrought_local = sqrt(pptQntsDrghtShft) * climateData[thisRow, , rep(growSeason[1], 8), , 1]	
-#		if(!customerTable$Soil_Moisture[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing soil moisture is it cannot be used
+#		if(!customerTable_input$Soil_Moisture[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing soil moisture is it cannot be used
 		for(thisMonth in growSeason[-1])	{
 			growSeasonPPTqntsdrought_local = growSeasonPPTqntsdrought_local + sqrt(pptQntsDrghtShft) * climateData[thisRow, , rep(thisMonth, 8), , 1]	
 		}
@@ -1131,7 +1132,7 @@ waterIndexCalculations_locationSpecific_f = function(
 			if(any(streamflowRechargeDrght < 0))	{	streamflowRechargeDrght[which(streamflowRechargeDrght < 0)] = 0	}
 		}
 		effectiveStrmfl = 	effectiveIrrigationRatio * (streamflowImports_mm + streamflowRecharge)
-		effectiveStrmflDrght = 	effectiveIrrigationRatio * (streamflowImports_mm * 0.37 + streamflowRechargeDrght)
+		effectiveStrmflDrght = 	effectiveIrrigationRatio * (streamflowImports_mm * streamflowDroughtScalar + streamflowRechargeDrght)
 
 #		if(any(effectiveStrmfl > 1000))	{effectiveStrmfl[effectiveStrmfl > 1000] = 1000}
 #		if(any(effectiveStrmflDrght > 1000))	{effectiveStrmflDrght[effectiveStrmflDrght > 1000] = 1000}
@@ -1140,7 +1141,7 @@ waterIndexCalculations_locationSpecific_f = function(
 		indexValuesArray[thisRow, , , , 5, 2] = (pptQntsDrght + effectiveRech + effectiveStrmfl) - petQntsAvg * humidAI
 			# Plant Water Demand w/ Irrigation - Avg'
 		rechAvg_local = effectiveRech
-		if(!customerTable$Groundwater_Access[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing groundwater if it cannot be used
+		if(!customerTable_input$Groundwater_Access[thisRow])	{growSeasonPPTqntsdrought_local[,,] = 0}				# zeroing groundwater if it cannot be used
 		indexValuesArray[thisRow, , , , 6, 1] = (effectivePPT + rechAvg_local + effectiveStrmfl) / effectiveWPlant
 		indexValuesArray[thisRow, , , , 6, 2] = (effectivePPT + rechAvg_local + effectiveStrmfl) - effectiveWPlant
 
