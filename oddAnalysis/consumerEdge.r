@@ -300,11 +300,12 @@ for (thisIndustry in unique(dataInspect$industry_name)) {
 
   
 library(ncdf4)
-dateRange = range($trans_date)
+ncpath = "J:\\Cai_data\\Advanta\\firstFrost\\Nebraska\\"
+
+#dateRange = range($trans_date)
 climDat = nc_open(paste0(ncpath, "advNb_clim.nc"))
 
 
-ncpath = "J:\\Cai_data\\Advanta\\firstFrost\\Nebraska\\"
 latLon = c(41, -97.25)
 # Get lat and lon arrays
 lats = ncvar_get(climDat, "latitude")   # size 15
@@ -325,7 +326,7 @@ lon_index = find_nearest(lons, target_lon)
 timeVar = ncvar_get(climDat, "time") + as.Date("1979-01-01")
 theseTimes = which(timeVar > dateRange[1] & timeVar < dateRange[2])
 
-time_lag = 1
+time_lag = -10
 
 chooseYourVar = 't2m_max'
 maxTemp = ncvar_get(climDat, varid = chooseYourVar, start = c(lon_index, lat_index, theseTimes[1] + time_lag), count = c(1,1, last(theseTimes) + 1- theseTimes[1]))

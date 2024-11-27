@@ -1,6 +1,6 @@
 # load necessary functions
 	# gw specific functions
-source('C:\\Users\\arik\\Documents\\GitHub\\TCFD_ISIMIP_ingestion_and_reanalysis\\WaterIndex_v4_functions.R')
+source('C:\\Users\\arik\\Documents\\GitHub\\TCFD_ISIMIP_ingestion_and_reanalysis\\WaterIndex_v4_functionsOnly.R')
 
 
 
@@ -22,7 +22,9 @@ customerFolder = 'J:\\Cai_data\\Rabo\\Locations\\' # 'C:\\Users\\18033\\Document
 #clientName = 'NuveenIberia_July2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 #clientName = 'NuveenUSA-NC_July2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 #clientName = 'McCain_Nov2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
-clientName = 'NuveenCali_Nov2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+#clientName = 'NuveenCali_Nov2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+#clientName = 'BASF_Nov2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+clientName = 'ABI_Nov2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 
 
 customerTable = data.table::fread(paste0(customerFolder, clientName, '\\Customer Onboarding Information_',
@@ -34,33 +36,6 @@ customerTable = data.table::fread(paste0(customerFolder, clientName, '\\Customer
 
 ##################################################################################
 ## v4: running the data
-
-# input array is in format [location, decade, indexValueQuant, scenario, indexValue, indexValueClass]
-
-startTime = Sys.time()
-gracePlotter_f(
-	doPlot = FALSE
-	)
-climateDataSelection_f()
-#climateDataPlotting_f()
-waterIndexCalculations_f()
-waterIndexPlotter_f(
-	doPlot = FALSE,
-	locOrReg = "regional"
-	)
-endTime = Sys.time()
-endTime - startTime
-waterIndexCalculations_locationSpecific_f()
-waterIndexPlotter_f(
-	doPlot = FALSE,
-	locOrReg = "local"
-	)
-endTime = Sys.time()
-endTime - startTime
-
-
-
-
 startTime = Sys.time()
 gracePlotter_f(
 	doPlot = FALSE

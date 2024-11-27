@@ -1,0 +1,338 @@
+Radical transparency: what do you want to know?
+
+What are your preferred tools for wrangling large, multidimensional geospatial data.
+
+Role: two tracks
+	1) RS / flood scientist with domain expertise and good coding skills
+		70-80% coding
+	2) RS engineer with domain experience and excellent coding skills
+		80-90% coding
+	
+
+
+
+
+optical for crop yield and crop health (landsat and sentinel 2)
+grace to validate hydro models
+	high mountain asia
+lots of hydro model
+then worked for a bank
+also looks at wildfire risk
+	sentinel 2 for veg health
+laid off last year
+now working for non-profit
+preferred tools (esri, python, gdal, r, GEE, qgis)
+	school + early job: w/ esri
+	r gdal: academic 
+	now opern source python
+	gee for 2 years
+	gcp to aws
+some sar (for imaging mining)
+
+
+
+
+
+
+Kehan Yang
+	transition to private sector (M3 Works)
+	work on real-time SWE
+	snow vs water, technical challenges
+	R --> Python (has been working 
+	AWS experience for high res planet data and ML, and all current work
+
+
+
+	
+
+		
+[yes] 
+Benoit
+	belgian?
+	Tell about:
+		dredge boat detection w/ sentinel 1
+	Last job (Sr data Scientist) at Premise Data ended Dec 2023
+		step down?
+	track:
+		both (more science)
+		pasion for remote sensing tech, but long experience building backend / pipes
+	detailed knowledge of limitations of specific tools / products
+	previous experience in startups
+	9.5/10
+		currently applying to multiple positions
+		fast timeline
+		
+Karthik Venkataramani
+	tell about:
+		the desire for transition from academia to private sector
+		transition from climate / atmospheric sciences to res of water 
+		opera: back end, qa/qc issues
+		only 2 publications
+	had worked with astra, startups
+	more RS expertise; coding expertise is a work in progress but something he hopes to improve
+
+Mahyar Aboutalebi
+	2021 PhD at Utah St
+	4 first author pubs, but not high profile 
+	Research Analyst to Research Scientist 2 at Gallo (wine)
+	work in R and Python, w/ flood, HAND, PRISM, landsat, and sentinel data
+	found gallo job as a researcher for a joint nasa / gallo / academic project, then gallo wanted a RS scientist
+	had a specific job to pick out flood inundation in fields
+	also work in 
+		published paper with his wife (a hydrologist) on HAND
+
+Karen An
+	2020 PhD at UCLA
+	2013-2020 JPL intern
+	2021-2022 JPL (wildfires and ocean oil spills response; lots of SAR)
+	2022-now JPL engineer (fire, flood, oil spill)
+	transition to private sector?
+	soft spoken but easy to talk to
+	lots of questions
+	exhibited lots of technical knowledge
+	pubs look like preprints only?
+	
+	
+	
+[no]
+
+
+
+	
+Karen Endres
+	long record of work: US Forest Service (Jen "Costanza"?) and National Weather Service
+	tell about:
+		why transition from gov to private?
+		"Flood impact and water level monitoring, Import and analysis of hydrologic data using GIS to support river level forecasting."
+		programming: lots of variety, but transition to pyton?
+	very smart
+	hydro background
+	not super motivated to intense work (mostly happy about remote)
+	
+
+
+
+
+
+
+
+
+		
+
+
+			
+		
+
+
+
+
+	
+
+
+###################################
+# end of definitely next round
+###################################
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+###################################
+# rejected w/ email
+###################################
+Lihui (Lydia) Zhang
+	MIT PhD (2.5 yrs)
+	Planet labs
+	ACRE at McKinsey (DS)
+	Planet Labs PBC (Product Specialist on GIS B2B SaaS Solutions)
+	
+
+Shengfang Ma
+	2019 Chinese Phd, 2 yr gap to move with husband to US, then 2024 MS at OK State
+		Chinese Academy of Sciences: I don't know it but is #112 globally and #7 in china, and top 10 globally in a few sciency fields, so pretty good
+	talked passionately about learning ML in the context of RS
+	has 3 first author pubs and several coauthorship, none high profile but a growing pub count
+	described the fast-paced environment of the private sector (short internship at planet labs) as being a big positive
+	has a greencard
+	very excited
+
+
+Chen Liang
+	Tell about:
+		transition from academia to private (how did you like it?)
+			pay expectations
+		experience at Gro Intel
+		comfort in transitioning away from R (Python or JavaScript)
+		experience in RS of water vs crops and specific challenges
+	lots of great questions and conficence
+	worried about feasibility of private sector work
+	forward thinking
+	fits price range
+	
+Ratnaksha Lele
+	tell about:
+		the desire for transition from academia to private sector
+		experience at corteva and jupiter
+			specifically:
+				"Project lead on engineering and testing a pilot machine learning model to predict coastal flooding in future climate scenarios along the us coastline"
+		diff between forecasting / projecting flood along coast vs pluvial / fluvial
+	buld statistical emulator for coastal flood, via neural net
+
+William Saulnier
+	(currently at Ecosystem Planning & Restoration, Raleigh, NC (Remote))
+	transition from R / ESRI / QGIS to Python 
+	nerdy coding guy who has lead engineering teams for a long while, wants to dive deeper into pure code / science
+	he is a bit outside our pay range
+
+
+Owen Smith
+	Tell about: 
+		Accenture Federal Services working on the Intelligence Advanced ResearchProjects Activity’s SMART 
+		Publish vs Code (preference)
+			only one first author
+	track:
+		both (more engineery)
+	build something that can actually affect change
+	long-term interest in ag / climate (grandad farmer)
+	not graduated yet
+	8/10
+		has some real word experience (accenture intern) and 
+		hasn't graduated yet or published yet
+
+"zee" Zhenzhen Zhang
+	Tell about:
+		exp in private sector
+		comfort in transitioning away from R (Python or JavaScript)
+		experience in RS of water and specific challenges
+	comfortable, confident w/ engineering aspect
+		personal network to help scale
+	request for more details on modeling project esp scaling to near real time
+
+Mansi Shah
+	Geography BS at UNC; MS at NC State 2019
+	self describes more as eng than ds
+		LinkedIn connections Jay Cable, Conghe Song, Raquel Silva, Stephan Rasp, and Eric Hall
+	worked at 
+		UNC IE 2016-2017
+		DS contractor (EarthOptics jun-sep 2020)
+		software eng (Planet Labs sep2021-oct 2023)
+	gap in employment?
+	more of a geospatial engineer
+	aws python sdk for data 
+	rebuilt github repos 
+		worked directly with customers and engineering teams
+	on the developer relations team
+
+Xiaoman Lu
+	Lots of good pubs \
+	Forestry / LAI, wildfire, smoke, and lulc change
+	2022 PhD, now postdoc at U Illinois UC
+	a bit shy / awkward (poor English) but speeking with technical skills
+
+Yi Zhao
+	Tell about:
+		academic research (lulc and crop classification, but doesn't show papers)
+		stanford phd 2016
+		linked in friend with Chao Wang at unc
+		work experience at Gro Intel
+			growth from intro to more senior (2018-current)
+			pay expectations
+			primary tools used
+				operational vs bespoke / poc
+			transition from crop / ndvi to water / flood, and what complications are likely 
+			pay expectations
+	still spends 50% time coding despite leading a teams
+	very awkward to talk to
+	didn't ask a lot of questions about the role or project
+
+Daniel Moore
+	Princeton PhD 2024
+	Dec 2023 to now: DS consultant for an early-stage startup
+	some private sector experience after BA / before MS
+	1 first author pub
+	very well spoken and thoughtful
+	does consider himself a "user of RS" not a "RS expert" though
+
+Lucas Zeller
+	Tell about:
+		transition from academia to private (and growing citation) [and permafrost!!]
+		preferred tools for RS, and transition from snow to water (specific challenges)
+	has 
+	matt ross in his committee
+	a little scared about the data engineery side
+
+Elizabeth Webb
+	Tell about:
+		transition from academia to private (and growing citation) [and permafrost!!]
+		comfort in transitioning away from R (Python or JavaScript)
+		experience in RS of water vs fire and specific challenges
+	wants some guardrails early on
+	a little reticent about private sector
+	solid domain expertise
+
+Claire Miles
+	Tell about:
+		work experience at Gro Intel
+			growth from intro to more senior
+			primary tools used
+				operational vs bespoke / poc
+			transition from crop / ndvi to water / flood, and what complications are likely 
+			pay expectations
+	fits in the middle, but a bit more engineery
+	experience with building workflows with eng
+	not confident as a subject matter expert
+
+Nawaraj Shrestha
+	Tell about:
+		transition from academia to private (and long period teaching / change of tools / keeping up with new best practices)
+		experience in RS of water and specific challenges
+	a little nervous
+	tenuous connection to tamlin (wrote letter of support for visa)
+	no private sectore experience, not very engineery
+	
+Joshua Roundy
+	Tell about:
+		global drought prediction w/ smap
+	waterplan
+	why leaving academia?
+
+Diena Dogom
+	tell about:
+		previous history of gov't and private sector, then transition to academia (phd 2023) now transition back
+		different gis tools used, and preference for and limitations of each
+		programming: lots of variety, but transition to pyton?
+	kinda just wants a remote position
+	not overly enthusiastic
+
+Piyush Mehta
+	tell about:
+		the desire for transition from academia to private sector
+		few publications (only 2) so expectations for graduation?
+	more of a sciencey vs engineery focus
+	
+Weiqian Gao
+	2024 PhD at Texas A&M
+	4 first author pubs
+	RS work in fire, veg health, livestock and standard satellites
+	intern at WWF 
+		monitoring pipeline for protected areas and biodiversity
+		ultimately used NPP for habit productivity / health
+	uses a lot of ESRI (also qgis and gee)
+	javascript and r
+	class on flood risk in houston
+	lives in houston texas - on a student visa 3 yrs then needs hb1

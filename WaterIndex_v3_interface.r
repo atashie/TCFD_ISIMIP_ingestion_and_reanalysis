@@ -19,8 +19,9 @@ customerFolder = 'J:\\Cai_data\\Rabo\\Locations\\' # 'C:\\Users\\18033\\Document
 #clientName = 'McCain_Mar2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 #clientName = 'NuveenIberia_Apr2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 #clientName = 'NuveenChile_May2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
-clientName = 'NuveenIberia_July2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+#clientName = 'NuveenIberia_July2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 #clientName = 'NuveenUSA-NC_July2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
+clientName = 'McCain_Nov2024'#	'BeefNW' #'WestHillsFarms' #'AgricolaSanOsvaldo'#	'AgricolaPachacama' #' AgricolaSanTelmo	
 
 
 customerTable = data.table::fread(paste0(customerFolder, clientName, '\\Customer Onboarding Information_',
